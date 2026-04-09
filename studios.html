@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Студии — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="wiki-cards.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="wiki-page">
+  <div class="wiki-header">
+    <h1>Студии</h1>
+    <p>Команды и организации ру мапдева</p>
+  </div>
+
+  <!-- back to main -->
+  <div class="wiki-nav-row">
+    <a href="main.html" class="wiki-back-btn" data-sound>← На главную</a>
+  </div>
+
+  <div class="wiki-divider"></div>
+
+  <div class="cards-grid">
+
+    <!-- ══ КУБИ КАРТЫ ══ -->
+    <a href="studio-cubikarti.html" class="wiki-card grad-pink-blue" id="cubiCard" data-sound>
+      <canvas class="card-canvas" id="cubiCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="cubikarti.png" class="card-logo" alt="Куби Карты">
+          <div>
+            <div class="card-title">Куби карты</div>
+            <div class="card-tag">Студия • Карты</div>
+          </div>
+        </div>
+        <div>
+          <div class="card-desc-label">описание</div>
+          <div class="card-desc-text" style="margin-top:6px">
+            Привет. Мы команда КубиКарты и занимаемся... Картами, думаю логично. Наши карты на любой вкус и цвет, но по большей части это либо аркада, либо сюжет, либо рогалик....
+          </div>
+        </div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-copy">© МапДев Вики — фан-проект</span>
+  <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
+</footer>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function() {
+  var canvas = document.getElementById('cubiCanvas');
+  var card   = document.getElementById('cubiCard');
+  if (!canvas || !card) return;
+  var ctx = canvas.getContext('2d');
+  function resize() { canvas.width = card.offsetWidth; canvas.height = card.offsetHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  var cubes = [];
+  for (var i = 0; i < 20; i++) {
+    cubes.push({ x: Math.random()*300, y: Math.random()*320,
+      s: 4+Math.random()*9, vx:(Math.random()-.5)*.4, vy:-0.3-Math.random()*.5,
+      a: Math.random()*Math.PI*2, va:(Math.random()-.5)*.022, op:0.15+Math.random()*.35 });
+  }
+  function drawCube(x,y,s,angle,op,c1) {
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.globalAlpha=op;
+    ctx.fillStyle=c1; ctx.fillRect(-s/2,-s/2,s,s);
+    ctx.fillStyle='rgba(255,255,255,0.22)';
+    ctx.beginPath(); ctx.moveTo(-s/2,-s/2); ctx.lineTo(0,-s/2-s*.4); ctx.lineTo(s/2,-s/2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.28)';
+    ctx.beginPath(); ctx.moveTo(s/2,-s/2); ctx.lineTo(s/2+s*.4,-s/2+s*.2); ctx.lineTo(s/2+s*.4,s/2+s*.2); ctx.lineTo(s/2,s/2); ctx.fill();
+    ctx.restore();
+  }
+  function tick() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var color = document.documentElement.dataset.theme==='light' ? '#b040ff' : '#d63eff';
+    cubes.forEach(function(c){
+      c.x+=c.vx; c.y+=c.vy; c.a+=c.va;
+      if(c.y+c.s<0){c.y=canvas.height+c.s;c.x=Math.random()*canvas.width;}
+      if(c.x<-c.s) c.x=canvas.width+c.s;
+      if(c.x>canvas.width+c.s) c.x=-c.s;
+      drawCube(c.x,c.y,c.s,c.a,c.op,color);
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

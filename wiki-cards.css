@@ -1,0 +1,96 @@
+/* wiki-cards shared styles — used by studios.html and authors.html */
+
+.wiki-page { padding-top: var(--hh); min-height: 100vh; display: flex; flex-direction: column; }
+
+.wiki-header { padding: 48px 40px 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
+.wiki-header h1 {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: clamp(28px, 5vw, 52px);
+  letter-spacing: .08em;
+  color: var(--text);
+  opacity: 0; animation: fadeUp .6s ease forwards;
+}
+.wiki-header p { font-size: 11px; color: var(--text2); margin-top: 8px; opacity: 0; animation: fadeUp .6s ease .15s forwards; }
+
+.wiki-nav-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 40px 20px; max-width: 1100px; margin: 0 auto; width: 100%;
+}
+.wiki-back-btn {
+  font-family: var(--font); font-size: 10px; color: var(--text2);
+  text-decoration: none; padding: 7px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  transition: color var(--tr), border-color var(--tr), background var(--tr), transform var(--tr);
+  opacity: 0; animation: fadeUp .5s ease .1s forwards;
+}
+.wiki-back-btn:hover { color: var(--accent); border-color: var(--border2); background: var(--bg3); transform: scale(1.05); }
+
+.wiki-divider { height: 1px; background: var(--border); max-width: 1100px; margin: 0 auto 36px; width: calc(100% - 80px); }
+
+.cards-grid { display: flex; flex-wrap: wrap; gap: 28px; padding: 0 40px 80px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+/* ══ BASE CARD ══ */
+.wiki-card {
+  width: 300px; height: 320px;
+  border-radius: 14px;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .2s ease, box-shadow .2s ease;
+  opacity: 0;
+  border: 1px solid var(--border2);
+  text-decoration: none; color: var(--text);
+}
+.wiki-card:hover { transform: translateY(-7px) scale(1.02); }
+
+/* ── card with gradient (КубиКарты style) ── */
+.wiki-card.grad-pink-blue {
+  background: linear-gradient(160deg, #1a0830 0%, #0d1a3a 100%);
+  border-color: rgba(214,62,255,.4);
+}
+.wiki-card.grad-pink-blue:hover { box-shadow: 0 0 36px rgba(214,62,255,.3), 0 10px 40px rgba(0,0,0,.6); }
+
+[data-theme="light"] .wiki-card.grad-pink-blue { background: linear-gradient(160deg, #f5e8ff 0%, #e0eeff 100%); border-color: rgba(180,60,220,.4); }
+
+/* ── card with bg photo (vladislavvc style) ── */
+.wiki-card.photo-bg .card-photo {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: brightness(.35) saturate(.7);
+  transition: filter .3s;
+}
+.wiki-card.photo-bg:hover .card-photo { filter: brightness(.45) saturate(.8); }
+.wiki-card.photo-bg { border-color: rgba(80,120,200,.4); }
+.wiki-card.photo-bg:hover { box-shadow: 0 0 36px rgba(60,100,220,.3), 0 10px 40px rgba(0,0,0,.7); }
+
+/* card canvas (floating cubes) */
+.card-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .5; }
+
+/* card inner content */
+.card-body { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; padding: 20px; gap: 12px; }
+
+.card-logo-row { display: flex; align-items: center; gap: 11px; }
+.card-logo { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; image-rendering: pixelated; flex-shrink: 0; border: 1px solid rgba(255,255,255,.18); }
+.card-title { font-size: 17px; color: #fff; line-height: 1.2; font-family: var(--font); }
+.card-tag { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+.card-desc-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); }
+.card-desc-text { font-size: 10px; color: rgba(255,255,255,.7); line-height: 1.72; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+
+.card-read-btn {
+  display: inline-block; font-family: var(--font);
+  font-size: 10px; letter-spacing: .07em;
+  padding: 8px 16px;
+  border-radius: 5px; border: 1px solid rgba(255,255,255,.25);
+  color: #fff; text-decoration: none; background: rgba(255,255,255,.06);
+  cursor: pointer; margin-top: auto; align-self: flex-start;
+  transition: background .15s, transform .15s, box-shadow .15s, border-color .15s;
+}
+.card-read-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.5); transform: scale(1.05); }
+
+@media (max-width: 680px) {
+  .cards-grid { padding: 0 18px 60px; }
+  .wiki-header { padding: 36px 18px 20px; }
+  .wiki-nav-row { padding: 0 18px 16px; }
+  .wiki-divider { width: calc(100% - 36px); }
+  .wiki-card { width: 100%; height: auto; min-height: 300px; }
+}

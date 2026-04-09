@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <meta property="og:title" content="МЭДЭЛЭ">
+  <meta property="og:description" content="МЭДЭЛЭ, ну ооочень серьезное название">
+  <meta property="og:image" content="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="site-header">
+  <div class="header-logo" id="logoWrap">
+    <!-- secret click on logo image → counter page -->
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg" title="">
+    <span class="logo-text" id="logoText"
+      data-default="МапДев Вики"
+      data-hover="кто кто?"
+    >МапДев Вики</span>
+  </div>
+
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+  </nav>
+
+  <button class="theme-toggle" id="themeToggle" data-sound title="Сменить тему">
+    <span class="theme-icon">🌙</span>
+  </button>
+</header>
+
+<!-- ══ HERO ══ -->
+<main class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">beta</div>
+    <h1 class="hero-title">РУ МапДев<br><span class="accent">Вики</span></h1>
+    <p class="hero-sub">Энциклопедия людей и студий,<br>создающих Minecraft карты</p>
+    <div class="hero-btns">
+      <a href="authors.html" class="big-btn primary" data-sound>Начать читать</a>
+      <button class="big-btn secondary" id="memBtn" data-sound>
+        <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/1f3b2.svg" class="btn-emoji" alt=""> Случайный мемасик
+      </button>
+    </div>
+  </div>
+  <div class="pixel-deco p1"></div>
+  <div class="pixel-deco p2"></div>
+  <div class="pixel-deco p3"></div>
+</main>
+
+<!-- ══ CATEGORIES ══ -->
+<section class="categories">
+  <a href="authors.html" class="cat-card" data-sound>
+    <div class="cat-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/270d.svg" class="tw-emoji" alt="✍"></div>
+    <h2>Авторы</h2><p>Создатели карт, сценаристы и маперы</p>
+    <span class="cat-arrow">→</span>
+  </a>
+  <a href="bloggers.html" class="cat-card" data-sound>
+    <div class="cat-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/1f4f9.svg" class="tw-emoji" alt="📹"></div>
+    <h2>Блогеры</h2><p>Те кто освещают и продвигают сцену</p>
+    <span class="cat-arrow">→</span>
+  </a>
+  <a href="studios.html" class="cat-card" data-sound>
+    <div class="cat-icon"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/1f3db.svg" class="tw-emoji" alt="🏛"></div>
+    <h2>Студии</h2><p>Команды и организации ру мапдева</p>
+    <span class="cat-arrow">→</span>
+  </a>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer">
+  <span class="footer-copy">© МапДев Вики — фан-проект</span>
+  <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
+</footer>
+
+<!-- ══ DRAGGABLE HEAD ══ -->
+<div class="head-wrap" id="headWrap">
+  <div class="head-bubble" id="headBubble"></div>
+  <img src="head.png" class="head-img" id="headImg" alt="голова" draggable="false">
+</div>
+
+<!-- ══ HEAD SCREAMER OVERLAY ══ -->
+<div class="screamer-overlay" id="headScreamer">
+  <div class="screamer-red" id="screamerRed"></div>
+  <img src="head.png" class="screamer-head" id="screamerHead" alt="">
+</div>
+
+<!-- ══ FOXY SCREAMER OVERLAY ══ -->
+<div class="screamer-overlay" id="foxyScreamer">
+  <video id="foxyVideo" src="foxy.mp4" class="screamer-video" playsinline></video>
+</div>
+
+<!-- hidden audio -->
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>

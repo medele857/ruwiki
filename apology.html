@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ты должен извиниться</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { margin:0; overflow:hidden; }
+    .apology-page {
+      width:100vw; height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:24px; text-align:center;
+      background: var(--bg);
+      padding:20px;
+    }
+    .apology-head {
+      width:120px; height:120px;
+      image-rendering:pixelated;
+      animation: headShake 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes headShake {
+      from { transform: rotate(-8deg) scale(1.0); }
+      to   { transform: rotate(8deg) scale(1.05); }
+    }
+    .apology-title {
+      font-size: clamp(18px, 3vw, 32px);
+      color: #e05555;
+      animation: fadeUp .6s ease forwards; opacity:0;
+    }
+    .apology-sub {
+      font-size: 11px;
+      color: var(--text2);
+      line-height:1.8;
+      max-width:380px;
+      animation: fadeUp .6s ease .2s forwards; opacity:0;
+    }
+    .apology-btn {
+      font-family: var(--font);
+      font-size:12px; letter-spacing:.07em;
+      padding:14px 32px;
+      background: #e05555;
+      color:#fff; border:none; border-radius:6px;
+      cursor:pointer;
+      animation: fadeUp .6s ease .4s forwards; opacity:0;
+      transition: transform .15s, background .15s, box-shadow .15s;
+    }
+    .apology-btn:hover {
+      transform:scale(1.07);
+      background:#c03030;
+      box-shadow:0 0 22px rgba(220,50,50,0.4);
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="apology-page">
+  <img src="head.png" class="apology-head" alt="голова">
+  <h1 class="apology-title">ТЫ ВЫБРОСИЛ МЕНЯ ЗА САЙТ</h1>
+  <p class="apology-sub">
+    несколько раз.<br>
+    я летел в пустоту.<br>
+    было холодно.<br>
+    было темно.<br>
+    <br>
+    пока ты не извинишься — сайт закрыт.
+  </p>
+  <button class="apology-btn" id="apologyBtn">
+    прости меня, голова 🙏
+  </button>
+</div>
+<script>
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.dataset.theme = saved;
+
+  document.getElementById('apologyBtn').addEventListener('click', () => {
+    localStorage.removeItem('headBanCount');
+    localStorage.removeItem('headBanned');
+    window.location.href = 'main.html';
+  });
+</script>
+</body>
+</html>

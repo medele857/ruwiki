@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МапДев Вики — Войти</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <style>
+    @font-face {
+      font-family: 'MC';
+      src: url('https://fonts.cdnfonts.com/s/29491/Minecraft.woff') format('woff');
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:#0a0a0d; color:#f0f0f0; overflow:hidden;
+      font-family:'MC','Courier New',monospace;
+      min-height:100vh;
+    }
+
+    .wrap {
+      width:100vw; height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:28px; position:relative;
+    }
+    /* scanlines */
+    .wrap::before {
+      content:''; position:fixed; inset:0;
+      background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px);
+      pointer-events:none; z-index:10;
+    }
+
+    .logo-block {
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      animation:up .8s ease forwards; opacity:0;
+    }
+    .logo-block img { width:64px; image-rendering:pixelated; }
+    .site-name { font-size:20px; letter-spacing:.08em; }
+
+    .label {
+      font-size:12px; color:#888; text-align:center; line-height:1.9;
+      animation:up .8s ease .2s forwards; opacity:0;
+    }
+
+    /* player */
+    .player {
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; padding:22px 34px; min-width:290px;
+      animation:up .8s ease .35s forwards; opacity:0;
+    }
+    .track-name { font-size:10px; color:#666; letter-spacing:.12em; text-transform:uppercase; }
+    .controls { display:flex; align-items:center; gap:12px; width:100%; }
+    .play-btn {
+      width:38px; height:38px; border-radius:4px;
+      background:#9b5ff0; border:none; cursor:pointer;
+      color:#fff; font-size:16px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      transition:transform .15s, background .15s;
+    }
+    .play-btn:hover { transform:scale(1.1); background:#7b3fd0; }
+    .prog-wrap {
+      flex:1; height:6px; background:rgba(255,255,255,.1);
+      border-radius:3px; cursor:pointer; position:relative; overflow:hidden;
+    }
+    .prog-fill { height:100%; width:0%; background:#9b5ff0; border-radius:3px; pointer-events:none; }
+    .time { font-size:10px; color:#555; min-width:34px; text-align:right; }
+
+    /* enter button — starts invisible, JS makes it visible */
+    .enter-btn {
+      font-family:'MC','Courier New',monospace;
+      font-size:12px; letter-spacing:.07em;
+      padding:13px 30px; background:#9b5ff0;
+      color:#fff; border:none; border-radius:6px;
+      cursor:pointer; text-decoration:none; display:inline-block;
+      /* starts hidden — JS unhides */
+      opacity:0; pointer-events:none;
+      transition:opacity .4s ease, transform .15s, background .15s, box-shadow .15s;
+    }
+    .enter-btn.show { opacity:1; pointer-events:all; }
+    .enter-btn:hover { transform:scale(1.06); background:#7b3fd0; box-shadow:0 0 20px rgba(155,95,240,.4); }
+
+    .hint {
+      font-size:10px; color:#333; letter-spacing:.05em;
+      animation:up .8s ease .5s forwards; opacity:0;
+      transition:color .4s;
+      text-align:center; min-height:16px;
+    }
+    .hint.bright { color:#777; }
+
+    @keyframes up {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    [data-theme="light"] body { background:#f2f5ee; color:#111; }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="logo-block">
+    <img src="medele.png" alt="logo">
+    <span class="site-name">МапДев Вики</span>
+  </div>
+
+  <p class="label">Прежде чем войти...<br>Послушай это. Мы не торопим. Ну почти.</p>
+
+  <div class="player">
+    <span class="track-name">Морген Басс</span>
+    <div class="controls">
+      <button class="play-btn" id="playBtn">▶</button>
+      <div class="prog-wrap" id="progWrap">
+        <div class="prog-fill" id="progFill"></div>
+      </div>
+      <span class="time" id="timeEl">0:00</span>
+    </div>
+  </div>
+
+  <a href="main.html" class="enter-btn" id="enterBtn">Войти на сайт →</a>
+
+  <p class="hint" id="hint">Кнопка появится через <span id="cd">15</span> сек...</p>
+</div>
+
+<audio id="track" src="morgen.mp3" preload="auto"></audio>
+
+<script>
+  // theme
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.dataset.theme = t;
+
+  const audio   = document.getElementById('track');
+  const playBtn = document.getElementById('playBtn');
+  const fill    = document.getElementById('progFill');
+  const timeEl  = document.getElementById('timeEl');
+  const enterBtn= document.getElementById('enterBtn');
+  const hint    = document.getElementById('hint');
+  const cdEl    = document.getElementById('cd');
+  const progWrap= document.getElementById('progWrap');
+
+  let unlocked = false;
+  let secs = 15;
+
+  // countdown
+  const cdTimer = setInterval(() => {
+    secs--;
+    if (secs > 0) {
+      if (cdEl) cdEl.textContent = secs;
+      if (secs <= 5) hint.classList.add('bright');
+    } else {
+      clearInterval(cdTimer);
+      unlock();
+    }
+  }, 1000);
+
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    // simply add class — no animation fighting
+    enterBtn.classList.add('show');
+    hint.textContent = 'Или можно остаться ещё...';
+    hint.classList.add('bright');
+  }
+
+  // play/pause
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) { audio.play().catch(()=>{}); playBtn.textContent = '⏸'; }
+    else { audio.pause(); playBtn.textContent = '▶'; }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    const pct = audio.duration ? audio.currentTime / audio.duration * 100 : 0;
+    fill.style.width = pct + '%';
+    timeEl.textContent = fmt(audio.currentTime);
+    // unlock at 50% listened
+    if (audio.duration && audio.currentTime >= audio.duration * 0.5) unlock();
+  });
+
+  audio.addEventListener('ended', () => { playBtn.textContent = '▶'; unlock(); });
+
+  // seek
+  progWrap.addEventListener('click', e => {
+    if (!audio.duration) return;
+    const r = progWrap.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+
+  function fmt(s) {
+    const m = Math.floor(s / 60);
+    return m + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  }
+</script>
+</body>
+</html>

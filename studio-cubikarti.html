@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Куби карты — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+
+    /* ══ PAGE BACKGROUND — pink→blue gradient bottom→top ══ */
+    .article-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(
+        to top,
+        #3a8fff 0%,
+        #7b4fff 35%,
+        #d63eff 65%,
+        #ff3eb5 100%
+      );
+      opacity: .12;
+      pointer-events: none;
+    }
+    /* subtle grid over gradient */
+    .article-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    /* ══ LAYOUT ══ */
+    .article-wrap {
+      padding-top: var(--hh);
+      max-width: 820px;
+      margin: 0 auto;
+      padding-left: 36px;
+      padding-right: 36px;
+      padding-bottom: 100px;
+    }
+
+    /* ── Hero banner ── */
+    .article-hero {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 52px 0 36px;
+      opacity: 0;
+      animation: fadeUp .7s ease forwards;
+    }
+    .article-logo {
+      width: 90px; height: 90px;
+      border-radius: 14px;
+      object-fit: cover;
+      image-rendering: pixelated;
+      border: 2px solid rgba(255,62,181,.5);
+      box-shadow: 0 0 28px rgba(255,62,181,.35), 0 0 60px rgba(58,143,255,.2);
+      flex-shrink: 0;
+    }
+    .article-hero-text {}
+    .article-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      letter-spacing: .05em;
+      font-size: clamp(26px, 5vw, 42px);
+      line-height: 1.15;
+      /* gradient text */
+      background: linear-gradient(90deg, #ff3eb5, #7b4fff, #3a8fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .article-subtitle {
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+      margin-top: 8px;
+    }
+
+    /* ── Divider ── */
+    .article-divider {
+      height: 1px;
+      background: linear-gradient(90deg, #ff3eb5, #7b4fff 50%, #3a8fff);
+      opacity: .4;
+      margin: 4px 0 40px;
+    }
+
+    /* ── Body text ── */
+    .article-body {
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.95;
+      opacity: 0;
+      animation: fadeUp .7s ease .25s forwards;
+    }
+    [data-theme="light"] .article-body { color: #334; }
+
+    /* ── Links section ── */
+    .article-links {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      opacity: 0;
+      animation: fadeUp .7s ease .4s forwards;
+    }
+    .links-label {
+      font-size: 9px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: rgba(255,62,181,.7);
+      margin-bottom: 4px;
+    }
+
+    /* map link card */
+    .map-link-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,62,181,.25);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
+    }
+    .map-link-card:hover {
+      background: rgba(255,62,181,.08);
+      border-color: rgba(255,62,181,.6);
+      transform: translateX(4px);
+      box-shadow: 0 0 20px rgba(255,62,181,.15);
+    }
+    .map-thumb {
+      width: 80px; height: 45px;
+      object-fit: cover;
+      border-radius: 6px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    .map-info {}
+    .map-title {
+      font-size: 12px;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .map-url {
+      font-size: 9px;
+      color: rgba(255,62,181,.7);
+      letter-spacing: .04em;
+    }
+    .map-arrow {
+      margin-left: auto;
+      font-size: 16px;
+      color: rgba(255,62,181,.5);
+      transition: transform .15s, color .15s;
+    }
+    .map-link-card:hover .map-arrow { transform: translateX(4px); color: #ff3eb5; }
+
+    /* social icons row */
+    .social-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font);
+      font-size: 10px;
+      letter-spacing: .06em;
+      padding: 9px 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text2);
+      text-decoration: none;
+      background: rgba(255,255,255,.04);
+      transition: border-color .15s, background .15s, color .15s, transform .15s;
+    }
+    .social-btn:hover {
+      border-color: rgba(255,62,181,.55);
+      background: rgba(255,62,181,.08);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .social-btn svg {
+      width: 16px; height: 16px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* back button */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font);
+      font-size: 10px;
+      letter-spacing: .07em;
+      color: rgba(255,255,255,.4);
+      text-decoration: none;
+      margin-top: 60px;
+      transition: color .15s;
+    }
+    .back-link:hover { color: #ff3eb5; }
+
+    @media (max-width: 600px) {
+      .article-wrap { padding-left: 18px; padding-right: 18px; }
+      .article-hero { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .article-logo { width: 70px; height: 70px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="article-bg"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+
+  <!-- hero -->
+  <div class="article-hero">
+    <img src="cubikarti.png" class="article-logo" alt="Куби карты">
+    <div class="article-hero-text">
+      <h1 class="article-title">Куби карты</h1>
+      <p class="article-subtitle">Студия &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <!-- full description -->
+  <div class="article-body">
+    Привет. Мы команда КубиКарты и занимаемся... Картами, думаю логично. Наши карты на любой вкус и цвет, но по большей части это либо аркада, либо сюжет, либо рогалик. В первые дни наша команда была не особо большой. Напротив, создатель практически в одиночку работал над первой картой команды. К счастью, после успеха этой самой карты наша команда обрела новых, довольно опытных людей. С каждой картой наш опыт рос и до сих пор растёт. Мы планируем множество других карт в будущем, которые, вероятно, вам понравятся. До новых встреч!
+  </div>
+
+  <!-- links -->
+  <div class="article-links">
+
+    <div class="links-label">Карты</div>
+
+    <!-- Смертник -->
+    <a href="https://minecraft-inside.ru/maps/190754-s-m-e-r-t-n-i-k.html"
+       target="_blank" class="map-link-card" data-sound>
+      <img src="smertnik.png" class="map-thumb" alt="Смертник">
+      <div class="map-info">
+        <div class="map-title">Смертник — 3 минуты на спасение</div>
+        <div class="map-url">minecraft-inside.ru</div>
+      </div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <div class="links-label" style="margin-top:10px">Соцсети</div>
+
+    <div class="social-row">
+      <!-- Telegram -->
+      <a href="https://t.me/CubeMaps" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+
+  </div>
+
+  <a href="studios.html" class="back-link" data-sound>← Назад к студиям</a>
+
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+</body>
+</html>

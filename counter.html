@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Счётчик — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow: hidden; }
+    .counter-page {
+      width:100vw; height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:20px; text-align:center;
+      background: var(--bg);
+    }
+    .counter-label {
+      font-size:11px; color:var(--text2); letter-spacing:.15em;
+      text-transform:uppercase;
+      animation: fadeUp .5s ease forwards; opacity:0;
+    }
+    .counter-display {
+      font-size: clamp(48px, 10vw, 100px);
+      color: var(--accent);
+      text-shadow: 0 0 40px var(--accent-glow);
+      font-variant-numeric: tabular-nums;
+      animation: fadeUp .5s ease .1s forwards; opacity:0;
+      letter-spacing:.04em;
+    }
+    .counter-sub {
+      font-size:10px; color:var(--text2);
+      animation: fadeUp .5s ease .2s forwards; opacity:0;
+    }
+    .counter-bar-wrap {
+      width:280px; height:6px;
+      background:rgba(255,255,255,0.08);
+      border-radius:3px; overflow:hidden;
+      animation: fadeUp .5s ease .3s forwards; opacity:0;
+    }
+    .counter-bar {
+      height:100%; width:0%;
+      background: var(--accent);
+      border-radius:3px; transition:width .4s ease;
+    }
+    .back-link {
+      font-family:var(--font); font-size:10px; color:var(--text2);
+      text-decoration:none; padding:8px 16px;
+      border:1px solid var(--border); border-radius:6px;
+      animation: fadeUp .5s ease .4s forwards; opacity:0;
+      transition: color .15s, border-color .15s, transform .15s, background .15s;
+    }
+    .back-link:hover { color:var(--accent); border-color:var(--border2); background:var(--bg3); transform:scale(1.06); }
+    .secret-note {
+      font-size:9px; color:var(--text2); opacity:.35;
+      animation: fadeUp .5s ease .5s forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="counter-page">
+  <p class="counter-label">ты провёл на сайте</p>
+  <div class="counter-display" id="counterDisplay">0</div>
+  <p class="counter-sub">секунд</p>
+  <div class="counter-bar-wrap">
+    <div class="counter-bar" id="counterBar"></div>
+  </div>
+  <a href="main.html" class="back-link">← назад</a>
+  <p class="secret-note">эту страницу нашли единицы</p>
+</div>
+<script>
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.dataset.theme = saved;
+
+  const display = document.getElementById('counterDisplay');
+  const bar     = document.getElementById('counterBar');
+
+  // total seconds is stored in localStorage, updated every second while on site
+  const KEY = 'siteTimeSec';
+  let total = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+  function update() {
+    display.textContent = total;
+    // bar fills up over 3600s (1 hour) as a fun visual
+    const pct = Math.min((total / 3600) * 100, 100);
+    bar.style.width = pct + '%';
+  }
+  update();
+
+  setInterval(() => {
+    total++;
+    localStorage.setItem(KEY, total);
+    update();
+  }, 1000);
+</script>
+</body>
+</html>
