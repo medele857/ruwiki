@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Авторы — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="wiki-cards.css">
+  <style>
+    /* gear card text needs to avoid the inner hole */
+    .gear-card .card-body { padding: 18px; }
+    .gear-card .card-desc-text { -webkit-line-clamp: 3; font-size: 10px; }
+    /* gear page decorations */
+    .gear-page-deco {
+      position: fixed; pointer-events: none; z-index: 0; opacity: .06; font-size: 48px;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"  class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="wiki-page">
+  <div class="wiki-header"><h1>Авторы</h1><p>Маперы, сценаристы и создатели карт</p></div>
+  <div class="wiki-nav-row"><a href="main.html" class="wiki-back-btn" data-sound>← На главную</a></div>
+  <div class="wiki-divider"></div>
+
+  <div class="cards-grid">
+
+    <!-- 1: VLADISLAVVC — photo-bg -->
+    <a href="author-vladislavvc.html" class="wiki-card photo-bg" data-sound>
+      <div class="card-photo" style="background-image:url('vladislavvcfon.jpg')"></div>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <div><div class="card-title">Vladislavvc</div><div class="card-tag">Автор • Карты • Датапаки</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">Здравствуй! Я vladislavvc, создатель достаточно популярных майнкрафт карт. Создал карту "yoodexy mod", которая стремительно набирает популярность...</div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+    <!-- 2: TENAR52 — dark grey + avatar corner -->
+    <a href="author-tenar52.html" class="wiki-card tenar-card" data-sound>
+      <img src="tenar.jpg" class="tenar-corner-img" alt="">
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="tenar.jpg" class="card-logo" alt="TENAR52">
+          <div><div class="card-title">TENAR52</div><div class="card-tag">Автор • Карты • Сервер</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">Привет! Я создатель майнкрафт карт. Прославился картой "Проект Грэмтар глава 1-6". Даже сейчас эта карта не сдает оборотов и является узнаваемой...</div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+    <!-- 3: RblBEHAteam — ocean card with fish canvas -->
+    <a href="author-rblbeha.html" class="wiki-card ocean-card" id="fishCard" data-sound>
+      <canvas class="card-canvas" id="fishCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="riba.jpg" class="card-logo" alt="RblBEHAteam">
+          <div><div class="card-title">RblBEHAteam</div><div class="card-tag">Автор • Карты</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">ЙОУУУУ, я, Рыбëха, с другом довольно любим строить из кубиков, и решили заливать это на майнкрафт-инсайд. На данный момент ничего не делаем, но ВДРУГ ЧТО ссылочка снизу...</div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+    <!-- 4: ProTiPro — gear card -->
+    <a href="author-protipro.html" class="wiki-card gear-card" id="gearCard" data-sound>
+      <div class="gear-shape"></div>
+      <div class="gear-hole"></div>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="protipro.jpg" class="card-logo" alt="ProTiPro" style="border-radius:50%">
+          <div><div class="card-title">ProTiPro</div><div class="card-tag">Автор • Карты • Датапаки</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">Доброго времени суток! Я TiPro, маленькая фанатка Майнкрафта и очень крутой картодел! Кажется у меня зависимость от датапаков. Помогите...</div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+  <!-- 5: QWER TEAM (Основатель) — cookie canvas -->
+    <a href="author-qwer.html" class="wiki-card" id="qwerAuthorCard" data-sound
+       style="background:linear-gradient(145deg,#0e0d0a,#1a1608);border-color:rgba(180,110,30,.4);width:310px;height:330px;">
+      <canvas class="card-canvas" id="qwerCookieCanvas"></canvas>
+      <!-- bg character art faded -->
+      <div style="position:absolute;inset:0;background-image:url('печенька1.png');background-size:cover;background-position:center;opacity:.07;z-index:0;pointer-events:none;"></div>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="banka.png" class="card-logo" alt="Qwer Team" style="border-color:rgba(180,110,30,.5);">
+          <div><div class="card-title">Qwer team</div><div class="card-tag">Основатель • Карты</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">Привет! Я создал студию Qwer team и сейчас мы все работаем сообща, вместе. Но так было не всегда, раньше карты делал я сам...</div>
+        <span class="card-read-btn" style="border-color:rgba(180,110,30,.5);color:#d4891e;">Читать больше →</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-copy">© МапДев Вики — фан-проект</span>
+  <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
+</footer>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+/* ── Fish animation ── */
+(function(){
+  var canvas=document.getElementById('fishCanvas');
+  var card=document.getElementById('fishCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth;canvas.height=card.offsetHeight;}
+  resize(); window.addEventListener('resize',resize);
+
+  var fish=[];
+  for(var i=0;i<18;i++){
+    var dir=Math.random()>.5?1:-1;
+    fish.push({
+      x:Math.random()*320, y:Math.random()*330,
+      s:6+Math.random()*10,
+      vx:(0.6+Math.random()*.8)*dir,
+      vy:(Math.random()-.5)*.35,
+      dir:dir, wobble:Math.random()*Math.PI*2,
+      op:.18+Math.random()*.38,
+      hue:170+Math.random()*60
+    });
+  }
+
+  function drawFish(x,y,s,dir,wobble,op,hue){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(dir,1);
+    ctx.rotate(Math.sin(wobble)*.12);
+    ctx.globalAlpha=op;
+    // body ellipse
+    ctx.fillStyle='hsl('+hue+',80%,60%)';
+    ctx.beginPath();
+    ctx.ellipse(0,0,s,s*.55,0,0,Math.PI*2);
+    ctx.fill();
+    // tail
+    ctx.fillStyle='hsl('+hue+',70%,45%)';
+    ctx.beginPath();
+    ctx.moveTo(-s*.8,0);
+    ctx.lineTo(-s*1.4,-s*.5);
+    ctx.lineTo(-s*1.4, s*.5);
+    ctx.closePath();
+    ctx.fill();
+    // eye
+    ctx.fillStyle='rgba(0,0,0,.8)';
+    ctx.beginPath();
+    ctx.arc(s*.35,-s*.1,s*.13,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    fish.forEach(function(f){
+      f.x+=f.vx; f.y+=f.vy; f.wobble+=.06;
+      if(f.x<-f.s*2){f.x=W+f.s;f.y=Math.random()*H;f.dir=1;f.vx=Math.abs(f.vx);}
+      if(f.x>W+f.s*2){f.x=-f.s;f.y=Math.random()*H;f.dir=-1;f.vx=-Math.abs(f.vx);}
+      if(f.y<0||f.y>H) f.vy*=-1;
+      drawFish(f.x,f.y,f.s,f.dir,f.wobble,f.op,f.hue);
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+
+<script>
+/* ── Cookie animation — Qwer card ── */
+(function(){
+  var canvas=document.getElementById('qwerCookieCanvas');
+  var card=document.getElementById('qwerAuthorCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth;canvas.height=card.offsetHeight;}
+  resize(); window.addEventListener('resize',resize);
+
+  var imgs=[]; var loaded=0;
+  var srcs=['cookie1.png','cookie2.png','cookie3.png'];
+  srcs.forEach(function(src,i){
+    var img=new Image(); img.src=src;
+    img.onload=function(){loaded++;};
+    imgs.push(img);
+  });
+
+  var cookies=[];
+  for(var i=0;i<14;i++){
+    cookies.push({
+      x:Math.random()*320, y:Math.random()*330,
+      s:14+Math.random()*18,
+      vx:(Math.random()-.5)*.5,
+      vy:-0.4-Math.random()*.5,
+      a:Math.random()*Math.PI*2,
+      va:(Math.random()-.5)*.018,
+      op:.18+Math.random()*.35,
+      idx:Math.floor(Math.random()*3)
+    });
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(loaded===0){requestAnimationFrame(tick);return;}
+    var W=canvas.width,H=canvas.height;
+    cookies.forEach(function(c){
+      c.x+=c.vx; c.y+=c.vy; c.a+=c.va;
+      if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}
+      if(c.x<-c.s) c.x=W+c.s;
+      if(c.x>W+c.s) c.x=-c.s;
+      var img=imgs[c.idx];
+      if(img.complete&&img.naturalWidth>0){
+        ctx.save();
+        ctx.translate(c.x,c.y);
+        ctx.rotate(c.a);
+        ctx.globalAlpha=c.op;
+        ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);
+        ctx.restore();
+      }
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

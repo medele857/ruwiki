@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qwer Team (Основатель) — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    /* BG: character art faded + cookie bg */
+    .article-bg { position:fixed;inset:0;z-index:-2;background-image:url('qwer_char_bg.png');background-size:cover;background-position:center;filter:brightness(.08) saturate(.3); }
+    .article-bg2 { position:fixed;inset:0;z-index:-1;background-image:url('qwer_cookies_bg.png');background-size:60%;background-position:right bottom;background-repeat:no-repeat;filter:brightness(.12) saturate(.4);opacity:.5; }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(14,13,10,.6) 0%,rgba(0,0,0,.92) 100%); }
+
+    /* floating cookies canvas */
+    #cookieBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3; }
+
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh)+36px) 36px 100px; }
+
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:26px;opacity:0;animation:fadeUp .7s ease forwards; }
+    .article-avatar { width:88px;height:88px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(180,110,30,.6);box-shadow:0 0 28px rgba(180,110,30,.35); }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(30px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#f0a030,#f5d060,#e07820);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,220,140,.35);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#f0a030,#f5d060);opacity:.35;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(240,225,200,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(200,140,40,.7);margin-bottom:2px; }
+    .map-link-card { display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.04);border:1px solid rgba(180,110,30,.25);border-radius:0;padding:14px 18px;text-decoration:none;color:var(--text);transition:all .15s; }
+    .map-link-card:hover { background:rgba(180,110,30,.08);border-color:rgba(180,110,30,.6);transform:translateX(4px);box-shadow:0 0 20px rgba(180,110,30,.15); }
+    .map-thumb { width:80px;height:45px;object-fit:cover;border-radius:0;flex-shrink:0;border:1px solid rgba(255,255,255,.1); }
+    .map-title { font-size:12px;color:#fff;margin-bottom:3px; }
+    .map-url { font-size:9px;color:rgba(200,140,40,.7);letter-spacing:.04em; }
+    .map-arrow { margin-left:auto;font-size:16px;color:rgba(200,140,40,.5);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:#f0a030; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(240,220,180,.8);text-decoration:none;background:rgba(255,255,255,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(180,110,30,.55);background:rgba(180,110,30,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:inline-flex;align-items:center;gap:6px;font-family:var(--font);font-size:11px;letter-spacing:.07em;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s;display:block; }
+    .back-link:hover { color:#f0a030; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="cookieBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-bg2"></div>
+<div class="article-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <img src="banka.png" class="article-avatar" alt="Qwer Team">
+    <div>
+      <h1 class="article-title">Qwer team</h1>
+      <p class="article-subtitle">Основатель &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Студия</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <div class="article-body">Привет! Я создал студию Qwer team и сейчас мы все работаем сообща, вместе. Но так было не всегда, раньше, карты публикующиеся сейчас от лица студии делал я сам. Мною была проделана огромная работа, а потом все это вылилось в студию по разработке майнкрафт карт. Кстати, у нас есть вторая страничка на этом сайте от лица студии! Смотри в "Студии"</div>
+
+  <div class="article-links">
+    <div class="links-label">Карты</div>
+
+    <a href="https://minecraft-inside.ru/maps/179356-my-wife-is-dead-chapters-1-2.html" target="_blank" class="map-link-card" data-sound>
+      <img src="mywife_thumb.png" class="map-thumb" alt="My Wife Is Dead"
+           >
+      <!-- use uploaded image directly -->
+      <div><div class="map-title">My Wife Is Dead | Chapters 1-2</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <div class="links-label" style="margin-top:10px">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/qwer_team" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('cookieBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  var imgs=[]; var loaded=0;
+  ['cookie1.png','cookie2.png','cookie3.png'].forEach(function(src){
+    var img=new Image();img.src=src;img.onload=function(){loaded++;};imgs.push(img);
+  });
+  var cookies=[];
+  for(var i=0;i<28;i++) cookies.push({x:Math.random()*1920,y:Math.random()*1080,s:20+Math.random()*30,vx:(Math.random()-.5)*.6,vy:-0.5-Math.random()*.7,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.015,op:.06+Math.random()*.14,idx:Math.floor(Math.random()*3)});
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!loaded){requestAnimationFrame(tick);return;}
+    var W=canvas.width,H=canvas.height;
+    cookies.forEach(function(c){
+      c.x+=c.vx;c.y+=c.vy;c.a+=c.va;
+      if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}
+      if(c.x<-c.s)c.x=W+c.s; if(c.x>W+c.s)c.x=-c.s;
+      var img=imgs[c.idx];
+      if(img.complete&&img.naturalWidth>0){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
