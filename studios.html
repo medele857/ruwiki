@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Студии — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="wiki-cards.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+
+    .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
+    .map-link-card:hover { border-color:var(--border2);background:rgba(255,255,255,.09);transform:translateX(4px); }
+    .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
+    .map-info { padding:10px 14px;display:flex;flex-direction:column;justify-content:center;flex:1; }
+    .map-title { font-size:15px;color:#fff;margin-bottom:4px;font-family:'VT323',monospace; }
+    .map-url   { font-size:13px;color:var(--text2); }
+    .map-arrow { padding:10px 14px;display:flex;align-items:center;font-size:20px;color:var(--text2);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:var(--accent); }
+    .social-btn { font-size:14px !important;padding:10px 18px !important; }
+    .social-btn svg { width:18px !important;height:18px !important; }
+    .links-label { font-size:13px !important; }
+
+    #qwerStudioCard {
+      overflow:hidden;position:relative;
+      background:transparent !important;
+      border-color:rgba(180,110,30,.4) !important;
+    }
+    .card-video-layer { position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="wiki-page">
+  <div class="wiki-header"><h1>Студии</h1><p>Команды и организации ру мапдева</p></div>
+  <div class="wiki-nav-row"><a href="main.html" class="wiki-back-btn" data-sound>← На главную</a></div>
+  <div class="wiki-divider"></div>
+
+  <div class="cards-grid">
+
+    <!-- КубиКарты -->
+    <a href="studio-cubikarti.html" class="wiki-card grad-pink-blue" id="cubiCard" data-sound>
+      <canvas class="card-canvas" id="cubiCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="cubikarti.png" class="card-logo" alt="Куби Карты">
+          <div><div class="card-title">Куби карты</div><div class="card-tag">Студия • Карты</div></div>
+        </div>
+        <div class="card-desc-label">описание</div>
+        <div class="card-desc-text">Привет. Мы команда КубиКарты и занимаемся... Картами, думаю логично. Наши карты на любой вкус и цвет...</div>
+        <span class="card-read-btn">Читать больше →</span>
+      </div>
+    </a>
+
+    <!-- QWER TEAM Studio -->
+    <a href="studio-qwer.html" class="wiki-card" id="qwerStudioCard" data-sound>
+      <!-- right char bg -->
+      <div style="position:absolute;right:0;top:0;width:55%;height:100%;background-image:url('qwer_char_bg.png');background-size:cover;background-position:left center;z-index:0;opacity:.22;pointer-events:none;"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,var(--bg,#0e0e12) 35%,transparent 75%);z-index:0;pointer-events:none;"></div>
+      <canvas class="card-canvas" id="qwerStudioCanvas" style="z-index:1;"></canvas>
+      <div class="card-video-layer" id="qwerStudioVidLayer"></div>
+      <div class="card-body" style="z-index:3;">
+        <div class="card-logo-row">
+          <img src="banka.png" class="card-logo" alt="Qwer Team" style="border-color:rgba(180,110,30,.5);">
+          <div><div class="card-title" style="color:#f0c060;">Qwer Team</div><div class="card-tag" style="color:rgba(200,160,60,.7);">Студия • Карты</div></div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(200,150,40,.6);">описание</div>
+        <div class="card-desc-text">🍪 Мы Qwer Team, талантливая команда маперов. Работаем над общим проектом "The Stanley parable"...</div>
+        <span class="card-read-btn" style="border-color:rgba(180,110,30,.5);color:#d4891e;">Читать больше →</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-copy">© МапДев Вики — фан-проект</span>
+  <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
+</footer>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+/* ── Кубики canvas ── */
+(function(){
+  var canvas=document.getElementById('cubiCanvas'),card=document.getElementById('cubiCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize(); window.addEventListener('resize',resize);
+  var cubes=[];
+  for(var i=0;i<20;i++) cubes.push({x:Math.random()*340,y:Math.random()*360,s:4+Math.random()*9,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.022,op:.15+Math.random()*.35});
+  function drawCube(x,y,s,angle,op,c){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalAlpha=op;ctx.fillStyle=c;ctx.fillRect(-s/2,-s/2,s,s);ctx.fillStyle='rgba(255,255,255,0.22)';ctx.beginPath();ctx.moveTo(-s/2,-s/2);ctx.lineTo(0,-s/2-s*.4);ctx.lineTo(s/2,-s/2);ctx.fill();ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.moveTo(s/2,-s/2);ctx.lineTo(s/2+s*.4,-s/2+s*.2);ctx.lineTo(s/2+s*.4,s/2+s*.2);ctx.lineTo(s/2,s/2);ctx.fill();ctx.restore();}
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var color=document.documentElement.dataset.theme==='light'?'#b040ff':'#d63eff';var W=canvas.width,H=canvas.height;cubes.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;drawCube(c.x,c.y,c.s,c.a,c.op,color);});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── Qwer Studio: cookie+video ── */
+(function(){
+  var canvas=document.getElementById('qwerStudioCanvas');
+  var card=document.getElementById('qwerStudioCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize(); window.addEventListener('resize',resize);
+
+  var img=new Image(); img.src='cookie_icon.png'; var imgLoaded=false;
+  img.onload=function(){imgLoaded=true;};
+
+  var cookies=[];
+  for(var i=0;i<16;i++) cookies.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*16,vx:(Math.random()-.5)*.5,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:.2+Math.random()*.35});
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    cookies.forEach(function(c){
+      c.x+=c.vx;c.y+=c.vy;c.a+=c.va;
+      if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}
+      if(c.x<-c.s)c.x=W+c.s; if(c.x>W+c.s)c.x=-c.s;
+      if(imgLoaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  var layer=document.getElementById('qwerStudioVidLayer');
+  if(!layer)return;
+  var vids=[];
+  for(var i=0;i<4;i++){
+    (function(){
+      var v=document.createElement('video');
+      v.src='cookie_vid.mp4';v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;
+      var sz=22+Math.random()*28;
+      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:'+(0.18+Math.random()*.22)+';pointer-events:none;';
+      layer.appendChild(v);
+      var x=Math.random()*280,y=Math.random()*300,vx=(Math.random()-.5)*.55,vy=-0.38-Math.random()*.48;
+      vids.push({el:v,x:x,y:y,vx:vx,vy:vy,sz:sz});
+    })();
+  }
+  function animVids(){
+    var W=card.offsetWidth||340,H=card.offsetHeight||360;
+    vids.forEach(function(v){
+      v.x+=v.vx;v.y+=v.vy;
+      if(v.y+v.sz<0){v.y=H+v.sz;v.x=Math.random()*W;}
+      if(v.x<-v.sz)v.x=W+v.sz; if(v.x>W+v.sz)v.x=-v.sz;
+      v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
+    });
+    requestAnimationFrame(animVids);
+  }
+  animVids();
+})();
+</script>
+</body>
+</html>

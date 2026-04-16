@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RblBEHAteam — МапДев Вики</title>
+  <link rel="icon" type="image/jpeg" href="fav.jpg">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    .article-bg { position:fixed;inset:0;z-index:-1;background-image:url('riba2.jpeg');background-size:cover;background-position:center;filter:brightness(.2) saturate(.7); }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at center,transparent 25%,rgba(0,10,30,.85) 100%); }
+    .article-wrap { padding-top:var(--hh);max-width:820px;margin:0 auto;padding:calc(var(--hh) + 32px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;opacity:0;animation:fadeUp .7s ease forwards; }
+    .article-avatar { width:88px;height:88px;border-radius:14px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,220,.5);box-shadow:0 0 28px rgba(0,160,220,.3); }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(28px,6vw,52px);letter-spacing:.06em;background:linear-gradient(90deg,#00cfff,#0050cc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#00cfff,#0050cc);opacity:.35;margin:0 0 34px; }
+    .article-body { font-size:12px;color:rgba(200,230,255,.78);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,180,220,.7);margin-bottom:2px; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:6px;border:1px solid rgba(255,255,255,.12);color:rgba(200,230,255,.8);text-decoration:none;background:rgba(255,255,255,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(0,180,220,.55);background:rgba(0,180,220,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:inline-flex;align-items:center;gap:6px;font-family:var(--font);font-size:11px;letter-spacing:.07em;color:rgba(255,255,255,.3);text-decoration:none;margin-top:56px;transition:color .15s; }
+    .back-link:hover { color:#00cfff; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html" class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html" class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"  class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+<div class="article-wrap">
+  <div class="article-hero">
+    <img src="riba.jpg" class="article-avatar" alt="RblBEHAteam">
+    <div>
+      <h1 class="article-title">RblBEHAteam</h1>
+      <p class="article-subtitle">Автор &nbsp;·&nbsp; Карты</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+  <div class="article-body">ЙОУУУУ, я, Рыбëха, с другом довольно любим строить из кубиков, и решили заливать это на майнкрафт-инсайд. На данный момент ничего не делаем, но ВДРУГ ЧТО ссылочка снизу, можешь посмотреть, может быть уже что-то делаем интересное.</div>
+  <div class="article-links">
+    <div class="links-label">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/RblBEHAteam" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+</body>
+</html>
