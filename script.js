@@ -8,7 +8,7 @@
 (function apologyGate() {
   const path = window.location.pathname;
   // skip the gate on these pages
-  if (/apology|intro|counter|index|settings/.test(path)) return;
+  if (/apology|intro|counter|index/.test(path)) return;
   if (localStorage.getItem('headBanned') === '1') {
     window.location.replace('apology.html');
   }
@@ -464,4 +464,3 @@ function fadeIn(el, targetOpacity, ms) {
   }
   requestAnimationFrame(step);
 }
-
