@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feodaller — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    #keyBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#1a0510 0%,#2a0a1a 50%,#0e0210 100%); }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(255,80,160,.08) 0%,rgba(0,0,0,.6) 100%); }
+
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar { width:88px;height:88px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,120,180,.6);box-shadow:0 0 28px rgba(255,80,160,.4); }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#ff80c0,#ffb0d8,#ff60b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,150,200,.4);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#ff80c0,#ffb0d8);opacity:.4;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(255,220,235,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,120,180,.7);margin-bottom:2px; }
+
+    .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(255,80,160,.06);border:1px solid rgba(255,100,160,.22);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
+    .map-link-card:hover { background:rgba(255,80,160,.12);border-color:rgba(255,100,160,.6);transform:translateX(4px); }
+    .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
+    .map-info { padding:10px 14px;display:flex;flex-direction:column;justify-content:center;flex:1; }
+    .map-title { font-size:14px;color:#fff;margin-bottom:3px;font-family:'Bebas Neue',monospace;letter-spacing:.04em; }
+    .map-url { font-size:11px;color:rgba(255,130,180,.7); }
+    .map-arrow { padding:10px 14px;display:flex;align-items:center;font-size:20px;color:rgba(255,120,180,.5);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:#ff80c0; }
+
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(255,200,220,.8);text-decoration:none;background:rgba(255,80,160,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(255,100,180,.55);background:rgba(255,80,160,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#ff80c0; }
+
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="keyBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <img src="feo.jpg" class="article-avatar" alt="Feodaller">
+    <div>
+      <h1 class="article-title">Feodaller</h1>
+      <p class="article-subtitle">Автор &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <div class="article-body">Привет! Я автор одних из самых популярных карт в снг. Сейчас я все также занимаюсь созданием карт и веду свой телеграмм канал. Я всегда стараюсь делать карты интересными и проработанными, возможно так они получают свою популярность. Узнаваемость пришла ко мне в основном после успешнейшей карты "Очень страшная карта", кстати она есть на этом сайте, это карта которую до сих пор с теплом вспоминает комьюнити. Если стало интересно, то ты можешь посмотреть в моем телеграмм канале больше про меня и мои творения! 💕</div>
+
+  <div class="article-links">
+    <div class="links-label">Карты</div>
+
+    <a href="https://minecraft-inside.ru/maps/177341-ochen-strashnaya-karta.html" target="_blank" class="map-link-card" data-sound>
+      <img src="feo2.png" class="map-thumb" alt="Очень Страшная Карта">
+      <div class="map-info"><div class="map-title">Очень Страшная Карта</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <a href="https://minecraft-inside.ru/maps/185877-perepute-vseh-kart.html" target="_blank" class="map-link-card" data-sound>
+      <img src="feo3.png" class="map-thumb" alt="Перепутье Всех Карт">
+      <div class="map-info"><div class="map-title">Перепутье Всех Карт</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <div class="links-label" style="margin-top:10px">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/flortefmap" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('keyBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  var img=new Image(); img.src='cluch.png'; var loaded=false;
+  img.onload=function(){loaded=true;};
+  var keys=[];
+  for(var i=0;i<30;i++) keys.push({x:Math.random()*1920,y:Math.random()*1080,s:16+Math.random()*28,vx:(Math.random()-.5)*.6,vy:-0.5-Math.random()*.6,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.022,op:.05+Math.random()*.12});
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    keys.forEach(function(k){
+      k.x+=k.vx;k.y+=k.vy;k.a+=k.va;
+      if(k.y+k.s<0){k.y=H+k.s;k.x=Math.random()*W;}
+      if(k.x<-k.s)k.x=W+k.s; if(k.x>W+k.s)k.x=-k.s;
+      if(loaded){ctx.save();ctx.translate(k.x,k.y);ctx.rotate(k.a);ctx.globalAlpha=k.op;ctx.drawImage(img,-k.s/2,-k.s/2,k.s,k.s);ctx.restore();}
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

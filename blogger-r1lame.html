@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>r1lame — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    #laughBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.22; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#0e0c04 0%,#1a1808 50%,#0a0c04 100%); }
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar { width:88px;height:88px;border-radius:14px;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,200,50,.55);box-shadow:0 0 28px rgba(255,200,50,.3); }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#ffe066,#ffcc00,#ffd040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,210,80,.4);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#ffe066,#ffcc00);opacity:.4;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(255,245,200,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,200,50,.7);margin-bottom:2px; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(255,240,180,.8);text-decoration:none;background:rgba(255,200,50,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(255,200,50,.55);background:rgba(255,200,50,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#ffe066; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="laughBg"></canvas>
+<div class="article-bg"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <img src="r1.jpg" class="article-avatar" alt="r1lame">
+    <div>
+      <h1 class="article-title">r1lame</h1>
+      <p class="article-subtitle">Блогер &nbsp;·&nbsp; Интервью &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+  <div class="article-body">ХАААААЙ! Я интервью беру у майнкрафтеров, вот так вот. Так получилось, что я брал интервью у некоторых мапмейкеров, тем самым получается их продвинул и оказался тут. Единственное — подписывайтесь на мой телеграмм канал, давайте сделаем там 500 подписчиков, чуть чуть осталось. И ИНТЕРВЬЮ СМОТРИТЕ!</div>
+  <div class="article-links">
+    <div class="links-label">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/r1lame538" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+      <a href="https://www.youtube.com/@Rilameoff" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        YouTube
+      </a>
+    </div>
+  </div>
+  <a href="bloggers.html" class="back-link" data-sound>← Назад к блогерам</a>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('laughBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  var CODES=['1f602','1f923','1f606','1f604','1f601'];
+  var imgs=[]; var lc=0;
+  CODES.forEach(function(code){
+    var img=new Image(); img.crossOrigin='anonymous';
+    img.src='https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/'+code+'.svg';
+    img.onload=function(){lc++;}; imgs.push(img);
+  });
+  var emojis=[];
+  for(var i=0;i<32;i++) emojis.push({x:Math.random()*1920,y:Math.random()*1080,s:20+Math.random()*32,vx:(Math.random()-.5)*.6,vy:-0.5-Math.random()*.6,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:.04+Math.random()*.1,idx:Math.floor(Math.random()*CODES.length)});
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!lc){requestAnimationFrame(tick);return;}
+    var W=canvas.width,H=canvas.height;
+    emojis.forEach(function(e){
+      e.x+=e.vx;e.y+=e.vy;e.a+=e.va;
+      if(e.y+e.s<0){e.y=H+e.s;e.x=Math.random()*W;}
+      if(e.x<-e.s)e.x=W+e.s; if(e.x>W+e.s)e.x=-e.s;
+      var img=imgs[e.idx];
+      if(img.complete&&img.naturalWidth>0){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.a);ctx.globalAlpha=e.op;ctx.drawImage(img,-e.s/2,-e.s/2,e.s,e.s);ctx.restore();}
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

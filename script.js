@@ -22,7 +22,7 @@
   var FONT_CSS = {
     'default':  "'MC', 'Courier New', monospace",
     'readable': "'Trebuchet MS', sans-serif",
-    'mc':       "'Courier New', monospace",
+    'mc':       "'MinecraftRus', 'Courier New', monospace",
     'mc2':      "monospace"
   };
   // Apply scale

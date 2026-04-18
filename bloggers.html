@@ -26,7 +26,24 @@
   <div class="wiki-nav-row"><a href="main.html" class="wiki-back-btn" data-sound>← На главную</a></div>
   <div class="wiki-divider"></div>
   <div class="cards-grid">
-    <p style="font-size:13px;color:var(--text2);opacity:.55;padding:20px 0">Статьи появятся здесь совсем скоро...</p>
+
+    <!-- r1lame — laughing emoji canvas -->
+    <a href="blogger-r1lame.html" class="wiki-card" id="r1Card" data-sound
+       style="background:linear-gradient(145deg,#12100a,#1e1c10);border-color:rgba(255,200,50,.35);">
+      <canvas class="card-canvas" id="r1Canvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="r1.jpg" class="card-logo" alt="r1lame">
+          <div>
+            <div class="card-title" style="color:#ffe066;">r1lame</div>
+            <div class="card-tag" style="color:rgba(255,210,80,.65);">Блогер • Интервью</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(255,200,60,.55);">описание</div>
+        <div class="card-desc-text">ХАААААЙ! Я интервью беру у майнкрафтеров, вот так вот. Брал интервью у некоторых мапмейкеров, тем самым их продвинул и оказался тут...</div>
+        <span class="card-read-btn" style="border-color:rgba(255,200,60,.5);color:#ffe066;">Читать больше →</span>
+      </div>
+    </a>
   </div>
 </div>
 <footer class="site-footer">
@@ -42,5 +59,50 @@
     <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
   </svg>
 </a>
+
+<script>
+(function(){
+  var canvas=document.getElementById('r1Canvas');
+  var card=document.getElementById('r1Card');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize(); window.addEventListener('resize',resize);
+  // Custom laugh emoji images from twemoji CDN
+  var EMOJIS=['1f602','1f923','1f606','1f604','1f601'];
+  var imgs=[]; var loadedCount=0;
+  EMOJIS.forEach(function(code){
+    var img=new Image();
+    img.crossOrigin='anonymous';
+    img.src='https://cdn.jsdelivr.net/gh/twitter/twemoji@14/assets/svg/'+code+'.svg';
+    img.onload=function(){loadedCount++;};
+    imgs.push(img);
+  });
+  var emojis=[];
+  for(var i=0;i<16;i++) emojis.push({
+    x:Math.random()*340,y:Math.random()*360,
+    s:14+Math.random()*18,vx:(Math.random()-.5)*.5,vy:-0.35-Math.random()*.45,
+    a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:.18+Math.random()*.38,
+    idx:Math.floor(Math.random()*EMOJIS.length)
+  });
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(loadedCount===0){requestAnimationFrame(tick);return;}
+    var W=canvas.width,H=canvas.height;
+    emojis.forEach(function(e){
+      e.x+=e.vx;e.y+=e.vy;e.a+=e.va;
+      if(e.y+e.s<0){e.y=H+e.s;e.x=Math.random()*W;}
+      if(e.x<-e.s)e.x=W+e.s; if(e.x>W+e.s)e.x=-e.s;
+      var img=imgs[e.idx];
+      if(img.complete&&img.naturalWidth>0){
+        ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.a);ctx.globalAlpha=e.op;
+        ctx.drawImage(img,-e.s/2,-e.s/2,e.s,e.s);ctx.restore();
+      }
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
 </body>
 </html>
