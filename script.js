@@ -14,6 +14,28 @@
   }
 })();
 
+
+// ══════════════════════════════════
+// 0b. APPLY SAVED SETTINGS (runs on EVERY page)
+// ══════════════════════════════════
+(function applySavedSettings() {
+  var FONT_CSS = {
+    'default':  "'MC', 'Courier New', monospace",
+    'readable': "'Trebuchet MS', sans-serif",
+    'mc':       "'Courier New', monospace",
+    'mc2':      "monospace"
+  };
+  // Apply scale
+  var scale = parseInt(localStorage.getItem('siteScale') || '100', 10);
+  if (scale !== 100) {
+    document.documentElement.style.zoom = (scale / 100).toString();
+  }
+  // Apply font
+  var fontId = localStorage.getItem('siteFont') || 'default';
+  var fontCss = FONT_CSS[fontId] || FONT_CSS['default'];
+  document.documentElement.style.setProperty('--font', fontCss);
+})();
+
 // ══════════════════════════════════
 // 1.  THEME
 // ══════════════════════════════════

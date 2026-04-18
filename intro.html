@@ -125,19 +125,6 @@
 <audio id="track" src="morgen.mp3" preload="auto"></audio>
 
 <script>
-
-  // Apply saved settings
-  (function(){
-    var FONT_CSS={'default':"'MC','Courier New',monospace",'readable':"'Trebuchet MS',sans-serif",'mc':"'Courier New',monospace",'mc2':"monospace"};
-    var scale=parseInt(localStorage.getItem('siteScale')||'100',10);
-    if(scale!==100) document.documentElement.style.zoom=(scale/100).toString();
-    var fontCss=FONT_CSS[localStorage.getItem('siteFont')||'default']||FONT_CSS['default'];
-    document.documentElement.style.setProperty('--font',fontCss);
-  })();
-  // Theme
-  var t=localStorage.getItem('theme')||'dark';
-  document.documentElement.dataset.theme=t;
-
   // theme
   const t = localStorage.getItem('theme') || 'dark';
   document.documentElement.dataset.theme = t;
