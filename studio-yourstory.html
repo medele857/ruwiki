@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YourStory — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    #ystBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#0d0318 0%,#160828 50%,#08020e 100%); }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(140,60,220,.08) 0%,rgba(0,0,0,.65) 100%); }
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar-box { width:88px;height:88px;border-radius:14px;background:linear-gradient(135deg,#1a0640,#2e0a60);border:2px solid rgba(140,60,220,.6);box-shadow:0 0 28px rgba(120,40,200,.4);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0; }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#c080ff,#e0a0ff,#a060ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(160,80,240,.4);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#c080ff,#e0a0ff);opacity:.4;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(230,200,255,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(160,80,240,.7);margin-bottom:2px; }
+    .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(120,40,200,.06);border:1px solid rgba(140,60,220,.22);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
+    .map-link-card:hover { background:rgba(120,40,200,.12);border-color:rgba(140,60,220,.6);transform:translateX(4px); }
+    .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
+    .map-info { padding:10px 14px;display:flex;flex-direction:column;justify-content:center;flex:1; }
+    .map-title { font-size:14px;color:#fff;margin-bottom:3px;font-family:'Bebas Neue',monospace;letter-spacing:.04em; }
+    .map-url { font-size:11px;color:rgba(160,80,240,.7); }
+    .map-arrow { padding:10px 14px;display:flex;align-items:center;font-size:20px;color:rgba(140,60,220,.5);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:#c080ff; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(210,170,255,.8);text-decoration:none;background:rgba(120,40,200,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(140,60,220,.55);background:rgba(120,40,200,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#c080ff; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="ystBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <div class="article-avatar-box">🎬</div>
+    <div>
+      <h1 class="article-title">YourStory</h1>
+      <p class="article-subtitle">Команда &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <div class="article-body">ДАРОВА, мы YST, и мы любители киношности, катсцен, сюжеток, и экспериментальности в проектах! Когда-то более года назад мы начали разработку крупного проекта "Азарт Вселенной", и спустя очень длительное время он имеет ранний открытый доступ, и уже этой весной, или летом получит полноценный релиз! И надеюсь, оно того стоило...
+
+У нас есть крупный телеграмм канал на почти 3k подписчиков, и так же активно планируем развиваться во всех планах, создавать больше интересных карт которые будут захватывать своими персонажами, сценами, анимациями и так же механиками которые будут реализовываться в будущем, и останавливаться мы не собираемся. Побольше о нас узнать можно в наших соц. сетях, ссылка снизу!</div>
+
+  <div class="article-links">
+    <div class="links-label">Карты</div>
+    <a href="https://minecraft-inside.ru/maps/181780-azart-vselennoy-1-2-glava.html" target="_blank" class="map-link-card" data-sound>
+      <img src="9y.jpg" class="map-thumb" alt="Азарт Вселенной">
+      <div class="map-info">
+        <div class="map-title">Азарт Вселенной 1–4 глава (Ранний доступ)</div>
+        <div class="map-url">minecraft-inside.ru</div>
+      </div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <div class="links-label" style="margin-top:10px">Соцсети</div>
+    <div class="social-row">
+      <!-- Telegram -->
+      <a href="https://t.me/yourstorytm" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+      <!-- YouTube -->
+      <a href="https://www.youtube.com/@YourStorytm" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        YouTube
+      </a>
+      <!-- Discord -->
+      <a href="https://discord.gg/xernK4Gdgf" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963a.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+        Discord
+      </a>
+      <!-- Boosty -->
+      <a href="https://boosty.to/yourstoryboosty" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M6 2h8a4 4 0 0 1 0 8H6V2zm0 10h9a4 4 0 0 1 0 8H6v-8z" fill="currentColor"/></svg>
+        Boosty
+      </a>
+    </div>
+  </div>
+
+  <a href="studios.html" class="back-link" data-sound>← Назад к студиям</a>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('ystBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  var img=new Image(); img.src='8y.png'; var loaded=false;
+  img.onload=function(){loaded=true;};
+  var cups=[];
+  for(var i=0;i<28;i++) cups.push({x:Math.random()*1920,y:Math.random()*1080,s:20+Math.random()*30,vx:(Math.random()-.5)*.55,vy:-0.45-Math.random()*.55,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.018,op:.04+Math.random()*.1});
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    cups.forEach(function(c){
+      c.x+=c.vx;c.y+=c.vy;c.a+=c.va;
+      if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}
+      if(c.x<-c.s)c.x=W+c.s; if(c.x>W+c.s)c.x=-c.s;
+      if(loaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

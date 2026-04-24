@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сотрудничество — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    .collab-page {
+      min-height: 100vh;
+      padding-top: var(--hh);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 80px;
+    }
+    .collab-wrap {
+      max-width: 600px;
+      width: 100%;
+      padding: 60px 36px 0;
+      text-align: center;
+    }
+    .collab-icon {
+      font-size: 56px;
+      display: block;
+      margin-bottom: 24px;
+      animation: floatA 4s ease-in-out infinite;
+    }
+    .collab-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: clamp(36px, 6vw, 60px);
+      letter-spacing: .07em;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeUp .7s ease forwards;
+    }
+    .collab-sub {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.85;
+      margin-top: 18px;
+      opacity: 0;
+      animation: fadeUp .7s ease .2s forwards;
+    }
+    .collab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 40px;
+      font-family: var(--font);
+      font-size: 14px;
+      letter-spacing: .06em;
+      padding: 16px 36px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      opacity: 0;
+      animation: fadeUp .7s ease .35s forwards;
+      transition: background .18s, transform .18s, box-shadow .18s;
+    }
+    .collab-btn:hover {
+      background: var(--accent2);
+      transform: scale(1.06);
+      box-shadow: 0 0 24px var(--glow);
+    }
+    .collab-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+    .collab-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0 32px;
+      opacity: 0;
+      animation: fadeUp .6s ease .45s forwards;
+    }
+    .collab-note {
+      font-size: 11px;
+      color: var(--text2);
+      opacity: 0;
+      animation: fadeUp .6s ease .55s forwards;
+      line-height: 1.8;
+    }
+    .back-link {
+      display: inline-block;
+      font-family: var(--font);
+      font-size: 11px;
+      color: var(--text2);
+      text-decoration: none;
+      margin-top: 36px;
+      opacity: 0;
+      animation: fadeUp .6s ease .65s forwards;
+      transition: color .15s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    @media(max-width:600px){ .collab-wrap { padding: 40px 18px 0; } }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="collab-page">
+  <div class="collab-wrap">
+
+    <span class="collab-icon">🤝</span>
+    <h1 class="collab-title">Сотрудничество</h1>
+    <p class="collab-sub">Здесь вы можете нам написать,<br>чтобы добавить себя на сайт или предложить идею!</p>
+
+    <a href="https://t.me/Medele_predlozhka_bot" target="_blank" class="collab-btn" data-sound>
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+      Написать нам (клик)
+    </a>
+
+    <div class="collab-divider"></div>
+    <p class="collab-note">Мы рассматриваем все заявки.<br>Расскажите о себе и своих проектах — и мы добавим вас на сайт!</p>
+
+    <a href="main.html" class="back-link" data-sound>← На главную</a>
+
+  </div>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+</body>
+</html>

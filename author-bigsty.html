@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BigSty — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#040c18 0%,#081428 50%,#040810 100%); }
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar-box { width:88px;height:88px;border-radius:14px;background:linear-gradient(135deg,#0e2040,#1a3a80);border:2px solid rgba(60,140,220,.6);box-shadow:0 0 28px rgba(40,120,220,.35);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0; }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#60b0ff,#90d0ff,#40a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(60,140,220,.45);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#60b0ff,#90d0ff);opacity:.4;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(190,220,255,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-note { font-size:11px;color:rgba(60,140,220,.6);margin-top:14px;font-style:italic;opacity:0;animation:fadeUp .7s ease .35s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(60,140,220,.7);margin-bottom:2px; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(160,210,255,.8);text-decoration:none;background:rgba(40,120,220,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(60,140,220,.55);background:rgba(40,120,220,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#60b0ff; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<div class="article-bg"></div>
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+<div class="article-wrap">
+  <div class="article-hero">
+    <div class="article-avatar-box">🔧</div>
+    <div>
+      <h1 class="article-title">BigSty</h1>
+      <p class="article-subtitle">Автор &nbsp;·&nbsp; Датапаки &nbsp;·&nbsp; Гайды</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+  <div class="article-body">Dorou! Делаю крутые датапак проекты и снимаю гайды по коду в Майне. Занимаюсь этим с 2018 года и пытаюсь других подсадить на данное дельце. Пытаюсь быть близким к аудитории, так что в случаи вопросов просто пиши коммент под видосами. Ну а с вами были как всегда BigSTy, и всем ... пока!</div>
+  <div class="article-note">(все мои проекты в моем тгк)</div>
+  <div class="article-links">
+    <div class="links-label">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/bigsty1" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YoguRtt_ — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    #yogurtBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.2; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#1a0812 0%,#260e1e 50%,#0e0208 100%); }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(220,80,160,.08) 0%,rgba(0,0,0,.6) 100%); }
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar { width:88px;height:88px;border-radius:14px;object-fit:cover;flex-shrink:0;border:2px solid rgba(220,100,160,.6);box-shadow:0 0 28px rgba(200,60,150,.4); }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#f080c0,#ffa0d0,#e060b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(220,120,170,.4);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#f080c0,#ffa0d0);opacity:.4;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(255,210,235,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards;white-space:pre-line; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(220,100,160,.7);margin-bottom:2px; }
+    .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(200,60,140,.06);border:1px solid rgba(220,100,160,.22);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
+    .map-link-card:hover { background:rgba(200,60,140,.12);border-color:rgba(220,100,160,.6);transform:translateX(4px); }
+    .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
+    .map-info { padding:10px 14px;display:flex;flex-direction:column;justify-content:center;flex:1; }
+    .map-title { font-size:14px;color:#fff;margin-bottom:3px;font-family:'Bebas Neue',monospace;letter-spacing:.04em; }
+    .map-url { font-size:11px;color:rgba(220,100,160,.7); }
+    .map-arrow { padding:10px 14px;display:flex;align-items:center;font-size:20px;color:rgba(220,100,160,.5);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:#f080c0; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(255,190,220,.8);text-decoration:none;background:rgba(200,60,140,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(220,100,160,.55);background:rgba(200,60,140,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#f080c0; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="yogurtBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+<div class="article-wrap">
+  <div class="article-hero">
+    <img src="7y.jpg" class="article-avatar" alt="YoguRtt_">
+    <div>
+      <h1 class="article-title">YoguRtt_</h1>
+      <p class="article-subtitle">Автор &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Аниматор</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+  <div class="article-body">Ёмаё привет, до основания своей команды я был полу-одиночка разработчик карт, который в своё время сделал несколько карт, и демо версию своего крупнейшего проекта... Ну и карта "Двадцать Один" которая должна была выйти полноценной, но вышла не доделанной и теперь её место остаётся в архиве...
+
+Моя история началась с паркур карт с сюжетом, а после перехода на новый формат сюжетных карт, я понял что это именно то чем я хочу заниматься. Начало взяло релиз дуэта карт "Безмятежный Мир", и её второй части "Безмятежный Мир 2: Забвение", так же с разработки этих карт я понял что мне уж сильно нравится анимировать, и я всё так же продолжаю сильно развиваться в данном деле(анимации в Blockbench и Blender).
+
+И всё так же остаюсь основателем и руководителем своей команды. А ещё как фан. факт я единственный аниматор во всех своих картах, и искать кого-то на роль аниматора не планирую вообще :3, я слишком хорош))) Побольше обо мне как авторе можно узнать ниже, ссылки там все дела.</div>
+  <div class="article-links">
+    <div class="links-label">Карты</div>
+    <a href="https://minecraft-inside.ru/maps/167455-story-parkour.html" target="_blank" class="map-link-card" data-sound>
+      <img src="1y.jpg" class="map-thumb" alt="Story Parkour">
+      <div class="map-info"><div class="map-title">Story Parkour</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <a href="https://minecraft-inside.ru/maps/172236-story-parkour-2-ghost-oblivion.html" target="_blank" class="map-link-card" data-sound>
+      <img src="2y.jpg" class="map-thumb" alt="Story Parkour 2">
+      <div class="map-info"><div class="map-title">Story Parkour 2: Ghost Oblivion</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <a href="https://minecraft-inside.ru/maps/174719-bezmyatezhnyy-mir.html" target="_blank" class="map-link-card" data-sound>
+      <img src="3y.jpg" class="map-thumb" alt="Безмятежный Мир">
+      <div class="map-info"><div class="map-title">Безмятежный Мир</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <a href="https://minecraft-inside.ru/maps/176386-bezmyatezhnyy-mir-zabvenie.html" target="_blank" class="map-link-card" data-sound>
+      <img src="4y.jpg" class="map-thumb" alt="Безмятежный Мир 2: Забвение">
+      <div class="map-info"><div class="map-title">Безмятежный Мир 2: Забвение</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <a href="https://minecraft-inside.ru/maps/179808-azart-vselennoy-neizbezhnaya-sudba.html" target="_blank" class="map-link-card" data-sound>
+      <img src="5y.jpg" class="map-thumb" alt="Азарт Вселенной (Демо)">
+      <div class="map-info"><div class="map-title">Азарт Вселенной (Демо)</div><div class="map-url">minecraft-inside.ru</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <a href="https://t.me/yourstorytm/858" target="_blank" class="map-link-card" data-sound>
+      <img src="6y.jpg" class="map-thumb" alt="Двадцать Один">
+      <div class="map-info"><div class="map-title">Двадцать Один (Архив)</div><div class="map-url">t.me/yourstorytm</div></div>
+      <span class="map-arrow">→</span>
+    </a>
+    <div class="links-label" style="margin-top:10px">Соцсети</div>
+    <div class="social-row">
+      <a href="https://t.me/kislmolo4ka" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('yogurtBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  var img=new Image(); img.src='8y.png'; var loaded=false;
+  img.onload=function(){loaded=true;};
+  var cups=[];
+  for(var i=0;i<28;i++) cups.push({x:Math.random()*1920,y:Math.random()*1080,s:20+Math.random()*30,vx:(Math.random()-.5)*.55,vy:-0.45-Math.random()*.55,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.018,op:.04+Math.random()*.1});
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    cups.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;if(loaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}});
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
