@@ -112,7 +112,7 @@
       <canvas class="card-canvas" id="ystCanvas"></canvas>
       <div class="card-body">
         <div class="card-logo-row">
-          <div style="width:52px;height:52px;border-radius:8px;background:linear-gradient(135deg,#200840,#300a60);border:1px solid rgba(140,60,220,.5);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎬</div>
+          <img src="yst_ava.jpg" class="card-logo" alt="YourStory" style="border-color:rgba(140,60,220,.5);">
           <div>
             <div class="card-title" style="color:#c080ff;">YourStory</div>
             <div class="card-tag" style="color:rgba(160,80,240,.65);">Команда • Карты</div>
@@ -144,7 +144,7 @@
   function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
   resize(); window.addEventListener('resize',resize);
   var cubes=[];
-  for(var i=0;i<20;i++) cubes.push({x:Math.random()*340,y:Math.random()*360,s:4+Math.random()*9,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.022,op:.15+Math.random()*.35});
+  for(var i=0;i<20;i++) cubes.push({x:Math.random()*340,y:Math.random()*360,s:4+Math.random()*9,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.022,op:1});
   function drawCube(x,y,s,angle,op,c){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalAlpha=op;ctx.fillStyle=c;ctx.fillRect(-s/2,-s/2,s,s);ctx.fillStyle='rgba(255,255,255,0.22)';ctx.beginPath();ctx.moveTo(-s/2,-s/2);ctx.lineTo(0,-s/2-s*.4);ctx.lineTo(s/2,-s/2);ctx.fill();ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.moveTo(s/2,-s/2);ctx.lineTo(s/2+s*.4,-s/2+s*.2);ctx.lineTo(s/2+s*.4,s/2+s*.2);ctx.lineTo(s/2,s/2);ctx.fill();ctx.restore();}
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var color=document.documentElement.dataset.theme==='light'?'#b040ff':'#d63eff';var W=canvas.width,H=canvas.height;cubes.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;drawCube(c.x,c.y,c.s,c.a,c.op,color);});requestAnimationFrame(tick);}
   tick();
@@ -163,7 +163,7 @@
   img.onload=function(){imgLoaded=true;};
 
   var cookies=[];
-  for(var i=0;i<16;i++) cookies.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*16,vx:(Math.random()-.5)*.5,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:.2+Math.random()*.35});
+  for(var i=0;i<16;i++) cookies.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*16,vx:(Math.random()-.5)*.5,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
 
   function tick(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -186,7 +186,7 @@
       var v=document.createElement('video');
       v.src='cookie_vid.mp4';v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;
       var sz=22+Math.random()*28;
-      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:'+(0.18+Math.random()*.22)+';pointer-events:none;';
+      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:1;pointer-events:none;';
       layer.appendChild(v);
       var x=Math.random()*280,y=Math.random()*300,vx=(Math.random()-.5)*.55,vy=-0.38-Math.random()*.48;
       vids.push({el:v,x:x,y:y,vx:vx,vy:vy,sz:sz});
@@ -203,6 +203,33 @@
     requestAnimationFrame(animVids);
   }
   animVids();
+})();
+
+/* ── Zero One: floating Z letters ── */
+(function(){
+  var canvas=document.getElementById('zoCanvas'),card=document.getElementById('zoCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var zs=[];
+  for(var i=0;i<14;i++) zs.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*20,vx:(Math.random()-.5)*.45,vy:-0.38-Math.random()*.45,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;zs.forEach(function(z){z.x+=z.vx;z.y+=z.vy;z.a+=z.va;if(z.y+z.s<0){z.y=H+z.s;z.x=Math.random()*W;}if(z.x<-z.s)z.x=W+z.s;if(z.x>W+z.s)z.x=-z.s;ctx.save();ctx.translate(z.x,z.y);ctx.rotate(z.a);ctx.globalAlpha=z.op;ctx.font='bold '+Math.round(z.s*1.6)+'px MinecraftRus,Courier New,monospace';ctx.fillStyle='#ff2030';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff0020';ctx.shadowBlur=8;ctx.fillText('Z',0,0);ctx.restore();});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── YourStory: floating cats ── */
+(function(){
+  var canvas=document.getElementById('ystCanvas'),card=document.getElementById('ystCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var img=new Image();img.src='yst_float.png';var loaded=false;img.onload=function(){loaded=true;};
+  var items=[];
+  for(var i=0;i<14;i++) items.push({x:Math.random()*340,y:Math.random()*360,s:14+Math.random()*18,vx:(Math.random()-.5)*.5,vy:-0.38-Math.random()*.48,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;items.forEach(function(it){it.x+=it.vx;it.y+=it.vy;it.a+=it.va;if(it.y+it.s<0){it.y=H+it.s;it.x=Math.random()*W;}if(it.x<-it.s)it.x=W+it.s;if(it.x>W+it.s)it.x=-it.s;if(loaded){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.a);ctx.globalAlpha=it.op;ctx.drawImage(img,-it.s/2,-it.s/2,it.s,it.s);ctx.restore();}});requestAnimationFrame(tick);}
+  tick();
 })();
 </script>
 
