@@ -9,12 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     html, body { overflow-y: auto !important; }
-    #ystBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18; }
+    #ystBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background:transparent; }
     .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#0d0318 0%,#160828 50%,#08020e 100%); }
     .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(140,60,220,.08) 0%,rgba(0,0,0,.65) 100%); }
     .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
     .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
-    .article-avatar-box { width:88px;height:88px;border-radius:14px;background:linear-gradient(135deg,#1a0640,#2e0a60);border:2px solid rgba(140,60,220,.6);box-shadow:0 0 28px rgba(120,40,200,.4);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0; }
+    .article-avatar-box { width:88px;height:88px;border-radius:14px;background:linear-gradient(135deg,#1a0640,#2e0a60);border:2px solid rgba(140,60,220,.6);box-shadow:0 0 28px rgba(120,40,200,.4);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;overflow:hidden; }
+    .article-avatar-box img { width:100%;height:100%;object-fit:cover;display:block; }
     .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#c080ff,#e0a0ff,#a060ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
     .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(160,80,240,.4);margin-top:7px; }
     .article-divider { height:1px;background:linear-gradient(90deg,#c080ff,#e0a0ff);opacity:.4;margin:0 0 32px; }
@@ -59,7 +60,7 @@
 
 <div class="article-wrap">
   <div class="article-hero">
-    <div class="article-avatar-box">🎬</div>
+    <div class="article-avatar-box"><img src="yst_ava.jpg" alt="YourStory"></div>
     <div>
       <h1 class="article-title">YourStory</h1>
       <p class="article-subtitle">Команда &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Ру МапДев</p>

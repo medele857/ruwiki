@@ -214,12 +214,12 @@ if (foxyOverlay) {
 }
 
 // ══════════════════════════════════
-// 8.  DRAGGABLE HEAD  +  HEAD SCREAMER
+// 8.  DRAGGABLE HEAD  +  HEAD SCREAMER  (removed)
 // ══════════════════════════════════
-var headWrap   = document.getElementById('headWrap');
-var headBubble = document.getElementById('headBubble');
+var headWrap   = null; // removed
+var headBubble = null; // removed
 
-if (headWrap && headBubble) {
+if (false && headWrap && headBubble) {
 
   // ── counters ──
   var BAN_KEY      = 'headBanCount';
