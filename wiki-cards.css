@@ -165,7 +165,23 @@
 }
 
 /* ── Canvas overlays ── */
-.card-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.card-canvas {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: transparent !important;
+}
+
+/* ── Video inside cards: kill black bg ── */
+.card-video-layer video,
+.wiki-card video {
+  background: transparent !important;
+  mix-blend-mode: screen;
+}
+
+/* ── All floating canvas backgrounds: kill black bg ── */
+canvas[id$="Bg"],
+canvas[id$="Canvas"] {
+  background: transparent !important;
+}
 
 /* ── Card body ── */
 .card-body {

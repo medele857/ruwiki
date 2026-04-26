@@ -186,7 +186,7 @@
       var v=document.createElement('video');
       v.src='cookie_vid.mp4';v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;
       var sz=22+Math.random()*28;
-      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:1;pointer-events:none;';
+      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:1;pointer-events:none;background:transparent;mix-blend-mode:screen;';
       layer.appendChild(v);
       var x=Math.random()*280,y=Math.random()*300,vx=(Math.random()-.5)*.55,vy=-0.38-Math.random()*.48;
       vids.push({el:v,x:x,y:y,vx:vx,vy:vy,sz:sz});

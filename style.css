@@ -73,7 +73,9 @@ body {
   font-size: 14px;
 }
 
-canvas { background: transparent; }
+/* ── Canvas & Video: no black background ── */
+canvas { background: transparent !important; }
+video  { background: transparent !important; mix-blend-mode: screen; }
 
 /* ── Twemoji helpers ── */
 .tw-emoji {
