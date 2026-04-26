@@ -80,6 +80,18 @@
   <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
 </footer>
 
+<!-- ══ DRAGGABLE HEAD ══ -->
+<div class="head-wrap" id="headWrap">
+  <div class="head-bubble" id="headBubble"></div>
+  <img src="head.png" class="head-img" id="headImg" alt="голова" draggable="false">
+</div>
+
+<!-- ══ HEAD SCREAMER OVERLAY ══ -->
+<div class="screamer-overlay" id="headScreamer">
+  <div class="screamer-red" id="screamerRed"></div>
+  <img src="head.png" class="screamer-head" id="screamerHead" alt="">
+</div>
+
 <!-- ══ FOXY SCREAMER OVERLAY ══ -->
 <div class="screamer-overlay" id="foxyScreamer">
   <video id="foxyVideo" src="foxy.mp4" class="screamer-video" playsinline></video>
@@ -89,6 +101,31 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 
 <script src="script.js"></script>
+<script>
+// ── SECRET: 3 theme switches in 30s → angry birds ──
+(function(){
+  var toggles = [];
+  var themeBtn = document.getElementById('themeToggle');
+  if (!themeBtn) return;
+
+  themeBtn.addEventListener('click', function(){
+    var now = Date.now();
+    toggles.push(now);
+    // keep only last 30 seconds
+    toggles = toggles.filter(function(t){ return now - t < 30000; });
+
+    if (toggles.length >= 3) {
+      toggles = [];
+      // flash screen before redirect
+      var flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none;';
+      document.body.appendChild(flash);
+      setTimeout(function(){ flash.style.opacity = '1'; }, 10);
+      setTimeout(function(){ window.location.href = 'secret-birds.html'; }, 400);
+    }
+  });
+})();
+</script>
 
 <!-- ══ SETTINGS BUTTON ══ -->
 <a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
