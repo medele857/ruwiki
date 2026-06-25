@@ -94,7 +94,7 @@
   <div class="cards-grid">
 
     <!-- 1: VLADISLAVVC -->
-    <a href="author-vladislavvc.html" class="wiki-card photo-bg" data-sound>
+    <a href="author-vladislavvc.html" class="wiki-card photo-bg" data-sound data-name="Vladislavvc" data-order="1">
       <div class="card-photo" style="background-image:url('vladislavvcfon.jpg')"></div>
       <div class="card-body">
         <div class="card-logo-row">
@@ -107,7 +107,7 @@
     </a>
 
     <!-- 2: TENAR52 — floating avatar effect -->
-    <a href="author-tenar52.html" class="wiki-card tenar-card" id="tenarCard" data-sound>
+    <a href="author-tenar52.html" class="wiki-card tenar-card" id="tenarCard" data-sound data-name="TENAR52" data-order="2">
       <!-- floating avatar (single, slow) -->
       <img src="tenar.jpg" id="tenarFloat"
         style="position:absolute;width:90px;height:90px;border-radius:50%;opacity:.18;pointer-events:none;z-index:1;object-fit:cover;filter:blur(1px);transition:none;"
@@ -124,7 +124,7 @@
     </a>
 
     <!-- 3: RblBEHAteam — fish canvas full coverage -->
-    <a href="author-rblbeha.html" class="wiki-card ocean-card" id="fishCard" data-sound>
+    <a href="author-rblbeha.html" class="wiki-card ocean-card" id="fishCard" data-sound data-name="RblBEHAteam" data-order="3">
       <canvas class="card-canvas" id="fishCanvas"></canvas>
       <div class="card-body">
         <div class="card-logo-row">
@@ -138,7 +138,7 @@
     </a>
 
     <!-- 4: ProTiPro — gear particles (NOT gear shape) -->
-    <a href="author-protipro.html" class="wiki-card" id="gearCard" data-sound
+    <a href="author-protipro.html" class="wiki-card" id="gearCard" data-sound data-name="ProTiPro" data-order="4"
        style="background:linear-gradient(145deg,#18181f,#111118);border-color:rgba(150,150,190,.35);">
       <canvas class="card-canvas" id="gearCanvas"></canvas>
       <div class="card-body">
@@ -153,7 +153,7 @@
     </a>
 
     <!-- 5: QWER TEAM (Основатель) — cookie+video particles, char bg right side -->
-    <a href="author-qwer.html" class="wiki-card" id="qwerAuthorCard" data-sound
+    <a href="author-qwer.html" class="wiki-card" id="qwerAuthorCard" data-sound data-name="Qwer team" data-order="5"
        style="overflow:hidden;position:relative;">
       <!-- right-side char bg -->
       <div style="position:absolute;right:0;top:0;width:55%;height:100%;background-image:url('qwer42.png');background-size:cover;background-position:left center;z-index:0;opacity:.22;pointer-events:none;"></div>
@@ -176,7 +176,7 @@
 
 
     <!-- FEODALLER — pink gradient + flying keys canvas -->
-    <a href="author-feodaller.html" class="wiki-card" id="feoCard" data-sound
+    <a href="author-feodaller.html" class="wiki-card" id="feoCard" data-sound data-name="Feodaller" data-order="6"
        style="background:linear-gradient(145deg,#2a0a18,#1a0812);border-color:rgba(255,100,160,.4);">
       <canvas class="card-canvas" id="feoCanvas"></canvas>
       <div class="card-body">
@@ -195,7 +195,7 @@
 
 
     <!-- YoguRtt_ — pink gradient + floating yogurt cups -->
-    <a href="author-yogurtt.html" class="wiki-card" id="yogurtCard" data-sound
+    <a href="author-yogurtt.html" class="wiki-card" id="yogurtCard" data-sound data-name="YoguRtt_" data-order="7"
        style="background:linear-gradient(145deg,#1a0812,#220e1c);border-color:rgba(220,100,160,.4);">
       <canvas class="card-canvas" id="yogurtCanvas"></canvas>
       <div class="card-body">
@@ -213,7 +213,7 @@
     </a>
 
     <!-- BigSty -->
-    <a href="author-bigsty.html" class="wiki-card" id="bigstyCard" data-sound
+    <a href="author-bigsty.html" class="wiki-card" id="bigstyCard" data-sound data-name="BigSty" data-order="8"
        style="background:linear-gradient(145deg,#08101a,#0e182a);border-color:rgba(60,140,220,.4);">
       <div class="card-body">
         <div class="card-logo-row">
@@ -239,6 +239,7 @@
 </footer>
 
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="wiki-search.js"></script>
 <script src="script.js"></script>
 <script>
 /* ── Tenar floating avatar ── */

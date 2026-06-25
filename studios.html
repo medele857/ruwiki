@@ -55,7 +55,7 @@
   <div class="cards-grid">
 
     <!-- КубиКарты -->
-    <a href="studio-cubikarti.html" class="wiki-card grad-pink-blue" id="cubiCard" data-sound>
+    <a href="studio-cubikarti.html" class="wiki-card grad-pink-blue" id="cubiCard" data-sound data-name="Куби карты" data-order="1">
       <canvas class="card-canvas" id="cubiCanvas"></canvas>
       <div class="card-body">
         <div class="card-logo-row">
@@ -69,7 +69,7 @@
     </a>
 
     <!-- QWER TEAM Studio -->
-    <a href="studio-qwer.html" class="wiki-card" id="qwerStudioCard" data-sound>
+    <a href="studio-qwer.html" class="wiki-card" id="qwerStudioCard" data-sound data-name="Qwer Team" data-order="2">
       <!-- right char bg -->
       <div style="position:absolute;right:0;top:0;width:55%;height:100%;background-image:url('qwer42.png');background-size:cover;background-position:left center;z-index:0;opacity:.22;pointer-events:none;"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(90deg,var(--bg,#0e0e12) 35%,transparent 75%);z-index:0;pointer-events:none;"></div>
@@ -88,7 +88,7 @@
 
 
     <!-- ZERO ONE — red glitch, floating Z letters -->
-    <a href="studio-zerooone.html" class="wiki-card" id="zoCard" data-sound
+    <a href="studio-zerooone.html" class="wiki-card" id="zoCard" data-sound data-name="Zero One" data-order="3"
        style="background:linear-gradient(145deg,#150005,#200008);border-color:rgba(220,30,50,.4);">
       <canvas class="card-canvas" id="zoCanvas"></canvas>
       <div class="card-body">
@@ -107,7 +107,7 @@
 
 
     <!-- YourStory — purple gradient + floating yogurt cups -->
-    <a href="studio-yourstory.html" class="wiki-card" id="ystCard" data-sound
+    <a href="studio-yourstory.html" class="wiki-card" id="ystCard" data-sound data-name="YourStory" data-order="4"
        style="background:linear-gradient(145deg,#0d0318,#160828);border-color:rgba(140,60,220,.4);">
       <canvas class="card-canvas" id="ystCanvas"></canvas>
       <div class="card-body">
@@ -126,7 +126,7 @@
 
 
     <!-- Наутилус — ocean blue + floating bubbles -->
-    <a href="studio-nautilus.html" class="wiki-card" id="nautCard" data-sound
+    <a href="studio-nautilus.html" class="wiki-card" id="nautCard" data-sound data-name="Наутилус" data-order="5"
        style="background:linear-gradient(145deg,#032040,#041828);border-color:rgba(0,180,220,.4);">
       <canvas class="card-canvas" id="nautCanvas"></canvas>
       <!-- darkened background image -->
@@ -156,6 +156,7 @@
 </footer>
 
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="wiki-search.js"></script>
 <script src="script.js"></script>
 <script>
 /* ── Кубики canvas ── */
