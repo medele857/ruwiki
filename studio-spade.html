@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spade Studio — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+
+    #spadeBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18; }
+    .article-bg {
+      position:fixed;inset:0;z-index:-1;
+      background:linear-gradient(160deg,#1a0800 0%,#2e1200 50%,#0e0500 100%);
+    }
+    .article-vignette {
+      position:fixed;inset:0;z-index:-1;
+      background:radial-gradient(ellipse at 40% 40%,rgba(255,120,0,.07) 0%,rgba(0,0,0,.7) 100%);
+    }
+
+    .article-wrap {
+      position:relative;z-index:1;
+      max-width:860px;margin:0 auto;
+      padding:calc(var(--hh) + 80px) 36px 100px;
+    }
+    .article-hero {
+      display:flex;align-items:center;gap:26px;
+      padding-bottom:28px;animation:fadeUp .7s ease forwards;
+    }
+    .article-avatar-box {
+      width:88px;height:88px;border-radius:14px;
+      overflow:hidden;
+      border:2px solid rgba(255,140,0,.65);
+      box-shadow:0 0 28px rgba(255,100,0,.4);
+      flex-shrink:0;
+    }
+    .article-avatar-box img {
+      width:100%;height:100%;object-fit:cover;
+    }
+    .article-title {
+      font-family:'Bebas Neue','Impact',sans-serif;
+      font-size:clamp(32px,6vw,54px);
+      letter-spacing:.06em;
+      background:linear-gradient(90deg,#ff9020,#ffb860,#e06000);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .article-subtitle {
+      font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+      color:rgba(255,140,0,.45);margin-top:7px;
+    }
+    .article-divider {
+      height:1px;
+      background:linear-gradient(90deg,#ff9020,#e06000);
+      opacity:.45;margin:0 0 32px;
+    }
+    .article-body {
+      font-size:12px;color:rgba(255,230,200,.82);
+      line-height:1.95;
+      opacity:0;animation:fadeUp .7s ease .25s forwards;
+    }
+
+    .article-links {
+      margin-top:44px;display:flex;flex-direction:column;gap:14px;
+      opacity:0;animation:fadeUp .7s ease .4s forwards;
+    }
+    .links-label {
+      font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+      color:rgba(255,140,0,.7);margin-bottom:2px;
+    }
+
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn {
+      display:inline-flex;align-items:center;gap:8px;
+      font-family:var(--font);font-size:11px;letter-spacing:.06em;
+      padding:9px 16px;border-radius:0;
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,210,160,.8);text-decoration:none;
+      background:rgba(255,120,0,.04);transition:all .15s;
+    }
+    .social-btn:hover {
+      border-color:rgba(255,140,0,.55);
+      background:rgba(255,120,0,.1);
+      color:#fff;transform:scale(1.05);
+    }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+
+    .back-link {
+      display:block;font-family:var(--font);font-size:11px;
+      color:rgba(255,255,255,.3);text-decoration:none;
+      margin-top:52px;transition:color .15s;
+    }
+    .back-link:hover { color:#ff9020; }
+
+    @media(max-width:600px){
+      .article-wrap{padding-left:18px;padding-right:18px;}
+      .article-hero{flex-direction:column;align-items:flex-start;}
+    }
+  </style>
+</head>
+<body>
+<canvas id="spadeBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <div class="article-avatar-box">
+      <img src="spade_studio_ava.png" alt="Spade Studio">
+    </div>
+    <div>
+      <h1 class="article-title">Spade Studio</h1>
+      <p class="article-subtitle">Команда &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <div class="article-body">Приветствую! Наша молодая команда нацелена на создание проработанных, глубоких сюжетных карт. На данный момент мы активно работаем над проектом «The Incident» — научно-фантастическим шутером с элементами хоррора и головоломок, вдохновленным такими франшизами, как Half Life, Serious Sam, а также вселенной Star Wars. Если вы хотите следить за разработкой, можете перейти в наш тг-канал!</div>
+
+  <div class="article-links">
+    <div class="links-label">Соцсети</div>
+    <div class="social-row">
+      <!-- Telegram -->
+      <a href="https://t.me/spadestudio" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+
+  <a href="studios.html" class="back-link" data-sound>← Назад к студиям</a>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+/* ── Spade bg: floating ♠ spades ── */
+(function(){
+  var canvas = document.getElementById('spadeBg');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  var sp = [];
+  for (var i = 0; i < 30; i++) sp.push({
+    x: Math.random()*1920, y: Math.random()*1080,
+    s: 12+Math.random()*22,
+    vx: (Math.random()-.5)*.45, vy: -0.3-Math.random()*.5,
+    a: Math.random()*Math.PI*2, va: (Math.random()-.5)*.02,
+    op: .04+Math.random()*.1
+  });
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var W=canvas.width,H=canvas.height;
+    sp.forEach(function(p){
+      p.x+=p.vx; p.y+=p.vy; p.a+=p.va;
+      if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}
+      if(p.x<-p.s)p.x=W+p.s; if(p.x>W+p.s)p.x=-p.s;
+      ctx.save();
+      ctx.translate(p.x,p.y); ctx.rotate(p.a);
+      ctx.globalCompositeOperation='screen';
+      ctx.globalAlpha=p.op;
+      ctx.font='bold '+Math.round(p.s*1.8)+'px serif';
+      ctx.fillStyle='#ff8800';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='#ff5500'; ctx.shadowBlur=12;
+      ctx.fillText('♠',0,0);
+      ctx.restore();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

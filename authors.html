@@ -229,6 +229,24 @@
       </div>
     </a>
 
+    <!-- NateShapiro — orange gradient + floating spades -->
+    <a href="author-nateshapiro.html" class="wiki-card" id="nateCard" data-sound data-name="NateShapiro" data-order="9"
+       style="background:linear-gradient(145deg,#1a0a00,#2a1000);border-color:rgba(255,140,0,.4);">
+      <canvas class="card-canvas" id="nateCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="nate_ava.png" class="card-logo" alt="NateShapiro" style="border-color:rgba(255,140,0,.5);">
+          <div>
+            <div class="card-title" style="color:#ff9020;">NateShapiro</div>
+            <div class="card-tag" style="color:rgba(255,150,30,.65);">Автор • Карты</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(255,130,0,.55);">описание</div>
+        <div class="card-desc-text">Здарова, меня зовут Нейт. Я достаточно давно сижу в сообществе маперов, и мне бы очень хотелось, чтобы оно развивалось. Участник Spade Studio...</div>
+        <span class="card-read-btn" style="border-color:rgba(255,140,0,.5);color:#ff9020;">Читать больше →</span>
+      </div>
+    </a>
+
   </div>
 </div>
 
@@ -325,10 +343,19 @@
   for(var i=0;i<14;i++) cups.push({x:Math.random()*340,y:Math.random()*360,s:14+Math.random()*18,vx:(Math.random()-.5)*.5,vy:-0.38-Math.random()*.48,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;cups.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;if(loaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
+/* ── NateShapiro: floating spades ── */
+(function(){
+  var canvas=document.getElementById('nateCanvas'),card=document.getElementById('nateCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var sp=[];
+  for(var i=0;i<16;i++) sp.push({x:Math.random()*340,y:Math.random()*360,s:10+Math.random()*18,vx:(Math.random()-.5)*.45,vy:-0.35-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;sp.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.a+=p.va;if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}if(p.x<-p.s)p.x=W+p.s;if(p.x>W+p.s)p.x=-p.s;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=p.op;ctx.font='bold '+Math.round(p.s*1.8)+'px serif';ctx.fillStyle='#ff8800';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff6000';ctx.shadowBlur=10;ctx.fillText('♠',0,0);ctx.restore();});requestAnimationFrame(tick);}
+  tick();
 })();
 </script>
-
-<!-- ══ SETTINGS BUTTON ══ -->
 <a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
