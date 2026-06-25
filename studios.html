@@ -124,6 +124,28 @@
       </div>
     </a>
 
+
+    <!-- Наутилус — ocean blue + floating bubbles -->
+    <a href="studio-nautilus.html" class="wiki-card" id="nautCard" data-sound
+       style="background:linear-gradient(145deg,#032040,#041828);border-color:rgba(0,180,220,.4);">
+      <canvas class="card-canvas" id="nautCanvas"></canvas>
+      <!-- darkened background image -->
+      <div style="position:absolute;inset:0;background-image:url('nautilus_bg.jpg');background-size:cover;background-position:center;filter:brightness(.18) saturate(.5);z-index:0;pointer-events:none;"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(2,20,40,.85) 0%,rgba(4,35,65,.7) 100%);z-index:0;pointer-events:none;"></div>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="nautilus_ava.jpg" class="card-logo" alt="Наутилус" style="border-color:rgba(0,180,220,.5);image-rendering:pixelated;">
+          <div>
+            <div class="card-title" style="color:#40c8ff;">Наутилус</div>
+            <div class="card-tag" style="color:rgba(0,180,220,.65);">Студия • Карты</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(0,180,220,.55);">описание</div>
+        <div class="card-desc-text">Мы — Команда «Наутилус», и мы создаём карты для Minecraft. Многие знают нас по серии карт «Снайперы». Сейчас мы выпускаем глобальные обновления, делаем трейлеры, добавляем новые локации и механики...</div>
+        <span class="card-read-btn" style="border-color:rgba(0,180,220,.5);color:#40c8ff;">Читать больше →</span>
+      </div>
+    </a>
+
   </div>
 </div>
 
@@ -215,6 +237,19 @@
   var zs=[];
   for(var i=0;i<14;i++) zs.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*20,vx:(Math.random()-.5)*.45,vy:-0.38-Math.random()*.45,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;zs.forEach(function(z){z.x+=z.vx;z.y+=z.vy;z.a+=z.va;if(z.y+z.s<0){z.y=H+z.s;z.x=Math.random()*W;}if(z.x<-z.s)z.x=W+z.s;if(z.x>W+z.s)z.x=-z.s;ctx.save();ctx.translate(z.x,z.y);ctx.rotate(z.a);ctx.globalCompositeOperation="screen";ctx.globalAlpha=z.op;ctx.font='bold '+Math.round(z.s*1.6)+'px MinecraftRus,Courier New,monospace';ctx.fillStyle='#ff2030';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff0020';ctx.shadowBlur=8;ctx.fillText('Z',0,0);ctx.restore();});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── Наутилус: floating bubbles ── */
+(function(){
+  var canvas=document.getElementById('nautCanvas'),card=document.getElementById('nautCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var bs=[];
+  for(var i=0;i<22;i++) bs.push({x:Math.random()*340,y:Math.random()*360,r:2+Math.random()*5,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,op:.06+Math.random()*.18});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;bs.forEach(function(b){b.x+=b.vx;b.y+=b.vy;if(b.y+b.r<0){b.y=H+b.r;b.x=Math.random()*W;}if(b.x<-b.r)b.x=W+b.r;if(b.x>W+b.r)b.x=-b.r;ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=b.op;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle='#40c8ff';ctx.fill();ctx.restore();});requestAnimationFrame(tick);}
   tick();
 })();
 
