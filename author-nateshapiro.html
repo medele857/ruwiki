@@ -10,21 +10,57 @@
   <style>
     html, body { overflow-y: auto !important; }
 
-    #nateBg { position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.17; }
+    /* ── Floating nates canvas (full page bg) ── */
+    #nateBg {
+      position:fixed;inset:0;z-index:0;pointer-events:none;
+    }
+
+    /* ── Photo background: bright top, dark bottom ── */
     .article-bg {
+      position:fixed;inset:0;z-index:-2;
+      background-image:url('nate_bg.png');
+      background-size:cover;
+      background-position:center top;
+    }
+    /* extra darkening overlay that leaves top bright */
+    .article-bg-grad {
       position:fixed;inset:0;z-index:-1;
-      background:linear-gradient(160deg,#1a0800 0%,#2e1200 50%,#0e0500 100%);
+      background:linear-gradient(
+        to bottom,
+        rgba(0,0,0,0)    0%,
+        rgba(0,0,0,0.45) 35%,
+        rgba(10,5,0,0.82) 70%,
+        rgba(10,5,0,0.95) 100%
+      );
     }
     .article-vignette {
       position:fixed;inset:0;z-index:-1;
-      background:radial-gradient(ellipse at 40% 40%,rgba(255,120,0,.07) 0%,rgba(0,0,0,.7) 100%);
+      background:radial-gradient(ellipse at 50% 0%,rgba(255,120,0,.06) 0%,transparent 65%);
+    }
+
+    /* ── Watch cat fixed bottom-right ── */
+    #watchCatFixed {
+      position:fixed;
+      bottom:-8px; right:-12px;
+      width:220px;
+      pointer-events:none;
+      z-index:10;
+      opacity:.93;
+      filter:drop-shadow(0 0 18px rgba(255,140,0,.4));
     }
 
     .article-wrap {
       position:relative;z-index:1;
       max-width:860px;margin:0 auto;
       padding:calc(var(--hh) + 80px) 36px 100px;
+      /* leave space so text doesn't go under cat */
+      padding-right:200px;
     }
+    @media(max-width:860px){
+      .article-wrap{ padding-right:36px; }
+      #watchCatFixed{ width:150px; }
+    }
+
     .article-hero {
       display:flex;align-items:center;gap:26px;
       padding-bottom:28px;animation:fadeUp .7s ease forwards;
@@ -56,7 +92,7 @@
       opacity:.45;margin:0 0 32px;
     }
     .article-body {
-      font-size:12px;color:rgba(255,230,200,.82);
+      font-size:12px;color:rgba(255,230,200,.85);
       line-height:1.95;
       opacity:0;animation:fadeUp .7s ease .25s forwards;
     }
@@ -69,7 +105,6 @@
       font-size:10px;letter-spacing:.15em;text-transform:uppercase;
       color:rgba(255,140,0,.7);margin-bottom:2px;
     }
-
     .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
     .social-btn {
       display:inline-flex;align-items:center;gap:8px;
@@ -86,9 +121,7 @@
     }
     .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
 
-    /* inline link to studio */
     .studio-ref {
-      display:inline-flex;align-items:center;gap:6px;
       color:#ff9020;text-decoration:none;
       border-bottom:1px solid rgba(255,140,0,.35);
       transition:border-color .15s,color .15s;
@@ -101,17 +134,18 @@
       margin-top:52px;transition:color .15s;
     }
     .back-link:hover { color:#ff9020; }
-
-    @media(max-width:600px){
-      .article-wrap{padding-left:18px;padding-right:18px;}
-      .article-hero{flex-direction:column;align-items:flex-start;}
-    }
   </style>
 </head>
 <body>
+
+<!-- floating nates canvas -->
 <canvas id="nateBg"></canvas>
 <div class="article-bg"></div>
+<div class="article-bg-grad"></div>
 <div class="article-vignette"></div>
+
+<!-- watch cat — fixed bottom right -->
+<img src="nate_watch_cat.png" id="watchCatFixed" alt="">
 
 <header class="site-header">
   <div class="header-logo">
@@ -144,7 +178,6 @@
   <div class="article-links">
     <div class="links-label">Соцсети</div>
     <div class="social-row">
-      <!-- Telegram -->
       <a href="https://t.me/spadestudio" target="_blank" class="social-btn" data-sound>
         <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.982l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.577z"/></svg>
         Telegram (Spade Studio)
@@ -162,37 +195,49 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script>
-/* ── Nate bg: floating spades ── */
+/* ── Floating mini-nates: top → bottom on full page ── */
 (function(){
   var canvas = document.getElementById('nateBg');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
+  canvas.style.opacity = '1';
+
   function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resize(); window.addEventListener('resize', resize);
-  var sp = [];
-  for (var i = 0; i < 30; i++) sp.push({
-    x: Math.random()*1920, y: Math.random()*1080,
-    s: 12+Math.random()*22,
-    vx: (Math.random()-.5)*.45, vy: -0.3-Math.random()*.5,
-    a: Math.random()*Math.PI*2, va: (Math.random()-.5)*.02,
-    op: .04+Math.random()*.1
-  });
+
+  var img = new Image(); img.src = 'nate_float.png'; var loaded = false;
+  img.onload = function(){ loaded = true; };
+
+  var nates = [];
+  for (var i = 0; i < 28; i++) {
+    nates.push({
+      x: Math.random() * 1920,
+      y: -Math.random() * 1080,          /* start above screen */
+      s: 22 + Math.random() * 28,
+      vx: (Math.random() - .5) * .4,
+      vy: 0.5 + Math.random() * 0.65,    /* falls downward */
+      a: Math.random() * Math.PI * 2,
+      va: (Math.random() - .5) * .022,
+      op: 0.55 + Math.random() * 0.4
+    });
+  }
+
   function tick(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    var W=canvas.width,H=canvas.height;
-    sp.forEach(function(p){
-      p.x+=p.vx; p.y+=p.vy; p.a+=p.va;
-      if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}
-      if(p.x<-p.s)p.x=W+p.s; if(p.x>W+p.s)p.x=-p.s;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var W = canvas.width, H = canvas.height;
+    nates.forEach(function(n){
+      n.x += n.vx; n.y += n.vy; n.a += n.va;
+      /* reset when goes off bottom */
+      if (n.y - n.s > H){ n.y = -n.s; n.x = Math.random() * W; }
+      if (n.x < -n.s) n.x = W + n.s;
+      if (n.x > W + n.s) n.x = -n.s;
+      if (!loaded) return;
       ctx.save();
-      ctx.translate(p.x,p.y); ctx.rotate(p.a);
-      ctx.globalCompositeOperation='screen';
-      ctx.globalAlpha=p.op;
-      ctx.font='bold '+Math.round(p.s*1.8)+'px serif';
-      ctx.fillStyle='#ff8800';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.shadowColor='#ff5500'; ctx.shadowBlur=12;
-      ctx.fillText('♠',0,0);
+      ctx.translate(n.x, n.y);
+      ctx.rotate(n.a);
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = n.op;
+      ctx.drawImage(img, -n.s/2, -n.s/2, n.s, n.s);
       ctx.restore();
     });
     requestAnimationFrame(tick);

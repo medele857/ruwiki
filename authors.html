@@ -229,10 +229,13 @@
       </div>
     </a>
 
-    <!-- NateShapiro — orange gradient + floating spades -->
+    <!-- NateShapiro — orange gradient + floating mini-nates -->
     <a href="author-nateshapiro.html" class="wiki-card" id="nateCard" data-sound data-name="NateShapiro" data-order="9"
        style="background:linear-gradient(145deg,#1a0a00,#2a1000);border-color:rgba(255,140,0,.4);">
       <canvas class="card-canvas" id="nateCanvas"></canvas>
+      <!-- watch cat pinned bottom-right -->
+      <img src="nate_watch_cat.png"
+           style="position:absolute;bottom:-10px;right:-14px;width:130px;pointer-events:none;z-index:3;opacity:.92;filter:drop-shadow(0 0 10px rgba(255,140,0,.35));">
       <div class="card-body">
         <div class="card-logo-row">
           <img src="nate_ava.png" class="card-logo" alt="NateShapiro" style="border-color:rgba(255,140,0,.5);">
@@ -343,16 +346,17 @@
   for(var i=0;i<14;i++) cups.push({x:Math.random()*340,y:Math.random()*360,s:14+Math.random()*18,vx:(Math.random()-.5)*.5,vy:-0.38-Math.random()*.48,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;cups.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;if(loaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
-/* ── NateShapiro: floating spades ── */
+/* ── NateShapiro: floating mini-nates top→bottom ── */
 (function(){
   var canvas=document.getElementById('nateCanvas'),card=document.getElementById('nateCard');
   if(!canvas||!card)return;
   var ctx=canvas.getContext('2d');
   function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
   resize();window.addEventListener('resize',resize);
-  var sp=[];
-  for(var i=0;i<16;i++) sp.push({x:Math.random()*340,y:Math.random()*360,s:10+Math.random()*18,vx:(Math.random()-.5)*.45,vy:-0.35-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
-  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;sp.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.a+=p.va;if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}if(p.x<-p.s)p.x=W+p.s;if(p.x>W+p.s)p.x=-p.s;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=p.op;ctx.font='bold '+Math.round(p.s*1.8)+'px serif';ctx.fillStyle='#ff8800';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff6000';ctx.shadowBlur=10;ctx.fillText('♠',0,0);ctx.restore();});requestAnimationFrame(tick);}
+  var img=new Image();img.src='nate_float.png';var loaded=false;img.onload=function(){loaded=true;};
+  var nates=[];
+  for(var i=0;i<18;i++) nates.push({x:Math.random()*340,y:-Math.random()*360,s:18+Math.random()*22,vx:(Math.random()-.5)*.35,vy:0.45+Math.random()*.55,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.025,op:.7+Math.random()*.3});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;nates.forEach(function(n){n.x+=n.vx;n.y+=n.vy;n.a+=n.va;if(n.y-n.s>H){n.y=-n.s;n.x=Math.random()*W;}if(n.x<-n.s)n.x=W+n.s;if(n.x>W+n.s)n.x=-n.s;if(loaded){ctx.save();ctx.translate(n.x,n.y);ctx.rotate(n.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=n.op;ctx.drawImage(img,-n.s/2,-n.s/2,n.s,n.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
 })();
 </script>
