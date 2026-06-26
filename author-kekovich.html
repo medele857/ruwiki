@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kekovich_lol — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    #kekBg { position:fixed;inset:0;z-index:0;pointer-events:none; }
+    .article-bg { position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#120005 0%,#1e0010 50%,#0a0008 100%); }
+    .article-vignette { position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 40% 40%,rgba(200,30,60,.07) 0%,rgba(0,0,0,.7) 100%); }
+    .article-wrap { position:relative;z-index:1;max-width:860px;margin:0 auto;padding:calc(var(--hh) + 80px) 36px 100px; }
+    .article-hero { display:flex;align-items:center;gap:26px;padding-bottom:28px;animation:fadeUp .7s ease forwards; }
+    .article-avatar-box { width:88px;height:88px;border-radius:14px;overflow:hidden;border:2px solid rgba(200,30,60,.65);box-shadow:0 0 28px rgba(180,20,50,.4);flex-shrink:0; }
+    .article-avatar-box img { width:100%;height:100%;object-fit:cover; }
+    .article-title { font-family:'Bebas Neue','Impact',sans-serif;font-size:clamp(32px,6vw,54px);letter-spacing:.06em;background:linear-gradient(90deg,#ff4060,#ff8090,#cc2040);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .article-subtitle { font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,30,60,.45);margin-top:7px; }
+    .article-divider { height:1px;background:linear-gradient(90deg,#ff4060,#cc2040);opacity:.45;margin:0 0 32px; }
+    .article-body { font-size:12px;color:rgba(255,210,220,.82);line-height:1.95;opacity:0;animation:fadeUp .7s ease .25s forwards; }
+    .article-links { margin-top:44px;display:flex;flex-direction:column;gap:14px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+    .links-label { font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(200,30,60,.7);margin-bottom:2px; }
+    .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(180,20,50,.06);border:1px solid rgba(200,30,60,.22);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
+    .map-link-card:hover { background:rgba(180,20,50,.12);border-color:rgba(200,30,60,.6);transform:translateX(4px); }
+    .map-link-card.coming-soon { cursor:default;opacity:.6; }
+    .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
+    .map-thumb-placeholder { width:120px;height:68px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(100,0,30,.3);font-size:28px; }
+    .map-info { padding:10px 14px;display:flex;flex-direction:column;justify-content:center;flex:1; }
+    .map-title { font-size:14px;color:#fff;margin-bottom:3px;font-family:'Bebas Neue',monospace;letter-spacing:.04em; }
+    .map-url { font-size:11px;color:rgba(200,30,60,.7); }
+    .map-arrow { padding:10px 14px;display:flex;align-items:center;font-size:20px;color:rgba(200,30,60,.5);transition:transform .15s,color .15s; }
+    .map-link-card:hover .map-arrow { transform:translateX(4px);color:#ff4060; }
+    .social-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
+    .social-btn { display:inline-flex;align-items:center;gap:8px;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px 16px;border-radius:0;border:1px solid rgba(255,255,255,.12);color:rgba(255,180,190,.8);text-decoration:none;background:rgba(180,20,50,.04);transition:all .15s; }
+    .social-btn:hover { border-color:rgba(200,30,60,.55);background:rgba(180,20,50,.1);color:#fff;transform:scale(1.05); }
+    .social-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+    .studio-ref { color:#ff4060;text-decoration:none;border-bottom:1px solid rgba(200,30,60,.35);transition:border-color .15s,color .15s; }
+    .studio-ref:hover { color:#ff8090;border-color:rgba(200,60,80,.7); }
+    .back-link { display:block;font-family:var(--font);font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;margin-top:52px;transition:color .15s; }
+    .back-link:hover { color:#ff4060; }
+    @media(max-width:600px){.article-wrap{padding-left:18px;padding-right:18px;}.article-hero{flex-direction:column;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+<canvas id="kekBg"></canvas>
+<div class="article-bg"></div>
+<div class="article-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="article-wrap">
+  <div class="article-hero">
+    <div class="article-avatar-box"><img src="kek_ava.png" alt="kekovich_lol"></div>
+    <div>
+      <h1 class="article-title">kekovich_lol</h1>
+      <p class="article-subtitle">Автор &nbsp;·&nbsp; Карты &nbsp;·&nbsp; Основатель &nbsp;·&nbsp; Ру МапДев</p>
+    </div>
+  </div>
+  <div class="article-divider"></div>
+
+  <div class="article-body">Всем привет! Я — Kekovich, и я создал команду <a href="studio-kts.html" class="studio-ref" data-sound>KTS</a> (правда, она состоит из двух человек). Раньше я просто работал под своим именем и даже выпустил пару карт! Они стали немного популярными, я сам был в шоке от этого... Но мне есть куда расти! Сейчас я реализую огромный проект — карту «Обманутый Богиней». Там повествуется о человеке, который погиб и попал в руки одной богини. Сначала она была доброй, милой, рассказывала о бедах в её мире, но в итоге обманула его и сделала рабом в своём храме! (Выход запланирован на лето-осень 2026 года)</div>
+
+  <div class="article-links">
+    <div class="links-label">Карты</div>
+
+    <a href="https://minecraft-inside.ru/maps/180846-poteryannyy-chast-1.html" target="_blank" class="map-link-card" data-sound>
+      <img src="kek_map1.png" class="map-thumb" alt="Потерянный: Начало Пути">
+      <div class="map-info">
+        <div class="map-title">Потерянный: Начало Пути [1.16.5]</div>
+        <div class="map-url">minecraft-inside.ru</div>
+      </div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <a href="https://minecraft-inside.ru/maps/185536-poteryannyy-remeyk.html" target="_blank" class="map-link-card" data-sound>
+      <img src="kek_map2.png" class="map-thumb" alt="Потерянный Ремейк">
+      <div class="map-info">
+        <div class="map-title">Потерянный Ремейк [1.16.5]</div>
+        <div class="map-url">minecraft-inside.ru</div>
+      </div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <a href="https://minecraft-inside.ru/maps/182322-poteryannyy-zaklyuchenie.html" target="_blank" class="map-link-card" data-sound>
+      <img src="kek_map3.png" class="map-thumb" alt="Потерянный: Божественная Сила">
+      <div class="map-info">
+        <div class="map-title">Потерянный: Божественная Сила [1.16.5]</div>
+        <div class="map-url">minecraft-inside.ru</div>
+      </div>
+      <span class="map-arrow">→</span>
+    </a>
+
+    <div class="links-label" style="margin-top:10px">Профиль</div>
+    <div class="social-row">
+      <a href="https://minecraft-inside.ru/user/KekovichTeamStory/" target="_blank" class="social-btn" data-sound>
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 14.2a7.2 7.2 0 0 1-6-3.22c.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08a7.2 7.2 0 0 1-6 3.22z"/></svg>
+        minecraft-inside.ru
+      </a>
+    </div>
+  </div>
+
+  <a href="authors.html" class="back-link" data-sound>← Назад к авторам</a>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById('kekBg');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  canvas.style.opacity='.9';
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  var img=new Image();img.src='kek_glass.png';var loaded=false;img.onload=function(){loaded=true;};
+  var shards=[];
+  for(var i=0;i<35;i++) shards.push({x:Math.random()*1920,y:Math.random()*1080,s:16+Math.random()*26,vx:(Math.random()-.5)*.55,vy:-0.4-Math.random()*.55,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.035,op:.04+Math.random()*.1});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;shards.forEach(function(s){s.x+=s.vx;s.y+=s.vy;s.a+=s.va;if(s.y+s.s<0){s.y=H+s.s;s.x=Math.random()*W;}if(s.x<-s.s)s.x=W+s.s;if(s.x>W+s.s)s.x=-s.s;if(loaded){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=s.op;ctx.drawImage(img,-s.s/2,-s.s/2,s.s,s.s);ctx.restore();}});requestAnimationFrame(tick);}
+  tick();
+})();
+</script>
+</body>
+</html>

@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=VT323&display=swap" rel="stylesheet">
   <style>
     html, body { overflow-y: auto !important; }
-
     .map-link-card { display:flex;align-items:stretch;gap:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:0;text-decoration:none;color:var(--text);overflow:hidden;transition:all .18s; }
     .map-link-card:hover { border-color:var(--border2);background:rgba(255,255,255,.09);transform:translateX(4px); }
     .map-thumb { width:120px;height:68px;object-fit:cover;flex-shrink:0;display:block; }
@@ -22,12 +21,7 @@
     .social-btn { font-size:14px !important;padding:10px 18px !important; }
     .social-btn svg { width:18px !important;height:18px !important; }
     .links-label { font-size:13px !important; }
-
-    #qwerStudioCard {
-      overflow:hidden;position:relative;
-      background:transparent !important;
-      border-color:rgba(180,110,30,.4) !important;
-    }
+    #qwerStudioCard { overflow:hidden;position:relative;background:transparent !important;border-color:rgba(180,110,30,.4) !important; }
     .card-video-layer { position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1; }
   </style>
 </head>
@@ -70,7 +64,6 @@
 
     <!-- QWER TEAM Studio -->
     <a href="studio-qwer.html" class="wiki-card" id="qwerStudioCard" data-sound data-name="Qwer Team" data-order="2">
-      <!-- right char bg -->
       <div style="position:absolute;right:0;top:0;width:55%;height:100%;background-image:url('qwer42.png');background-size:cover;background-position:left center;z-index:0;opacity:.22;pointer-events:none;"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(90deg,var(--bg,#0e0e12) 35%,transparent 75%);z-index:0;pointer-events:none;"></div>
       <canvas class="card-canvas" id="qwerStudioCanvas" style="z-index:1;"></canvas>
@@ -86,8 +79,7 @@
       </div>
     </a>
 
-
-    <!-- ZERO ONE — red glitch, floating Z letters -->
+    <!-- ZERO ONE -->
     <a href="studio-zerooone.html" class="wiki-card" id="zoCard" data-sound data-name="Zero One" data-order="3"
        style="background:linear-gradient(145deg,#150005,#200008);border-color:rgba(220,30,50,.4);">
       <canvas class="card-canvas" id="zoCanvas"></canvas>
@@ -105,8 +97,7 @@
       </div>
     </a>
 
-
-    <!-- YourStory — purple gradient + floating yogurt cups -->
+    <!-- YourStory -->
     <a href="studio-yourstory.html" class="wiki-card" id="ystCard" data-sound data-name="YourStory" data-order="4"
        style="background:linear-gradient(145deg,#0d0318,#160828);border-color:rgba(140,60,220,.4);">
       <canvas class="card-canvas" id="ystCanvas"></canvas>
@@ -124,8 +115,27 @@
       </div>
     </a>
 
+    <!-- Наутилус -->
+    <a href="studio-nautilus.html" class="wiki-card" id="nautCard" data-sound data-name="Наутилус" data-order="5"
+       style="background:linear-gradient(145deg,#032040,#041828);border-color:rgba(0,180,220,.4);">
+      <canvas class="card-canvas" id="nautCanvas"></canvas>
+      <div style="position:absolute;inset:0;background-image:url('nautilus_bg.jpg');background-size:cover;background-position:center;filter:brightness(.18) saturate(.5);z-index:0;pointer-events:none;"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(2,20,40,.85) 0%,rgba(4,35,65,.7) 100%);z-index:0;pointer-events:none;"></div>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="nautilus_ava.jpg" class="card-logo" alt="Наутилус" style="border-color:rgba(0,180,220,.5);image-rendering:pixelated;">
+          <div>
+            <div class="card-title" style="color:#40c8ff;">Наутилус</div>
+            <div class="card-tag" style="color:rgba(0,180,220,.65);">Студия • Карты</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(0,180,220,.55);">описание</div>
+        <div class="card-desc-text">Мы — Команда «Наутилус», и мы создаём карты для Minecraft. Многие знают нас по серии карт «Снайперы»...</div>
+        <span class="card-read-btn" style="border-color:rgba(0,180,220,.5);color:#40c8ff;">Читать больше →</span>
+      </div>
+    </a>
 
-    <!-- Spade Studio — orange fire gradient + floating spades -->
+    <!-- Spade Studio -->
     <a href="studio-spade.html" class="wiki-card" id="spadeCard" data-sound data-name="Spade Studio" data-order="6"
        style="background:linear-gradient(145deg,#1a0a00,#2a1000);border-color:rgba(255,140,0,.4);">
       <canvas class="card-canvas" id="spadeCanvas"></canvas>
@@ -143,25 +153,21 @@
       </div>
     </a>
 
-
-    <!-- Наутилус — ocean blue + floating bubbles -->
-    <a href="studio-nautilus.html" class="wiki-card" id="nautCard" data-sound data-name="Наутилус" data-order="5"
-       style="background:linear-gradient(145deg,#032040,#041828);border-color:rgba(0,180,220,.4);">
-      <canvas class="card-canvas" id="nautCanvas"></canvas>
-      <!-- darkened background image -->
-      <div style="position:absolute;inset:0;background-image:url('nautilus_bg.jpg');background-size:cover;background-position:center;filter:brightness(.18) saturate(.5);z-index:0;pointer-events:none;"></div>
-      <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(2,20,40,.85) 0%,rgba(4,35,65,.7) 100%);z-index:0;pointer-events:none;"></div>
+    <!-- KTS (KekovichTeamStory) -->
+    <a href="studio-kts.html" class="wiki-card" id="ktsCard" data-sound data-name="KekovichTeamStory" data-order="7"
+       style="background:linear-gradient(145deg,#0e0015,#180020);border-color:rgba(180,30,220,.4);">
+      <canvas class="card-canvas" id="ktsCanvas"></canvas>
       <div class="card-body">
         <div class="card-logo-row">
-          <img src="nautilus_ava.jpg" class="card-logo" alt="Наутилус" style="border-color:rgba(0,180,220,.5);image-rendering:pixelated;">
+          <img src="kts_ava.jpg" class="card-logo" alt="KTS" style="border-color:rgba(180,30,220,.5);">
           <div>
-            <div class="card-title" style="color:#40c8ff;">Наутилус</div>
-            <div class="card-tag" style="color:rgba(0,180,220,.65);">Студия • Карты</div>
+            <div class="card-title" style="color:#c040ff;">KTS</div>
+            <div class="card-tag" style="color:rgba(180,50,240,.65);">Мини-команда • Карты</div>
           </div>
         </div>
-        <div class="card-desc-label" style="color:rgba(0,180,220,.55);">описание</div>
-        <div class="card-desc-text">Мы — Команда «Наутилус», и мы создаём карты для Minecraft. Многие знают нас по серии карт «Снайперы». Сейчас мы выпускаем глобальные обновления, делаем трейлеры, добавляем новые локации и механики...</div>
-        <span class="card-read-btn" style="border-color:rgba(0,180,220,.5);color:#40c8ff;">Читать больше →</span>
+        <div class="card-desc-label" style="color:rgba(160,30,200,.55);">описание</div>
+        <div class="card-desc-text">Всем привет! Мы — KTS! Сейчас делаем карту «Обманутый Богиней», выход запланирован летом-осенью 2026...</div>
+        <span class="card-read-btn" style="border-color:rgba(180,30,220,.5);color:#c040ff;">Читать больше →</span>
       </div>
     </a>
 
@@ -200,50 +206,17 @@
   var ctx=canvas.getContext('2d');
   function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
   resize(); window.addEventListener('resize',resize);
-
   var img=new Image(); img.src='cookie_icon.png'; var imgLoaded=false;
   img.onload=function(){imgLoaded=true;};
-
   var cookies=[];
   for(var i=0;i<16;i++) cookies.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*16,vx:(Math.random()-.5)*.5,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
-
-  function tick(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    var W=canvas.width,H=canvas.height;
-    cookies.forEach(function(c){
-      c.x+=c.vx;c.y+=c.vy;c.a+=c.va;
-      if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}
-      if(c.x<-c.s)c.x=W+c.s; if(c.x>W+c.s)c.x=-c.s;
-      if(imgLoaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalCompositeOperation="screen";ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}
-    });
-    requestAnimationFrame(tick);
-  }
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;cookies.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;if(imgLoaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalCompositeOperation="screen";ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
-
   var layer=document.getElementById('qwerStudioVidLayer');
   if(!layer)return;
   var vids=[];
-  for(var i=0;i<4;i++){
-    (function(){
-      var v=document.createElement('video');
-      v.src='cookie_vid.mp4';v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;
-      var sz=22+Math.random()*28;
-      v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:1;pointer-events:none;';
-      layer.appendChild(v);
-      var x=Math.random()*280,y=Math.random()*300,vx=(Math.random()-.5)*.55,vy=-0.38-Math.random()*.48;
-      vids.push({el:v,x:x,y:y,vx:vx,vy:vy,sz:sz});
-    })();
-  }
-  function animVids(){
-    var W=card.offsetWidth||340,H=card.offsetHeight||360;
-    vids.forEach(function(v){
-      v.x+=v.vx;v.y+=v.vy;
-      if(v.y+v.sz<0){v.y=H+v.sz;v.x=Math.random()*W;}
-      if(v.x<-v.sz)v.x=W+v.sz; if(v.x>W+v.sz)v.x=-v.sz;
-      v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
-    });
-    requestAnimationFrame(animVids);
-  }
+  for(var i=0;i<4;i++){(function(){var v=document.createElement('video');v.src='cookie_vid.mp4';v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;var sz=22+Math.random()*28;v.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:3px;opacity:1;pointer-events:none;';layer.appendChild(v);var x=Math.random()*280,y=Math.random()*300,vx=(Math.random()-.5)*.55,vy=-0.38-Math.random()*.48;vids.push({el:v,x:x,y:y,vx:vx,vy:vy,sz:sz});})();}
+  function animVids(){var W=card.offsetWidth||340,H=card.offsetHeight||360;vids.forEach(function(v){v.x+=v.vx;v.y+=v.vy;if(v.y+v.sz<0){v.y=H+v.sz;v.x=Math.random()*W;}if(v.x<-v.sz)v.x=W+v.sz;if(v.x>W+v.sz)v.x=-v.sz;v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';});requestAnimationFrame(animVids);}
   animVids();
 })();
 
@@ -260,32 +233,6 @@
   tick();
 })();
 
-/* ── Наутилус: floating bubbles ── */
-(function(){
-  var canvas=document.getElementById('nautCanvas'),card=document.getElementById('nautCard');
-  if(!canvas||!card)return;
-  var ctx=canvas.getContext('2d');
-  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
-  resize();window.addEventListener('resize',resize);
-  var bs=[];
-  for(var i=0;i<22;i++) bs.push({x:Math.random()*340,y:Math.random()*360,r:2+Math.random()*5,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,op:.06+Math.random()*.18});
-  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;bs.forEach(function(b){b.x+=b.vx;b.y+=b.vy;if(b.y+b.r<0){b.y=H+b.r;b.x=Math.random()*W;}if(b.x<-b.r)b.x=W+b.r;if(b.x>W+b.r)b.x=-b.r;ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=b.op;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle='#40c8ff';ctx.fill();ctx.restore();});requestAnimationFrame(tick);}
-  tick();
-})();
-
-/* ── Spade Studio: floating ♠ spades ── */
-(function(){
-  var canvas=document.getElementById('spadeCanvas'),card=document.getElementById('spadeCard');
-  if(!canvas||!card)return;
-  var ctx=canvas.getContext('2d');
-  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
-  resize();window.addEventListener('resize',resize);
-  var sp=[];
-  for(var i=0;i<16;i++) sp.push({x:Math.random()*340,y:Math.random()*360,s:10+Math.random()*18,vx:(Math.random()-.5)*.45,vy:-0.35-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
-  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;sp.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.a+=p.va;if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}if(p.x<-p.s)p.x=W+p.s;if(p.x>W+p.s)p.x=-p.s;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=p.op;ctx.font='bold '+Math.round(p.s*1.8)+'px serif';ctx.fillStyle='#ff8800';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff6000';ctx.shadowBlur=10;ctx.fillText('♠',0,0);ctx.restore();});requestAnimationFrame(tick);}
-  tick();
-})();
-
 /* ── YourStory: floating cats ── */
 (function(){
   var canvas=document.getElementById('ystCanvas'),card=document.getElementById('ystCard');
@@ -299,9 +246,48 @@
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;items.forEach(function(it){it.x+=it.vx;it.y+=it.vy;it.a+=it.va;if(it.y+it.s<0){it.y=H+it.s;it.x=Math.random()*W;}if(it.x<-it.s)it.x=W+it.s;if(it.x>W+it.s)it.x=-it.s;if(loaded){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.a);ctx.globalCompositeOperation="screen";ctx.globalAlpha=it.op;ctx.drawImage(img,-it.s/2,-it.s/2,it.s,it.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
 })();
+
+/* ── Наутилус: floating bubbles ── */
+(function(){
+  var canvas=document.getElementById('nautCanvas'),card=document.getElementById('nautCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var bs=[];
+  for(var i=0;i<22;i++) bs.push({x:Math.random()*340,y:Math.random()*360,r:2+Math.random()*5,vx:(Math.random()-.5)*.4,vy:-0.3-Math.random()*.5,op:.06+Math.random()*.18});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;bs.forEach(function(b){b.x+=b.vx;b.y+=b.vy;if(b.y+b.r<0){b.y=H+b.r;b.x=Math.random()*W;}if(b.x<-b.r)b.x=W+b.r;if(b.x>W+b.r)b.x=-b.r;ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=b.op;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle='#40c8ff';ctx.fill();ctx.restore();});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── Spade Studio: floating spades ── */
+(function(){
+  var canvas=document.getElementById('spadeCanvas'),card=document.getElementById('spadeCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var sp=[];
+  for(var i=0;i<16;i++) sp.push({x:Math.random()*340,y:Math.random()*360,s:10+Math.random()*18,vx:(Math.random()-.5)*.45,vy:-0.35-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;sp.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.a+=p.va;if(p.y+p.s<0){p.y=H+p.s;p.x=Math.random()*W;}if(p.x<-p.s)p.x=W+p.s;if(p.x>W+p.s)p.x=-p.s;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=p.op;ctx.font='bold '+Math.round(p.s*1.8)+'px serif';ctx.fillStyle='#ff8800';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff6000';ctx.shadowBlur=10;ctx.fillText('♠',0,0);ctx.restore();});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── KTS: flying glass shards ── */
+(function(){
+  var canvas=document.getElementById('ktsCanvas'),card=document.getElementById('ktsCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var img=new Image();img.src='kek_glass.png';var loaded=false;img.onload=function(){loaded=true;};
+  var shards=[];
+  for(var i=0;i<20;i++) shards.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*18,vx:(Math.random()-.5)*.55,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.035,op:.7+Math.random()*.3});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;shards.forEach(function(s){s.x+=s.vx;s.y+=s.vy;s.a+=s.va;if(s.y+s.s<0){s.y=H+s.s;s.x=Math.random()*W;}if(s.x<-s.s)s.x=W+s.s;if(s.x>W+s.s)s.x=-s.s;if(loaded){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=s.op;ctx.drawImage(img,-s.s/2,-s.s/2,s.s,s.s);ctx.restore();}});requestAnimationFrame(tick);}
+  tick();
+})();
 </script>
 
-<!-- ══ SETTINGS BUTTON ══ -->
 <a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>

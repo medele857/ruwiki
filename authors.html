@@ -250,6 +250,24 @@
       </div>
     </a>
 
+    <!-- kekovich_lol — dark red + flying glass shards -->
+    <a href="author-kekovich.html" class="wiki-card" id="kekCard" data-sound data-name="kekovich_lol" data-order="10"
+       style="background:linear-gradient(145deg,#150008,#220010);border-color:rgba(200,30,60,.4);">
+      <canvas class="card-canvas" id="kekCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="kek_ava.png" class="card-logo" alt="kekovich_lol" style="border-color:rgba(200,30,60,.5);">
+          <div>
+            <div class="card-title" style="color:#ff4060;">kekovich_lol</div>
+            <div class="card-tag" style="color:rgba(220,50,80,.65);">Автор • Карты • Основатель</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(200,30,60,.55);">описание</div>
+        <div class="card-desc-text">Всем привет! Я — Kekovich, создал команду KTS. Раньше работал под своим именем, выпустил пару карт, которые неожиданно стали популярными. Сейчас работаю над «Обманутый Богиней»...</div>
+        <span class="card-read-btn" style="border-color:rgba(200,30,60,.5);color:#ff4060;">Читать больше →</span>
+      </div>
+    </a>
+
   </div>
 </div>
 
@@ -346,6 +364,8 @@
   for(var i=0;i<14;i++) cups.push({x:Math.random()*340,y:Math.random()*360,s:14+Math.random()*18,vx:(Math.random()-.5)*.5,vy:-0.38-Math.random()*.48,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.02,op:1});
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;cups.forEach(function(c){c.x+=c.vx;c.y+=c.vy;c.a+=c.va;if(c.y+c.s<0){c.y=H+c.s;c.x=Math.random()*W;}if(c.x<-c.s)c.x=W+c.s;if(c.x>W+c.s)c.x=-c.s;if(loaded){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=c.op;ctx.drawImage(img,-c.s/2,-c.s/2,c.s,c.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
+})(); /* ← FIX: was missing this closing */
+
 /* ── NateShapiro: floating mini-nates top→bottom ── */
 (function(){
   var canvas=document.getElementById('nateCanvas'),card=document.getElementById('nateCard');
@@ -357,6 +377,20 @@
   var nates=[];
   for(var i=0;i<18;i++) nates.push({x:Math.random()*340,y:-Math.random()*360,s:18+Math.random()*22,vx:(Math.random()-.5)*.35,vy:0.45+Math.random()*.55,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.025,op:.7+Math.random()*.3});
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;nates.forEach(function(n){n.x+=n.vx;n.y+=n.vy;n.a+=n.va;if(n.y-n.s>H){n.y=-n.s;n.x=Math.random()*W;}if(n.x<-n.s)n.x=W+n.s;if(n.x>W+n.s)n.x=-n.s;if(loaded){ctx.save();ctx.translate(n.x,n.y);ctx.rotate(n.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=n.op;ctx.drawImage(img,-n.s/2,-n.s/2,n.s,n.s);ctx.restore();}});requestAnimationFrame(tick);}
+  tick();
+})();
+
+/* ── kekovich_lol: red glass shards ── */
+(function(){
+  var canvas=document.getElementById('kekCanvas'),card=document.getElementById('kekCard');
+  if(!canvas||!card)return;
+  var ctx=canvas.getContext('2d');
+  function resize(){canvas.width=card.offsetWidth||340;canvas.height=card.offsetHeight||360;}
+  resize();window.addEventListener('resize',resize);
+  var img=new Image();img.src='kek_glass.png';var loaded=false;img.onload=function(){loaded=true;};
+  var shards=[];
+  for(var i=0;i<20;i++) shards.push({x:Math.random()*340,y:Math.random()*360,s:12+Math.random()*18,vx:(Math.random()-.5)*.55,vy:-0.4-Math.random()*.5,a:Math.random()*Math.PI*2,va:(Math.random()-.5)*.035,op:.7+Math.random()*.3});
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;shards.forEach(function(s){s.x+=s.vx;s.y+=s.vy;s.a+=s.va;if(s.y+s.s<0){s.y=H+s.s;s.x=Math.random()*W;}if(s.x<-s.s)s.x=W+s.s;if(s.x>W+s.s)s.x=-s.s;if(loaded){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=s.op;ctx.drawImage(img,-s.s/2,-s.s/2,s.s,s.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
 })();
 </script>
