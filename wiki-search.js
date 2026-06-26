@@ -161,6 +161,7 @@
         <button class="ws-sort-btn" data-sort="newest" title="Новые сначала">Новее ↑</button>
         <button class="ws-sort-btn" data-sort="oldest" title="Старые сначала">Старее ↓</button>
         <button class="ws-sort-btn" data-sort="alpha" title="По алфавиту А→Я">А → Я</button>
+        <button class="ws-sort-btn" data-sort="views" title="По просмотрам">🔥 Популярные</button>
       </div>
       <span class="ws-count" id="wsCount"></span>
     `;
@@ -209,6 +210,9 @@
         sorted.sort(function (a, b) { return b._wsOrder - a._wsOrder; });
       } else if (currentSort === 'alpha') {
         sorted.sort(function (a, b) { return a._wsName.localeCompare(b._wsName, 'ru'); });
+      } else if (currentSort === 'views') {
+        /* sort by Firebase views — use cached _wsViews, loaded async */
+        sorted.sort(function (a, b) { return (b._wsViews||0) - (a._wsViews||0); });
       } else {
         /* default: original DOM order */
         sorted.sort(function (a, b) { return a._wsOrigIndex - b._wsOrigIndex; });
@@ -252,6 +256,19 @@
 
     /* Initial render */
     render();
+
+    /* ── Preload view counts from Firebase for popularity sort ── */
+    function loadViews() {
+      if (!window.WikiDB) { setTimeout(loadViews, 500); return; }
+      cards.forEach(function(card) {
+        var pid = (card.getAttribute('href') || '').replace('.html','').replace(/^\//,'');
+        if (!pid) return;
+        window.WikiDB.db.ref('pages/' + pid + '/views').once('value', function(snap){
+          card._wsViews = snap.val() || 0;
+        });
+      });
+    }
+    loadViews();
   }
 
   if (document.readyState === 'loading') {
