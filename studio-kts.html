@@ -113,6 +113,6 @@
   function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);var W=canvas.width,H=canvas.height;shards.forEach(function(s){s.x+=s.vx;s.y+=s.vy;s.a+=s.va;if(s.y+s.s<0){s.y=H+s.s;s.x=Math.random()*W;}if(s.x<-s.s)s.x=W+s.s;if(s.x>W+s.s)s.x=-s.s;if(loaded){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalCompositeOperation='screen';ctx.globalAlpha=s.op;ctx.drawImage(img,-s.s/2,-s.s/2,s.s,s.s);ctx.restore();}});requestAnimationFrame(tick);}
   tick();
 })();
-<script src="firebase-wiki.js"></script>
+</script>
 </body>
 </html>
