@@ -8,14 +8,6 @@ const FIREBASE_CFG = {
   appId: "1:645896740533:web:169a140bb01857fec0a8fc",
   databaseURL: "https://ruwiki-f1ecb-default-rtdb.firebaseio.com/"
 };
-  apiKey:            "REPLACE_API_KEY",
-  authDomain:        "REPLACE.firebaseapp.com",
-  projectId:         "REPLACE_PROJECT_ID",
-  storageBucket:     "REPLACE.appspot.com",
-  messagingSenderId: "REPLACE_SENDER_ID",
-  appId:             "REPLACE_APP_ID",
-  databaseURL:       "https://REPLACE_PROJECT_ID-default-rtdb.europe-west1.firebasedatabase.app"
-};
 
 // ── Load Firebase SDK dynamically ──
 (function () {
