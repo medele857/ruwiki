@@ -1,18 +1,13 @@
-/**
- * firebase-wiki.js
- * Подключи этот файл на КАЖДУЮ страницу после script.js.
- *
- * Что делает:
- *  1. Трекает просмотры страницы (pageId = slug из URL)
- *  2. Показывает кнопку лайка (1 лайк с устройства в LocalStorage)
- *  3. Показывает блок комментариев
- *  4. Экспортирует window.WikiDB для использования на main.html
- *
- * НАСТРОЙ firebaseConfig ниже под свой проект!
- */
 
-// ── Firebase config — замени на свои данные из консоли Firebase ──
 const FIREBASE_CFG = {
+  apiKey: "AIzaSyAID9ivHW94RB6eMB9qG4kVK7QfK2iStgc",
+  authDomain: "ruwiki-f1ecb.firebaseapp.com",
+  projectId: "ruwiki-f1ecb",
+  storageBucket: "ruwiki-f1ecb.firebasestorage.app",
+  messagingSenderId: "645896740533",
+  appId: "1:645896740533:web:169a140bb01857fec0a8fc",
+  databaseURL: "https://ruwiki-f1ecb-default-rtdb.firebaseio.com/"
+};
   apiKey:            "REPLACE_API_KEY",
   authDomain:        "REPLACE.firebaseapp.com",
   projectId:         "REPLACE_PROJECT_ID",
