@@ -426,58 +426,25 @@
   /* ════════════════════════════════════════════════
      DRAWING
   ════════════════════════════════════════════════ */
-  var lastPaint  = 0;   /* локальный кэш для UI */
-  var cdChecking = false;
-  var painting   = false;
+  var lastPaint = 0, painting = false;
 
   function tryPaint(dispX, dispY) {
+    if (!isAdmin && Date.now() - lastPaint < CD_MS) return;
     var pos = toCell(dispX, dispY);
     var bs  = isAdmin ? brushSize : 1;
-
-    var toWrite = [];
+    var painted = false;
     for (var dr = 0; dr < bs; dr++) {
       for (var dc = 0; dc < bs; dc++) {
         var r = pos.r + dr, c = pos.c + dc;
         if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
         if (grid[r][c] === selectedColor) continue;
-        toWrite.push({ r: r, c: c });
+        setCell(r, c, selectedColor);
+        if (window.WikiDB) window.WikiDB.db.ref('pixelbattle/' + r + '_' + c).set(selectedColor);
+        painted = true;
       }
     }
-    if (!toWrite.length) return;
-
-    if (isAdmin) {
-      toWrite.forEach(function (p) {
-        setCell(p.r, p.c, selectedColor);
-        if (window.WikiDB) window.WikiDB.db.ref('pixelbattle/' + p.r + '_' + p.c).set(selectedColor);
-      });
-      redraw();
-      return;
-    }
-
-    /* Быстрая локальная проверка — не идём в Firebase если точно в КД */
-    if (Date.now() - lastPaint < CD_MS) return;
-    if (cdChecking) return;
-
-    /* Проверяем КД в Firebase */
-    cdChecking = true;
-    function waitDB(cb) { if (window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); }, 200); }
-    waitDB(function() {
-      window.WikiDB.checkCooldown('pixelbattle', CD_MS, function (remaining) {
-        cdChecking = false;
-        if (remaining > 0) {
-          /* Синхронизируем локальный кэш */
-          lastPaint = Date.now() - (CD_MS - remaining);
-          return;
-        }
-        window.WikiDB.stampCooldown('pixelbattle');
-        lastPaint = Date.now();
-        toWrite.forEach(function (p) {
-          setCell(p.r, p.c, selectedColor);
-          window.WikiDB.db.ref('pixelbattle/' + p.r + '_' + p.c).set(selectedColor);
-        });
-        redraw();
-      });
-    });
+    if (painted) lastPaint = Date.now();
+    redraw();
   }
 
   /* Mouse */
@@ -544,13 +511,6 @@
 
   waitDB(function () {
     var db = window.WikiDB.db;
-
-    /* Синхронизируем lastPaint из Firebase при старте */
-    if (!isAdmin) {
-      window.WikiDB.checkCooldown('pixelbattle', CD_MS, function(remaining) {
-        if (remaining > 0) lastPaint = Date.now() - (CD_MS - remaining);
-      });
-    }
 
     var onRef = db.ref('pb_online').push();
     onRef.set(true);
