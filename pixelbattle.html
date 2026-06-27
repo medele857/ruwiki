@@ -9,182 +9,96 @@
   <style>
     html, body { overflow: hidden !important; height: 100%; margin: 0; }
 
-    /* ── Canvas viewport fills the screen under header ── */
     #pbViewport {
       position: fixed;
-      top: var(--hh);
-      left: 0; right: 0; bottom: 0;
-      overflow: hidden;
-      cursor: crosshair;
+      top: var(--hh); left: 0; right: 0; bottom: 0;
       background: #111118;
       touch-action: none;
+      /* cursor set by JS */
     }
 
-    /* ── The actual canvas, positioned by JS transform ── */
-    #pbCanvas {
+    /* The display canvas fills the viewport */
+    #pbDisplay {
       position: absolute;
-      top: 0; left: 0;
+      inset: 0;
+      width: 100%; height: 100%;
+      display: block;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      transform-origin: 0 0;
-      /* transform set by JS */
     }
 
-    /* ── HUD: top bar ── */
+    /* HUD pieces */
     .pb-hud-top {
-      position: fixed;
-      top: calc(var(--hh) + 8px);
+      position: fixed; top: calc(var(--hh) + 8px);
       left: 50%; transform: translateX(-50%);
       display: flex; align-items: center; gap: 10px;
-      background: rgba(14,14,18,.82);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      padding: 6px 14px;
-      z-index: 100;
-      backdrop-filter: blur(8px);
-      flex-wrap: wrap;
-      justify-content: center;
+      background: rgba(14,14,18,.88); border: 1px solid var(--border);
+      border-radius: 30px; padding: 6px 16px;
+      z-index: 200; backdrop-filter: blur(8px);
     }
-    .pb-hud-title {
-      font-family: var(--font); font-size: 13px;
-      color: var(--text); letter-spacing: .06em;
-    }
-    .pb-admin-badge {
-      font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
-      color: #ff9020; border: 1px solid rgba(255,144,32,.4);
-      border-radius: 3px; padding: 2px 7px;
-    }
-    .pb-online-badge {
-      font-size: 11px; color: var(--text2);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .pb-online-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #44ff88; box-shadow: 0 0 5px #44ff88;
-      animation: onlinePulse 1.5s ease-in-out infinite;
-    }
+    .pb-hud-title { font-family:var(--font); font-size:13px; color:var(--text); letter-spacing:.06em; }
+    .pb-admin-badge { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#ff9020; border:1px solid rgba(255,144,32,.4); border-radius:3px; padding:2px 7px; }
+    .pb-online-badge { font-size:11px; color:var(--text2); display:flex; align-items:center; gap:5px; }
+    .pb-online-dot { width:7px; height:7px; border-radius:50%; background:#44ff88; box-shadow:0 0 5px #44ff88; animation:onlinePulse 1.5s ease-in-out infinite; }
     @keyframes onlinePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ── HUD: bottom palette + CD + coords ── */
-    .pb-hud-bottom {
-      position: fixed;
-      bottom: 16px;
-      left: 50%; transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      z-index: 100;
-    }
-
-    .pb-palette-row {
-      display: flex; gap: 5px; flex-wrap: wrap;
-      justify-content: center;
-      background: rgba(14,14,18,.85);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 12px;
-      backdrop-filter: blur(8px);
-      max-width: 90vw;
-    }
-    .pb-col {
-      width: 24px; height: 24px; border-radius: 4px; cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform .12s, border-color .12s;
-      flex-shrink: 0;
-    }
-    .pb-col.active { border-color: #fff; transform: scale(1.25); }
-
-    /* Brush size (admin only) */
-    .pb-brush-row {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(14,14,18,.85);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 5px 14px;
-      backdrop-filter: blur(8px);
-    }
-    .pb-brush-label { font-size: 11px; color: var(--text2); font-family: var(--font); }
-    .pb-brush-btn {
-      width: 26px; height: 26px;
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: var(--radius); color: var(--text); cursor: pointer;
-      font-size: 14px; display: flex; align-items: center; justify-content: center;
-      transition: border-color .15s;
-    }
-    .pb-brush-btn:hover { border-color: var(--border2); }
-    .pb-brush-val { font-size: 13px; color: var(--accent); font-family: var(--font); min-width: 20px; text-align: center; }
-
-    /* Cooldown row */
-    .pb-cd-row {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(14,14,18,.85);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 5px 14px;
-      backdrop-filter: blur(8px);
-      min-width: 200px;
-    }
-    .pb-cd-bar-outer {
-      flex: 1; height: 5px; background: var(--bg3);
-      border-radius: 3px; overflow: hidden;
-    }
-    .pb-cd-bar-inner {
-      height: 100%; background: var(--accent);
-      transition: width .1s linear; border-radius: 3px;
-    }
-    .pb-cd-label { font-size: 11px; color: var(--text2); font-family: var(--font); min-width: 44px; text-align: right; white-space: nowrap; }
-
-    /* Coords + zoom info */
-    .pb-info-row {
-      display: flex; gap: 12px; align-items: center;
-      font-size: 11px; color: var(--text2); font-family: var(--font);
-      background: rgba(14,14,18,.75);
-      border-radius: 20px; padding: 4px 14px;
-      border: 1px solid var(--border);
-    }
-
-    /* ── HUD: right side – zoom ── */
-    .pb-zoom-col {
-      position: fixed;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex; flex-direction: column; gap: 6px;
-      z-index: 100;
-    }
-    .pb-zoom-btn {
-      width: 36px; height: 36px;
-      background: rgba(14,14,18,.85);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text); cursor: pointer; font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-      transition: border-color .15s, transform .12s;
-      backdrop-filter: blur(8px);
-    }
-    .pb-zoom-btn:hover { border-color: var(--border2); transform: scale(1.1); }
-    .pb-zoom-val { font-size: 10px; color: var(--text2); text-align: center; font-family: var(--font); }
-
-    /* Back */
     .pb-back-btn {
-      position: fixed;
-      top: calc(var(--hh) + 8px);
-      left: 14px;
-      font-family: var(--font); font-size: 12px; color: var(--text2);
-      text-decoration: none; padding: 7px 14px;
-      background: rgba(14,14,18,.82); border: 1px solid var(--border);
-      border-radius: var(--radius); transition: color .15s, border-color .15s;
-      z-index: 100; backdrop-filter: blur(8px);
+      position:fixed; top:calc(var(--hh)+8px); left:14px;
+      font-family:var(--font); font-size:12px; color:var(--text2);
+      text-decoration:none; padding:7px 14px;
+      background:rgba(14,14,18,.88); border:1px solid var(--border);
+      border-radius:var(--radius); z-index:200; backdrop-filter:blur(8px);
+      transition:color .15s, border-color .15s;
     }
-    .pb-back-btn:hover { color: var(--accent); border-color: var(--border2); }
+    .pb-back-btn:hover { color:var(--accent); border-color:var(--border2); }
 
-    /* Pixel cursor overlay */
-    #pbCursor {
-      position: absolute;
-      pointer-events: none;
-      border: 2px solid rgba(255,255,255,.9);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.5);
-      z-index: 10;
-      display: none;
+    .pb-hud-bottom {
+      position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; gap:7px;
+      z-index:200;
     }
+    .pb-palette-row {
+      display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
+      background:rgba(14,14,18,.88); border:1px solid var(--border);
+      border-radius:12px; padding:8px 12px;
+      backdrop-filter:blur(8px); max-width:90vw;
+    }
+    .pb-col { width:24px; height:24px; border-radius:4px; cursor:pointer; border:2px solid transparent; transition:transform .12s,border-color .12s; flex-shrink:0; }
+    .pb-col.active { border-color:#fff; transform:scale(1.3); }
+
+    .pb-brush-row {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(14,14,18,.88); border:1px solid var(--border);
+      border-radius:20px; padding:5px 14px; backdrop-filter:blur(8px);
+    }
+    .pb-brush-label { font-size:11px; color:var(--text2); font-family:var(--font); }
+    .pb-brush-btn { width:26px; height:26px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:border-color .15s; }
+    .pb-brush-btn:hover { border-color:var(--border2); }
+    .pb-brush-val { font-size:13px; color:var(--accent); font-family:var(--font); min-width:20px; text-align:center; }
+
+    .pb-cd-row {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(14,14,18,.88); border:1px solid var(--border);
+      border-radius:20px; padding:5px 14px; backdrop-filter:blur(8px); min-width:200px;
+    }
+    .pb-cd-bar-outer { flex:1; height:5px; background:var(--bg3); border-radius:3px; overflow:hidden; }
+    .pb-cd-bar-inner { height:100%; background:var(--accent); border-radius:3px; }
+    .pb-cd-label { font-size:11px; color:var(--text2); font-family:var(--font); min-width:50px; text-align:right; white-space:nowrap; }
+
+    .pb-info-row {
+      display:flex; gap:12px; align-items:center;
+      font-size:11px; color:var(--text2); font-family:var(--font);
+      background:rgba(14,14,18,.75); border-radius:20px;
+      padding:4px 14px; border:1px solid var(--border);
+    }
+
+    .pb-zoom-col {
+      position:fixed; right:14px; top:50%; transform:translateY(-50%);
+      display:flex; flex-direction:column; gap:6px; z-index:200;
+    }
+    .pb-zoom-btn { width:36px; height:36px; background:rgba(14,14,18,.88); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:border-color .15s,transform .12s; backdrop-filter:blur(8px); }
+    .pb-zoom-btn:hover { border-color:var(--border2); transform:scale(1.1); }
+    .pb-zoom-val { font-size:10px; color:var(--text2); text-align:center; font-family:var(--font); }
   </style>
 </head>
 <body>
@@ -196,7 +110,7 @@
        data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</a>
   </div>
   <nav class="header-nav">
-    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="authors.html" class="nav-btn" data-sound>Авторы</a>
     <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
     <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
     <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
@@ -204,13 +118,10 @@
   <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
 </header>
 
-<!-- Viewport -->
 <div id="pbViewport">
-  <canvas id="pbCanvas"></canvas>
-  <div id="pbCursor"></div>
+  <canvas id="pbDisplay"></canvas>
 </div>
 
-<!-- Top HUD -->
 <div class="pb-hud-top">
   <span class="pb-hud-title">🎨 Пиксель Баттл</span>
   <span id="pbAdminBadge" class="pb-admin-badge" style="display:none;">ADMIN · без КД</span>
@@ -220,45 +131,32 @@
   </span>
 </div>
 
-<!-- Back -->
 <a href="main.html" class="pb-back-btn">← Назад</a>
 
-<!-- Bottom HUD -->
 <div class="pb-hud-bottom">
-
-  <!-- Brush (admin only) -->
   <div class="pb-brush-row" id="pbBrushRow" style="display:none;">
     <span class="pb-brush-label">Кисть:</span>
     <button class="pb-brush-btn" id="brushDown">−</button>
     <span class="pb-brush-val" id="brushVal">1</span>
     <button class="pb-brush-btn" id="brushUp">+</button>
   </div>
-
-  <!-- Palette -->
   <div class="pb-palette-row" id="pbPalette"></div>
-
-  <!-- Cooldown -->
   <div class="pb-cd-row">
-    <div class="pb-cd-bar-outer">
-      <div class="pb-cd-bar-inner" id="cdBar" style="width:100%"></div>
-    </div>
+    <div class="pb-cd-bar-outer"><div class="pb-cd-bar-inner" id="cdBar" style="width:100%"></div></div>
     <div class="pb-cd-label" id="cdLabel">● готово</div>
   </div>
-
-  <!-- Info -->
   <div class="pb-info-row">
     <span id="pbCoords">x:— y:—</span>
-    <span id="pbZoomLabel">1×</span>
-    <span style="opacity:.5">колёсико = зум · ПКМ/средняя = перемещение</span>
+    <span id="pbZoomInfo">4×</span>
+    <span style="opacity:.5">ПКМ/средняя = перемещение · колёсико = зум</span>
   </div>
 </div>
 
-<!-- Zoom col -->
 <div class="pb-zoom-col">
   <button class="pb-zoom-btn" id="zoomIn">+</button>
-  <div class="pb-zoom-val" id="zoomVal2">1×</div>
+  <div class="pb-zoom-val" id="zoomVal">4×</div>
   <button class="pb-zoom-btn" id="zoomOut">−</button>
-  <button class="pb-zoom-btn" id="zoomReset" title="Сбросить вид" style="font-size:12px;">⌂</button>
+  <button class="pb-zoom-btn" id="zoomReset" title="Сбросить" style="font-size:12px;">⌂</button>
 </div>
 
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
@@ -266,12 +164,11 @@
 <script src="firebase-wiki.js"></script>
 <script>
 (function () {
-  /* ════════════════════════════════════
-     CONFIG
-  ════════════════════════════════════ */
-  var COLS    = 100;
-  var ROWS    = 100;
-  var CD_MS   = 15000;
+  'use strict';
+
+  /* ── Config ── */
+  var COLS  = 100, ROWS = 100;
+  var CD_MS = 15000;
   var PALETTE = [
     '#ff4060','#ff6040','#ff9020','#ffb800','#ffe066',
     '#b8ff40','#60ff60','#20e080','#40c8ff','#2060ff',
@@ -286,68 +183,134 @@
     document.getElementById('pbBrushRow').style.display   = 'flex';
   }
 
-  /* ════════════════════════════════════
-     CANVAS SETUP
-     The canvas is COLS×ROWS pixels (1px per cell).
-     We render it via CSS transform: scale + translate.
-  ════════════════════════════════════ */
-  var canvas   = document.getElementById('pbCanvas');
-  var ctx      = canvas.getContext('2d');
-  var viewport = document.getElementById('pbViewport');
-  var cursor   = document.getElementById('pbCursor');
+  /* ════════════════════════════════════════════════
+     OFFSCREEN: the true grid, 1px per cell
+  ════════════════════════════════════════════════ */
+  var offscreen = document.createElement('canvas');
+  offscreen.width  = COLS;
+  offscreen.height = ROWS;
+  var off = offscreen.getContext('2d');
 
-  canvas.width  = COLS;
-  canvas.height = ROWS;
-
-  /* ── Transform state ── */
-  var scale  = 4;          // initial zoom (4px per cell)
-  var MIN_SCALE = 1;
-  var MAX_SCALE = 64;
-  var panX   = 0;          // canvas left-top corner in viewport px
-  var panY   = 0;
-
-  /* Centre canvas on load */
-  function centreView() {
-    var vw = viewport.clientWidth;
-    var vh = viewport.clientHeight;
-    panX = (vw - COLS * scale) / 2;
-    panY = (vh - ROWS * scale) / 2;
-    applyTransform();
-  }
-
-  function applyTransform() {
-    canvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
-    var label = scale >= 1 ? (scale % 1 === 0 ? scale + '×' : scale.toFixed(1) + '×') : (1/scale).toFixed(1) + '×';
-    document.getElementById('pbZoomLabel').textContent = label;
-    document.getElementById('zoomVal2').textContent    = label;
-    updateCursorOverlay();
-  }
-
-  centreView();
-
-  /* ════════════════════════════════════
-     GRID DATA
-  ════════════════════════════════════ */
   var grid = [];
-  for (var r = 0; r < ROWS; r++) {
-    grid[r] = [];
-    for (var c = 0; c < COLS; c++) grid[r][c] = '#222233';
+  (function initGrid() {
+    off.fillStyle = '#222233';
+    off.fillRect(0, 0, COLS, ROWS);
+    for (var r = 0; r < ROWS; r++) { grid[r] = []; for (var c = 0; c < COLS; c++) grid[r][c] = '#222233'; }
+  })();
+
+  function setCell(r, c, color) {
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+    grid[r][c] = color;
+    off.fillStyle = color;
+    off.fillRect(c, r, 1, 1);
   }
 
-  function drawCell(r, c, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(c, r, 1, 1);
-  }
-  function redrawAll() {
-    for (var r = 0; r < ROWS; r++)
-      for (var c = 0; c < COLS; c++)
-        drawCell(r, c, grid[r][c]);
-  }
-  redrawAll();
+  /* ════════════════════════════════════════════════
+     DISPLAY CANVAS — renders offscreen + grid lines + cursor
+  ════════════════════════════════════════════════ */
+  var display  = document.getElementById('pbDisplay');
+  var dctx     = display.getContext('2d');
+  var viewport = document.getElementById('pbViewport');
 
-  /* ════════════════════════════════════
+  /* View state — panX/panY = pixel offset of grid origin in display coords */
+  var scale = 4;
+  var panX  = 0, panY = 0;
+
+  function resizeDisplay() {
+    display.width  = viewport.clientWidth;
+    display.height = viewport.clientHeight;
+    redraw();
+  }
+
+  var hoverC = -1, hoverR = -1;
+
+  function redraw() {
+    var W = display.width, H = display.height;
+    dctx.clearRect(0, 0, W, H);
+
+    /* background */
+    dctx.fillStyle = '#111118';
+    dctx.fillRect(0, 0, W, H);
+
+    /* draw offscreen scaled to display */
+    dctx.imageSmoothingEnabled = false;
+    dctx.drawImage(offscreen,
+      0, 0, COLS, ROWS,
+      panX, panY, COLS * scale, ROWS * scale);
+
+    /* grid lines when zoomed in enough */
+    if (scale >= 6) {
+      dctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      dctx.lineWidth   = 0.5;
+      /* vertical */
+      for (var c = 0; c <= COLS; c++) {
+        var x = panX + c * scale;
+        dctx.beginPath(); dctx.moveTo(x, panY); dctx.lineTo(x, panY + ROWS * scale); dctx.stroke();
+      }
+      /* horizontal */
+      for (var r = 0; r <= ROWS; r++) {
+        var y = panY + r * scale;
+        dctx.beginPath(); dctx.moveTo(panX, y); dctx.lineTo(panX + COLS * scale, y); dctx.stroke();
+      }
+    }
+
+    /* cursor highlight */
+    var bs = isAdmin ? brushSize : 1;
+    if (hoverC >= 0 && hoverR >= 0 && hoverC < COLS && hoverR < ROWS) {
+      var cx = panX + hoverC * scale;
+      var cy = panY + hoverR * scale;
+      dctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      dctx.lineWidth   = Math.max(1, scale / 8);
+      dctx.shadowColor = 'rgba(0,0,0,0.8)';
+      dctx.shadowBlur  = 3;
+      dctx.strokeRect(cx + 0.5, cy + 0.5, bs * scale - 1, bs * scale - 1);
+      dctx.shadowBlur  = 0;
+    }
+  }
+
+  /* zoom label */
+  function updateLabel() {
+    var txt = scale >= 1
+      ? (Number.isInteger(scale) ? scale + '×' : scale.toFixed(1) + '×')
+      : (1 / scale).toFixed(1) + '×';
+    document.getElementById('zoomVal').textContent    = txt;
+    document.getElementById('pbZoomInfo').textContent = txt;
+  }
+
+  function centreView() {
+    panX = (display.width  - COLS * scale) / 2;
+    panY = (display.height - ROWS * scale) / 2;
+    redraw(); updateLabel();
+  }
+
+  window.addEventListener('resize', function () { resizeDisplay(); });
+  resizeDisplay();
+  setTimeout(centreView, 0); /* after layout */
+
+  /* ════════════════════════════════════════════════
+     COORDINATE CONVERSION
+     displayX/displayY → grid col/row
+  ════════════════════════════════════════════════ */
+  function toCell(dispX, dispY) {
+    return {
+      c: Math.floor((dispX - panX) / scale),
+      r: Math.floor((dispY - panY) / scale)
+    };
+  }
+
+  /* Get display coords from a mouse/touch event */
+  function evXY(e) {
+    var rect = display.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function touchXY(touch) {
+    var rect = display.getBoundingClientRect();
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  }
+
+  /* ════════════════════════════════════════════════
      PALETTE
-  ════════════════════════════════════ */
+  ════════════════════════════════════════════════ */
   var selectedColor = PALETTE[0];
   var brushSize     = 1;
   var paletteEl     = document.getElementById('pbPalette');
@@ -356,7 +319,6 @@
     var btn = document.createElement('div');
     btn.className = 'pb-col' + (col === selectedColor ? ' active' : '');
     btn.style.background = col;
-    btn.title = col;
     btn.addEventListener('click', function () {
       selectedColor = col;
       paletteEl.querySelectorAll('.pb-col').forEach(function (b) { b.classList.remove('active'); });
@@ -365,169 +327,169 @@
     paletteEl.appendChild(btn);
   });
 
-  /* Brush (admin) */
-  var brushValEl = document.getElementById('brushVal');
   document.getElementById('brushUp').addEventListener('click', function () {
-    if (brushSize < 10) { brushSize++; brushValEl.textContent = brushSize; }
+    if (brushSize < 10) { brushSize++; document.getElementById('brushVal').textContent = brushSize; redraw(); }
   });
   document.getElementById('brushDown').addEventListener('click', function () {
-    if (brushSize > 1) { brushSize--; brushValEl.textContent = brushSize; }
+    if (brushSize > 1) { brushSize--; document.getElementById('brushVal').textContent = brushSize; redraw(); }
   });
 
-  /* ════════════════════════════════════
-     PIXEL CURSOR OVERLAY
-     Shows a highlight rect at the hovered cell
-  ════════════════════════════════════ */
-  var lastHoverR = -1, lastHoverC = -1;
+  /* ════════════════════════════════════════════════
+     ZOOM
+  ════════════════════════════════════════════════ */
+  var MIN_S = 1, MAX_S = 64;
 
-  function updateCursorOverlay() {
-    if (lastHoverR < 0) { cursor.style.display = 'none'; return; }
-    var bs    = isAdmin ? brushSize : 1;
-    var cellPx = scale;
-    var x = panX + lastHoverC * cellPx;
-    var y = panY + lastHoverR * cellPx;
-    cursor.style.display = 'block';
-    cursor.style.left    = x + 'px';
-    cursor.style.top     = y + 'px';
-    cursor.style.width   = (bs * cellPx) + 'px';
-    cursor.style.height  = (bs * cellPx) + 'px';
-  }
-
-  /* ════════════════════════════════════
-     VIEWPORT → GRID COORDINATE
-  ════════════════════════════════════ */
-  function viewportToCell(clientX, clientY) {
-    /* viewport position relative to its own bounding box */
-    var rect = viewport.getBoundingClientRect();
-    var vx   = clientX - rect.left;
-    var vy   = clientY - rect.top;
-    /* subtract pan, divide by scale */
-    var c = Math.floor((vx - panX) / scale);
-    var r = Math.floor((vy - panY) / scale);
-    return { r: r, c: c };
-  }
-
-  /* ════════════════════════════════════
-     ZOOM (wheel + buttons)
-  ════════════════════════════════════ */
-  function zoomAround(newScale, pivotX, pivotY) {
-    /* pivotX/Y in viewport px — zoom so that point under cursor stays fixed */
+  function zoomTo(newScale, pivDispX, pivDispY) {
+    newScale = Math.max(MIN_S, Math.min(MAX_S, newScale));
     var ratio = newScale / scale;
-    panX = pivotX - ratio * (pivotX - panX);
-    panY = pivotY - ratio * (pivotY - panY);
+    panX = pivDispX - ratio * (pivDispX - panX);
+    panY = pivDispY - ratio * (pivDispY - panY);
     scale = newScale;
-    applyTransform();
+    redraw(); updateLabel();
   }
 
-  function clampScale(s) {
-    return Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
-  }
-
-  viewport.addEventListener('wheel', function (e) {
+  display.addEventListener('wheel', function (e) {
     e.preventDefault();
-    var rect   = viewport.getBoundingClientRect();
-    var pivotX = e.clientX - rect.left;
-    var pivotY = e.clientY - rect.top;
-
-    var factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-    var newScale = clampScale(scale * factor);
-    zoomAround(newScale, pivotX, pivotY);
+    var xy = evXY(e);
+    var factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+    zoomTo(scale * factor, xy.x, xy.y);
   }, { passive: false });
 
-  document.getElementById('zoomIn').addEventListener('click', function () {
-    var vw = viewport.clientWidth, vh = viewport.clientHeight;
-    zoomAround(clampScale(scale * 2), vw / 2, vh / 2);
-  });
-  document.getElementById('zoomOut').addEventListener('click', function () {
-    var vw = viewport.clientWidth, vh = viewport.clientHeight;
-    zoomAround(clampScale(scale / 2), vw / 2, vh / 2);
-  });
-  document.getElementById('zoomReset').addEventListener('click', function () {
-    scale = 4;
-    centreView();
-  });
+  var cx = function() { return display.width / 2; };
+  var cy = function() { return display.height / 2; };
+  document.getElementById('zoomIn').addEventListener('click',  function () { zoomTo(scale * 2,   cx(), cy()); });
+  document.getElementById('zoomOut').addEventListener('click', function () { zoomTo(scale / 2,   cx(), cy()); });
+  document.getElementById('zoomReset').addEventListener('click', function () { scale = 4; centreView(); });
 
-  /* ════════════════════════════════════
-     PAN (right-click drag  OR  middle-click drag)
-  ════════════════════════════════════ */
-  var panning   = false;
-  var panStartX = 0, panStartY = 0;
-  var panStartPX = 0, panStartPY = 0;
+  /* ════════════════════════════════════════════════
+     PAN  (right-click or middle-click drag)
+  ════════════════════════════════════════════════ */
+  var panning = false, panPivX = 0, panPivY = 0, panPivPX = 0, panPivPY = 0;
 
-  viewport.addEventListener('mousedown', function (e) {
-    /* right click (2) or middle click (1) → pan */
+  display.addEventListener('mousedown', function (e) {
     if (e.button === 1 || e.button === 2) {
       e.preventDefault();
-      panning    = true;
-      panStartX  = e.clientX;
-      panStartY  = e.clientY;
-      panStartPX = panX;
-      panStartPY = panY;
-      viewport.style.cursor = 'grabbing';
+      panning = true;
+      panPivX = e.clientX; panPivY = e.clientY;
+      panPivPX = panX; panPivPY = panY;
+      display.style.cursor = 'grabbing';
     }
   });
   window.addEventListener('mousemove', function (e) {
     if (panning) {
-      panX = panStartPX + (e.clientX - panStartX);
-      panY = panStartPY + (e.clientY - panStartY);
-      applyTransform();
+      panX = panPivPX + (e.clientX - panPivX);
+      panY = panPivPY + (e.clientY - panPivY);
+      redraw();
     }
   });
   window.addEventListener('mouseup', function (e) {
     if (e.button === 1 || e.button === 2) {
       panning = false;
-      viewport.style.cursor = 'crosshair';
+      display.style.cursor = 'crosshair';
     }
   });
-  viewport.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  display.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-  /* ── Touch pan (two-finger) + pinch zoom ── */
-  var touchStart = null;
-  viewport.addEventListener('touchstart', function (e) {
+  /* Touch pan + pinch */
+  var tStart = null;
+  display.addEventListener('touchstart', function (e) {
     if (e.touches.length === 2) {
       e.preventDefault();
-      touchStart = {
-        x0: e.touches[0].clientX, y0: e.touches[0].clientY,
-        x1: e.touches[1].clientX, y1: e.touches[1].clientY,
+      tStart = {
+        t0x: e.touches[0].clientX, t0y: e.touches[0].clientY,
+        t1x: e.touches[1].clientX, t1y: e.touches[1].clientY,
         panX: panX, panY: panY, scale: scale
       };
     }
   }, { passive: false });
-
-  viewport.addEventListener('touchmove', function (e) {
-    if (e.touches.length === 2 && touchStart) {
+  display.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2 && tStart) {
       e.preventDefault();
-      var rect  = viewport.getBoundingClientRect();
-      var cx0   = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-      var cy0   = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-
-      var startDist = Math.hypot(touchStart.x1 - touchStart.x0, touchStart.y1 - touchStart.y0);
-      var nowDist   = Math.hypot(e.touches[1].clientX - e.touches[0].clientX,
-                                 e.touches[1].clientY - e.touches[0].clientY);
-
-      var newScale = clampScale(touchStart.scale * (nowDist / startDist));
-      var ratio    = newScale / touchStart.scale;
-      var startCx  = ((touchStart.x0 + touchStart.x1) / 2) - rect.left;
-      var startCy  = ((touchStart.y0 + touchStart.y1) / 2) - rect.top;
-
-      panX  = cx0 - ratio * (startCx - touchStart.panX);
-      panY  = cy0 - ratio * (startCy - touchStart.panY);
-      scale = newScale;
-      applyTransform();
+      var rect   = display.getBoundingClientRect();
+      var midX   = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      var midY   = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      var startD = Math.hypot(tStart.t1x - tStart.t0x, tStart.t1y - tStart.t0y);
+      var nowD   = Math.hypot(e.touches[1].clientX - e.touches[0].clientX,
+                              e.touches[1].clientY - e.touches[0].clientY);
+      var ns     = Math.max(MIN_S, Math.min(MAX_S, tStart.scale * nowD / startD));
+      var ratio  = ns / tStart.scale;
+      var sMidX  = (tStart.t0x + tStart.t1x) / 2 - rect.left;
+      var sMidY  = (tStart.t0y + tStart.t1y) / 2 - rect.top;
+      panX  = midX - ratio * (sMidX - tStart.panX);
+      panY  = midY - ratio * (sMidY - tStart.panY);
+      scale = ns;
+      redraw(); updateLabel();
     }
   }, { passive: false });
+  display.addEventListener('touchend', function (e) { if (e.touches.length < 2) tStart = null; });
 
-  viewport.addEventListener('touchend', function (e) {
-    if (e.touches.length < 2) touchStart = null;
+  /* ════════════════════════════════════════════════
+     DRAWING
+  ════════════════════════════════════════════════ */
+  var lastPaint = 0, painting = false;
+
+  function tryPaint(dispX, dispY) {
+    if (!isAdmin && Date.now() - lastPaint < CD_MS) return;
+    var pos = toCell(dispX, dispY);
+    var bs  = isAdmin ? brushSize : 1;
+    var painted = false;
+    for (var dr = 0; dr < bs; dr++) {
+      for (var dc = 0; dc < bs; dc++) {
+        var r = pos.r + dr, c = pos.c + dc;
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+        if (grid[r][c] === selectedColor) continue;
+        setCell(r, c, selectedColor);
+        if (window.WikiDB) window.WikiDB.db.ref('pixelbattle/' + r + '_' + c).set(selectedColor);
+        painted = true;
+      }
+    }
+    if (painted) lastPaint = Date.now();
+    redraw();
+  }
+
+  /* Mouse */
+  display.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return;
+    painting = true;
+    var xy = evXY(e);
+    tryPaint(xy.x, xy.y);
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (panning) return; /* don't update hover while panning */
+    var xy   = evXY(e);
+    var cell = toCell(xy.x, xy.y);
+    hoverC = cell.c; hoverR = cell.r;
+    var inBounds = cell.c >= 0 && cell.c < COLS && cell.r >= 0 && cell.r < ROWS;
+    document.getElementById('pbCoords').textContent = inBounds ? 'x:' + cell.c + ' y:' + cell.r : 'x:— y:—';
+    if (painting) tryPaint(xy.x, xy.y);
+    else redraw(); /* redraw cursor */
+  });
+  window.addEventListener('mouseup', function (e) { if (e.button === 0) painting = false; });
+  display.addEventListener('mouseleave', function () {
+    hoverC = -1; hoverR = -1; painting = false; redraw();
   });
 
-  /* ════════════════════════════════════
-     COOLDOWN
-  ════════════════════════════════════ */
-  var lastPaint = 0;
-  var cdBar     = document.getElementById('cdBar');
-  var cdLabel   = document.getElementById('cdLabel');
+  /* Touch draw (single finger) */
+  display.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    painting = true;
+    var xy = touchXY(e.touches[0]);
+    tryPaint(xy.x, xy.y);
+  }, { passive: false });
+  display.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 1 || !painting) return;
+    e.preventDefault();
+    var xy = touchXY(e.touches[0]);
+    tryPaint(xy.x, xy.y);
+  }, { passive: false });
+  display.addEventListener('touchend', function () { painting = false; });
 
+  /* ════════════════════════════════════════════════
+     COOLDOWN UI
+  ════════════════════════════════════════════════ */
+  var cdBar   = document.getElementById('cdBar');
+  var cdLabel = document.getElementById('cdLabel');
   setInterval(function () {
     if (isAdmin) { cdBar.style.width = '100%'; cdLabel.textContent = '● ADMIN'; cdLabel.style.color = '#ff9020'; return; }
     var diff = Date.now() - lastPaint;
@@ -536,92 +498,20 @@
       cdLabel.textContent = '● готово';
       cdLabel.style.color = '#44ff88';
     } else {
-      var pct = (diff / CD_MS * 100).toFixed(0);
-      var sec = Math.ceil((CD_MS - diff) / 1000);
-      cdBar.style.width = pct + '%';
-      cdLabel.textContent = sec + 'с';
+      cdBar.style.width = (diff / CD_MS * 100).toFixed(1) + '%';
+      cdLabel.textContent = Math.ceil((CD_MS - diff) / 1000) + 'с';
       cdLabel.style.color = '';
     }
   }, 80);
 
-  /* ════════════════════════════════════
-     DRAWING
-  ════════════════════════════════════ */
-  var painting = false;
-
-  function paintAt(r, c) {
-    if (!isAdmin && Date.now() - lastPaint < CD_MS) return;
-    var bs   = isAdmin ? brushSize : 1;
-    var pushed = false;
-    for (var dr = 0; dr < bs; dr++) {
-      for (var dc = 0; dc < bs; dc++) {
-        var pr = r + dr, pc = c + dc;
-        if (pr < 0 || pr >= ROWS || pc < 0 || pc >= COLS) continue;
-        if (grid[pr][pc] === selectedColor) continue;
-        grid[pr][pc] = selectedColor;
-        drawCell(pr, pc, selectedColor);
-        if (window.WikiDB) {
-          window.WikiDB.db.ref('pixelbattle/' + pr + '_' + pc).set(selectedColor);
-        }
-        pushed = true;
-      }
-    }
-    if (pushed) lastPaint = Date.now();
-  }
-
-  /* Mouse draw */
-  viewport.addEventListener('mousedown', function (e) {
-    if (e.button !== 0) return; /* only left click draws */
-    painting = true;
-    var pos = viewportToCell(e.clientX, e.clientY);
-    paintAt(pos.r, pos.c);
-  });
-  window.addEventListener('mousemove', function (e) {
-    var pos = viewportToCell(e.clientX, e.clientY);
-    lastHoverR = pos.r;
-    lastHoverC = pos.c;
-    document.getElementById('pbCoords').textContent =
-      (pos.c >= 0 && pos.c < COLS && pos.r >= 0 && pos.r < ROWS)
-        ? 'x:' + pos.c + ' y:' + pos.r : 'x:— y:—';
-    updateCursorOverlay();
-    if (painting) paintAt(pos.r, pos.c);
-  });
-  window.addEventListener('mouseup', function (e) {
-    if (e.button === 0) painting = false;
-  });
-  viewport.addEventListener('mouseleave', function () {
-    lastHoverR = -1; lastHoverC = -1;
-    cursor.style.display = 'none';
-  });
-
-  /* Touch draw (single finger) */
-  viewport.addEventListener('touchstart', function (e) {
-    if (e.touches.length !== 1) return;
-    e.preventDefault();
-    painting = true;
-    var pos = viewportToCell(e.touches[0].clientX, e.touches[0].clientY);
-    paintAt(pos.r, pos.c);
-  }, { passive: false });
-  viewport.addEventListener('touchmove', function (e) {
-    if (e.touches.length !== 1 || !painting) return;
-    e.preventDefault();
-    var pos = viewportToCell(e.touches[0].clientX, e.touches[0].clientY);
-    paintAt(pos.r, pos.c);
-  }, { passive: false });
-  viewport.addEventListener('touchend', function () { painting = false; });
-
-  /* ════════════════════════════════════
+  /* ════════════════════════════════════════════════
      FIREBASE SYNC
-  ════════════════════════════════════ */
-  function waitDB(cb) {
-    if (window.WikiDB) cb();
-    else setTimeout(function () { waitDB(cb); }, 300);
-  }
+  ════════════════════════════════════════════════ */
+  function waitDB(cb) { if (window.WikiDB) cb(); else setTimeout(function () { waitDB(cb); }, 300); }
 
   waitDB(function () {
     var db = window.WikiDB.db;
 
-    /* online presence on battle page */
     var onRef = db.ref('pb_online').push();
     onRef.set(true);
     onRef.onDisconnect().remove();
@@ -629,40 +519,26 @@
       document.getElementById('pbOnline').textContent = snap.numChildren();
     });
 
-    /* load full board once */
     db.ref('pixelbattle').once('value', function (snap) {
       if (!snap.exists()) return;
       snap.forEach(function (ch) {
-        var p = ch.key.split('_');
-        var r = +p[0], c = +p[1];
-        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-          grid[r][c] = ch.val();
-          drawCell(r, c, ch.val());
-        }
+        var p = ch.key.split('_'), r = +p[0], c = +p[1];
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) setCell(r, c, ch.val());
       });
+      redraw();
     });
 
-    /* live updates from others */
     db.ref('pixelbattle').on('child_changed', function (snap) {
-      var p = snap.key.split('_');
-      var r = +p[0], c = +p[1], color = snap.val();
-      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-        grid[r][c] = color; drawCell(r, c, color);
-      }
+      var p = snap.key.split('_'), r = +p[0], c = +p[1];
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) { setCell(r, c, snap.val()); redraw(); }
     });
     db.ref('pixelbattle').on('child_added', function (snap) {
-      var p = snap.key.split('_');
-      var r = +p[0], c = +p[1], color = snap.val();
-      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-        grid[r][c] = color; drawCell(r, c, color);
-      }
+      var p = snap.key.split('_'), r = +p[0], c = +p[1];
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) { setCell(r, c, snap.val()); redraw(); }
     });
     db.ref('pixelbattle').on('child_removed', function (snap) {
-      var p = snap.key.split('_');
-      var r = +p[0], c = +p[1];
-      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-        grid[r][c] = '#222233'; drawCell(r, c, '#222233');
-      }
+      var p = snap.key.split('_'), r = +p[0], c = +p[1];
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) { setCell(r, c, '#222233'); redraw(); }
     });
   });
 
