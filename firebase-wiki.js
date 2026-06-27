@@ -64,18 +64,25 @@
       db: db,
       entries: WIKI_ENTRIES,
       getTopByField: function (field, limit, cb) {
-        // Получаем все страницы и сортируем на клиенте
-        // (Firebase orderByChild не работает если поле отсутствует у некоторых узлов)
         db.ref('pages').once('value', function (snap) {
           var arr = [];
-          snap.forEach(function (ch) {
-            var val = ch.val() || {};
-            // показываем только известные страницы вики
-            if (WIKI_ENTRIES[ch.key]) {
-              arr.push({ id: ch.key, data: val, fieldVal: val[field] || 0 });
-            }
-          });
+          if (snap.exists()) {
+            snap.forEach(function (ch) {
+              var val = ch.val() || {};
+              // только известные страницы вики
+              if (WIKI_ENTRIES[ch.key]) {
+                arr.push({ id: ch.key, data: val, fieldVal: Number(val[field]) || 0 });
+              }
+            });
+          }
           arr.sort(function (a, b) { return b.fieldVal - a.fieldVal; });
+          // если нет данных вообще — вернём любые известные записи с 0
+          if (arr.length === 0) {
+            var keys = Object.keys(WIKI_ENTRIES);
+            keys.slice(0, limit).forEach(function(k){
+              arr.push({ id: k, data: {}, fieldVal: 0 });
+            });
+          }
           cb(arr.slice(0, limit));
         });
       }
@@ -86,6 +93,17 @@
 
     // ── Счётчик просмотров только на страницах статей ──
     var ref = db.ref('pages/' + pid);
+
+    // Инициализируем поля если их нет (чтобы Firebase мог сортировать)
+    ref.once('value', function(snap) {
+      var d = snap.val() || {};
+      var upd = {};
+      if (!d.views)        upd.views        = 0;
+      if (!d.likes)        upd.likes        = 0;
+      if (!d.commentCount) upd.commentCount = 0;
+      if (Object.keys(upd).length) ref.update(upd);
+    });
+
     ref.child('views').transaction(function (v) { return (v || 0) + 1; });
 
     injectUI(db, ref, pid);
