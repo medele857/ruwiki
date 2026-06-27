@@ -7,119 +7,183 @@
   <link rel="icon" type="image/png" href="fav.png">
   <link rel="stylesheet" href="style.css">
   <style>
-    html,body{overflow-y:auto!important;}
+    html, body { overflow: hidden !important; height: 100%; margin: 0; }
 
-    .pb-page{
-      padding:calc(var(--hh) + 32px) 0 80px;
-      display:flex;flex-direction:column;align-items:center;gap:0;
-      min-height:100vh;
-    }
-
-    /* ── Top bar ── */
-    .pb-topbar{
-      width:100%;max-width:660px;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 16px 16px;
-      flex-wrap:wrap;gap:10px;
-    }
-    .pb-title{
-      font-family:var(--font);font-size:16px;letter-spacing:.08em;
-      color:var(--text);display:flex;align-items:center;gap:8px;
-    }
-    .pb-online-badge{
-      font-size:11px;color:var(--text2);
-      display:flex;align-items:center;gap:5px;
-    }
-    .pb-online-dot{
-      width:7px;height:7px;border-radius:50%;background:#44ff88;
-      box-shadow:0 0 5px #44ff88;animation:onlinePulse 1.5s ease-in-out infinite;
-    }
-    @keyframes onlinePulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-    /* ── Canvas wrapper ── */
-    .pb-canvas-outer{
-      position:relative;
-      border:1px solid var(--border2);
-      border-radius:4px;
-      overflow:hidden;
-      box-shadow:0 0 40px rgba(0,0,0,.6);
-      cursor:crosshair;
-      touch-action:none;
-    }
-    #pbCanvas{
-      display:block;
-      image-rendering:pixelated;
-      image-rendering:crisp-edges;
+    /* ── Canvas viewport fills the screen under header ── */
+    #pbViewport {
+      position: fixed;
+      top: var(--hh);
+      left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      cursor: crosshair;
+      background: #111118;
+      touch-action: none;
     }
 
-    /* ── Zoom controls ── */
-    .pb-zoom-bar{
-      display:flex;align-items:center;gap:8px;
-      padding:10px 16px 0;
-    }
-    .pb-zoom-btn{
-      font-family:var(--font);font-size:14px;
-      width:32px;height:32px;
-      background:var(--bg3);border:1px solid var(--border);
-      border-radius:var(--radius);color:var(--text);cursor:pointer;
-      transition:border-color .15s,transform .12s;
-      display:flex;align-items:center;justify-content:center;
-    }
-    .pb-zoom-btn:hover{border-color:var(--border2);transform:scale(1.1);}
-    .pb-zoom-val{font-size:12px;color:var(--text2);min-width:36px;text-align:center;}
-
-    /* ── Palette ── */
-    .pb-palette-row{
-      display:flex;gap:5px;flex-wrap:wrap;
-      padding:12px 16px 0;
-      max-width:660px;width:100%;
-    }
-    .pb-col{
-      width:26px;height:26px;border-radius:4px;cursor:pointer;
-      border:2px solid transparent;transition:transform .12s,border-color .12s;
-      flex-shrink:0;
-    }
-    .pb-col.active{border-color:#fff;transform:scale(1.2);}
-
-    /* ── Cooldown bar ── */
-    .pb-cd-wrap{
-      width:100%;max-width:660px;padding:10px 16px 0;
-      display:flex;align-items:center;gap:10px;
-    }
-    .pb-cd-bar-outer{
-      flex:1;height:6px;background:var(--bg3);
-      border-radius:3px;overflow:hidden;border:1px solid var(--border);
-    }
-    .pb-cd-bar-inner{
-      height:100%;background:var(--accent);
-      transition:width .1s linear;border-radius:3px;
-    }
-    .pb-cd-label{
-      font-family:var(--font);font-size:11px;
-      color:var(--text2);min-width:40px;text-align:right;
-    }
-    .pb-cd-ready{color:#44ff88;font-size:11px;font-family:var(--font);}
-
-    /* ── Coords tooltip ── */
-    .pb-coords{
-      font-size:11px;color:var(--text2);
-      padding:6px 16px 0;align-self:flex-start;
+    /* ── The actual canvas, positioned by JS transform ── */
+    #pbCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      transform-origin: 0 0;
+      /* transform set by JS */
     }
 
-    /* ── Back link ── */
-    .pb-back{
-      font-family:var(--font);font-size:11px;
-      color:rgba(255,255,255,.3);text-decoration:none;
-      margin-top:32px;transition:color .15s;
-      align-self:flex-start;padding-left:16px;
+    /* ── HUD: top bar ── */
+    .pb-hud-top {
+      position: fixed;
+      top: calc(var(--hh) + 8px);
+      left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(14,14,18,.82);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 14px;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .pb-back:hover{color:var(--accent);}
+    .pb-hud-title {
+      font-family: var(--font); font-size: 13px;
+      color: var(--text); letter-spacing: .06em;
+    }
+    .pb-admin-badge {
+      font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+      color: #ff9020; border: 1px solid rgba(255,144,32,.4);
+      border-radius: 3px; padding: 2px 7px;
+    }
+    .pb-online-badge {
+      font-size: 11px; color: var(--text2);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .pb-online-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #44ff88; box-shadow: 0 0 5px #44ff88;
+      animation: onlinePulse 1.5s ease-in-out infinite;
+    }
+    @keyframes onlinePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ── Admin badge ── */
-    .pb-admin-badge{
-      font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-      color:#ff9020;border:1px solid rgba(255,144,32,.4);
-      border-radius:3px;padding:2px 8px;
+    /* ── HUD: bottom palette + CD + coords ── */
+    .pb-hud-bottom {
+      position: fixed;
+      bottom: 16px;
+      left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      z-index: 100;
+    }
+
+    .pb-palette-row {
+      display: flex; gap: 5px; flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(14,14,18,.85);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      backdrop-filter: blur(8px);
+      max-width: 90vw;
+    }
+    .pb-col {
+      width: 24px; height: 24px; border-radius: 4px; cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .12s, border-color .12s;
+      flex-shrink: 0;
+    }
+    .pb-col.active { border-color: #fff; transform: scale(1.25); }
+
+    /* Brush size (admin only) */
+    .pb-brush-row {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(14,14,18,.85);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      backdrop-filter: blur(8px);
+    }
+    .pb-brush-label { font-size: 11px; color: var(--text2); font-family: var(--font); }
+    .pb-brush-btn {
+      width: 26px; height: 26px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text); cursor: pointer;
+      font-size: 14px; display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .pb-brush-btn:hover { border-color: var(--border2); }
+    .pb-brush-val { font-size: 13px; color: var(--accent); font-family: var(--font); min-width: 20px; text-align: center; }
+
+    /* Cooldown row */
+    .pb-cd-row {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(14,14,18,.85);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      backdrop-filter: blur(8px);
+      min-width: 200px;
+    }
+    .pb-cd-bar-outer {
+      flex: 1; height: 5px; background: var(--bg3);
+      border-radius: 3px; overflow: hidden;
+    }
+    .pb-cd-bar-inner {
+      height: 100%; background: var(--accent);
+      transition: width .1s linear; border-radius: 3px;
+    }
+    .pb-cd-label { font-size: 11px; color: var(--text2); font-family: var(--font); min-width: 44px; text-align: right; white-space: nowrap; }
+
+    /* Coords + zoom info */
+    .pb-info-row {
+      display: flex; gap: 12px; align-items: center;
+      font-size: 11px; color: var(--text2); font-family: var(--font);
+      background: rgba(14,14,18,.75);
+      border-radius: 20px; padding: 4px 14px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HUD: right side – zoom ── */
+    .pb-zoom-col {
+      position: fixed;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 6px;
+      z-index: 100;
+    }
+    .pb-zoom-btn {
+      width: 36px; height: 36px;
+      background: rgba(14,14,18,.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text); cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s, transform .12s;
+      backdrop-filter: blur(8px);
+    }
+    .pb-zoom-btn:hover { border-color: var(--border2); transform: scale(1.1); }
+    .pb-zoom-val { font-size: 10px; color: var(--text2); text-align: center; font-family: var(--font); }
+
+    /* Back */
+    .pb-back-btn {
+      position: fixed;
+      top: calc(var(--hh) + 8px);
+      left: 14px;
+      font-family: var(--font); font-size: 12px; color: var(--text2);
+      text-decoration: none; padding: 7px 14px;
+      background: rgba(14,14,18,.82); border: 1px solid var(--border);
+      border-radius: var(--radius); transition: color .15s, border-color .15s;
+      z-index: 100; backdrop-filter: blur(8px);
+    }
+    .pb-back-btn:hover { color: var(--accent); border-color: var(--border2); }
+
+    /* Pixel cursor overlay */
+    #pbCursor {
+      position: absolute;
+      pointer-events: none;
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.5);
+      z-index: 10;
+      display: none;
     }
   </style>
 </head>
@@ -127,8 +191,8 @@
 
 <header class="site-header">
   <div class="header-logo">
-    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
-    <a href="main.html" class="logo-text" id="logoText" style="text-decoration:none;color:var(--text);"
+    <img src="medele.png" alt="logo" class="logo-img">
+    <a href="main.html" class="logo-text" style="text-decoration:none;color:var(--text);"
        data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</a>
   </div>
   <nav class="header-nav">
@@ -140,57 +204,74 @@
   <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
 </header>
 
-<div class="pb-page">
+<!-- Viewport -->
+<div id="pbViewport">
+  <canvas id="pbCanvas"></canvas>
+  <div id="pbCursor"></div>
+</div>
 
-  <div class="pb-topbar">
-    <div class="pb-title">
-      🎨 Пиксель Баттл
-      <span id="pbAdminBadge" class="pb-admin-badge" style="display:none;">ADMIN · без КД</span>
-    </div>
-    <div class="pb-online-badge">
-      <span class="pb-online-dot"></span>
-      <span id="pbOnline">…</span> онлайн
-    </div>
-  </div>
+<!-- Top HUD -->
+<div class="pb-hud-top">
+  <span class="pb-hud-title">🎨 Пиксель Баттл</span>
+  <span id="pbAdminBadge" class="pb-admin-badge" style="display:none;">ADMIN · без КД</span>
+  <span class="pb-online-badge">
+    <span class="pb-online-dot"></span>
+    <span id="pbOnline">…</span> онлайн
+  </span>
+</div>
 
-  <!-- Canvas -->
-  <div class="pb-canvas-outer" id="pbOuter">
-    <canvas id="pbCanvas"></canvas>
-  </div>
+<!-- Back -->
+<a href="main.html" class="pb-back-btn">← Назад</a>
 
-  <!-- Zoom -->
-  <div class="pb-zoom-bar">
-    <button class="pb-zoom-btn" id="zoomOut">−</button>
-    <span class="pb-zoom-val" id="zoomVal">2×</span>
-    <button class="pb-zoom-btn" id="zoomIn">+</button>
-    <span style="font-size:11px;color:var(--text2);margin-left:4px;">скролл или пальцами для зума</span>
+<!-- Bottom HUD -->
+<div class="pb-hud-bottom">
+
+  <!-- Brush (admin only) -->
+  <div class="pb-brush-row" id="pbBrushRow" style="display:none;">
+    <span class="pb-brush-label">Кисть:</span>
+    <button class="pb-brush-btn" id="brushDown">−</button>
+    <span class="pb-brush-val" id="brushVal">1</span>
+    <button class="pb-brush-btn" id="brushUp">+</button>
   </div>
 
   <!-- Palette -->
   <div class="pb-palette-row" id="pbPalette"></div>
 
   <!-- Cooldown -->
-  <div class="pb-cd-wrap">
+  <div class="pb-cd-row">
     <div class="pb-cd-bar-outer">
       <div class="pb-cd-bar-inner" id="cdBar" style="width:100%"></div>
     </div>
-    <div class="pb-cd-label" id="cdLabel"><span class="pb-cd-ready">●</span> готово</div>
+    <div class="pb-cd-label" id="cdLabel">● готово</div>
   </div>
 
-  <!-- Coords -->
-  <div class="pb-coords" id="pbCoords">x:— y:—</div>
+  <!-- Info -->
+  <div class="pb-info-row">
+    <span id="pbCoords">x:— y:—</span>
+    <span id="pbZoomLabel">1×</span>
+    <span style="opacity:.5">колёсико = зум · ПКМ/средняя = перемещение</span>
+  </div>
+</div>
 
-  <a href="main.html" class="pb-back">← На главную</a>
+<!-- Zoom col -->
+<div class="pb-zoom-col">
+  <button class="pb-zoom-btn" id="zoomIn">+</button>
+  <div class="pb-zoom-val" id="zoomVal2">1×</div>
+  <button class="pb-zoom-btn" id="zoomOut">−</button>
+  <button class="pb-zoom-btn" id="zoomReset" title="Сбросить вид" style="font-size:12px;">⌂</button>
 </div>
 
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
 <script>
-(function(){
-  // ── Config ──
-  var COLS    = 300;
-  var ROWS    = 300;
+(function () {
+  /* ════════════════════════════════════
+     CONFIG
+  ════════════════════════════════════ */
+  var COLS    = 100;
+  var ROWS    = 100;
+  var CD_MS   = 15000;
   var PALETTE = [
     '#ff4060','#ff6040','#ff9020','#ffb800','#ffe066',
     '#b8ff40','#60ff60','#20e080','#40c8ff','#2060ff',
@@ -198,167 +279,393 @@
     '#cccccc','#888899','#445566','#222233','#000000',
     '#80ffcc','#ff8040','#40ffff','#ff4040','#40ff80'
   ];
-  var CD_MS   = 15000; // 15 секунд для обычных
-  var ADMIN_PIN = 'medele857'; // тот же пин что в admin.html
 
   var isAdmin = sessionStorage.getItem('admAuth') === '1';
-  if(isAdmin) document.getElementById('pbAdminBadge').style.display='inline';
+  if (isAdmin) {
+    document.getElementById('pbAdminBadge').style.display = 'inline';
+    document.getElementById('pbBrushRow').style.display   = 'flex';
+  }
 
-  var canvas  = document.getElementById('pbCanvas');
-  var ctx     = canvas.getContext('2d');
-  var outer   = document.getElementById('pbOuter');
-
-  // ── Zoom ──
-  var zoom    = 2;
-  var minZoom = 1, maxZoom = 8;
+  /* ════════════════════════════════════
+     CANVAS SETUP
+     The canvas is COLS×ROWS pixels (1px per cell).
+     We render it via CSS transform: scale + translate.
+  ════════════════════════════════════ */
+  var canvas   = document.getElementById('pbCanvas');
+  var ctx      = canvas.getContext('2d');
+  var viewport = document.getElementById('pbViewport');
+  var cursor   = document.getElementById('pbCursor');
 
   canvas.width  = COLS;
   canvas.height = ROWS;
-  updateZoom();
 
-  function updateZoom(){
-    canvas.style.width  = (COLS * zoom) + 'px';
-    canvas.style.height = (ROWS * zoom) + 'px';
-    document.getElementById('zoomVal').textContent = zoom + '×';
+  /* ── Transform state ── */
+  var scale  = 4;          // initial zoom (4px per cell)
+  var MIN_SCALE = 1;
+  var MAX_SCALE = 64;
+  var panX   = 0;          // canvas left-top corner in viewport px
+  var panY   = 0;
+
+  /* Centre canvas on load */
+  function centreView() {
+    var vw = viewport.clientWidth;
+    var vh = viewport.clientHeight;
+    panX = (vw - COLS * scale) / 2;
+    panY = (vh - ROWS * scale) / 2;
+    applyTransform();
   }
 
-  document.getElementById('zoomIn').addEventListener('click',  function(){ if(zoom<maxZoom){ zoom*=2; updateZoom(); } });
-  document.getElementById('zoomOut').addEventListener('click', function(){ if(zoom>minZoom){ zoom=Math.max(1,zoom/2); updateZoom(); } });
+  function applyTransform() {
+    canvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
+    var label = scale >= 1 ? (scale % 1 === 0 ? scale + '×' : scale.toFixed(1) + '×') : (1/scale).toFixed(1) + '×';
+    document.getElementById('pbZoomLabel').textContent = label;
+    document.getElementById('zoomVal2').textContent    = label;
+    updateCursorOverlay();
+  }
 
-  outer.addEventListener('wheel', function(e){
-    e.preventDefault();
-    if(e.deltaY<0 && zoom<maxZoom) zoom*=2;
-    else if(e.deltaY>0 && zoom>minZoom) zoom=Math.max(1,zoom/2);
-    updateZoom();
-  }, {passive:false});
+  centreView();
 
-  // ── Grid ──
+  /* ════════════════════════════════════
+     GRID DATA
+  ════════════════════════════════════ */
   var grid = [];
-  for(var r=0;r<ROWS;r++){ grid[r]=[]; for(var c=0;c<COLS;c++) grid[r][c]='#222233'; }
-
-  function drawCell(r,c,color){
-    ctx.fillStyle=color;
-    ctx.fillRect(c,r,1,1);
+  for (var r = 0; r < ROWS; r++) {
+    grid[r] = [];
+    for (var c = 0; c < COLS; c++) grid[r][c] = '#222233';
   }
-  function redrawAll(){
-    for(var r=0;r<ROWS;r++) for(var c=0;c<COLS;c++) drawCell(r,c,grid[r][c]);
+
+  function drawCell(r, c, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(c, r, 1, 1);
+  }
+  function redrawAll() {
+    for (var r = 0; r < ROWS; r++)
+      for (var c = 0; c < COLS; c++)
+        drawCell(r, c, grid[r][c]);
   }
   redrawAll();
 
-  // ── Palette ──
+  /* ════════════════════════════════════
+     PALETTE
+  ════════════════════════════════════ */
   var selectedColor = PALETTE[0];
-  var paletteEl = document.getElementById('pbPalette');
-  PALETTE.forEach(function(col){
+  var brushSize     = 1;
+  var paletteEl     = document.getElementById('pbPalette');
+
+  PALETTE.forEach(function (col) {
     var btn = document.createElement('div');
-    btn.className = 'pb-col' + (col===selectedColor?' active':'');
+    btn.className = 'pb-col' + (col === selectedColor ? ' active' : '');
     btn.style.background = col;
     btn.title = col;
-    btn.addEventListener('click', function(){
-      selectedColor=col;
-      paletteEl.querySelectorAll('.pb-col').forEach(function(b){ b.classList.remove('active'); });
+    btn.addEventListener('click', function () {
+      selectedColor = col;
+      paletteEl.querySelectorAll('.pb-col').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
     });
     paletteEl.appendChild(btn);
   });
 
-  // ── Cooldown ──
-  var lastPaint   = 0;
-  var cdBar       = document.getElementById('cdBar');
-  var cdLabel     = document.getElementById('cdLabel');
-
-  function updateCD(){
-    if(isAdmin){ cdBar.style.width='100%'; cdLabel.innerHTML='<span class="pb-cd-ready">● ADMIN</span>'; return; }
-    var now  = Date.now();
-    var diff = now - lastPaint;
-    if(diff >= CD_MS){
-      cdBar.style.width='100%';
-      cdLabel.innerHTML='<span class="pb-cd-ready">● готово</span>';
-    } else {
-      var pct = Math.round(diff/CD_MS*100);
-      var sec = Math.ceil((CD_MS-diff)/1000);
-      cdBar.style.width=pct+'%';
-      cdLabel.textContent=sec+'с';
-    }
-  }
-  setInterval(updateCD, 100);
-
-  // ── Draw ──
-  function getCell(e){
-    var rect = canvas.getBoundingClientRect();
-    // canvas CSS size = COLS*zoom, actual = COLS
-    var x = Math.floor((e.clientX - rect.left) / zoom);
-    var y = Math.floor((e.clientY - rect.top)  / zoom);
-    return {r:y, c:x};
-  }
-
-  function tryPaint(r,c){
-    if(r<0||r>=ROWS||c<0||c>=COLS) return;
-    if(!isAdmin && Date.now()-lastPaint < CD_MS) return;
-    if(grid[r][c]===selectedColor) return;
-    grid[r][c]=selectedColor;
-    drawCell(r,c,selectedColor);
-    lastPaint=Date.now();
-    if(window.WikiDB) window.WikiDB.db.ref('pixelbattle/'+r+'_'+c).set(selectedColor);
-  }
-
-  var painting=false;
-  canvas.addEventListener('mousedown', function(e){ painting=true; var p=getCell(e); tryPaint(p.r,p.c); });
-  canvas.addEventListener('mousemove', function(e){
-    var p=getCell(e);
-    document.getElementById('pbCoords').textContent='x:'+p.c+' y:'+p.r;
-    if(painting) tryPaint(p.r,p.c);
+  /* Brush (admin) */
+  var brushValEl = document.getElementById('brushVal');
+  document.getElementById('brushUp').addEventListener('click', function () {
+    if (brushSize < 10) { brushSize++; brushValEl.textContent = brushSize; }
   });
-  canvas.addEventListener('mouseup',    function(){ painting=false; });
-  canvas.addEventListener('mouseleave', function(){ painting=false; });
+  document.getElementById('brushDown').addEventListener('click', function () {
+    if (brushSize > 1) { brushSize--; brushValEl.textContent = brushSize; }
+  });
 
-  // Touch
-  canvas.addEventListener('touchstart', function(e){ e.preventDefault(); painting=true; var t=e.touches[0],p=getCell(t); tryPaint(p.r,p.c); },{passive:false});
-  canvas.addEventListener('touchmove',  function(e){ e.preventDefault(); var t=e.touches[0],p=getCell(t); if(painting) tryPaint(p.r,p.c); },{passive:false});
-  canvas.addEventListener('touchend',   function(){ painting=false; });
+  /* ════════════════════════════════════
+     PIXEL CURSOR OVERLAY
+     Shows a highlight rect at the hovered cell
+  ════════════════════════════════════ */
+  var lastHoverR = -1, lastHoverC = -1;
 
-  // ── Firebase sync ──
-  function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); },300); }
-  waitDB(function(){
-    var db=window.WikiDB.db;
+  function updateCursorOverlay() {
+    if (lastHoverR < 0) { cursor.style.display = 'none'; return; }
+    var bs    = isAdmin ? brushSize : 1;
+    var cellPx = scale;
+    var x = panX + lastHoverC * cellPx;
+    var y = panY + lastHoverR * cellPx;
+    cursor.style.display = 'block';
+    cursor.style.left    = x + 'px';
+    cursor.style.top     = y + 'px';
+    cursor.style.width   = (bs * cellPx) + 'px';
+    cursor.style.height  = (bs * cellPx) + 'px';
+  }
 
-    // Онлайн на странице
-    var onRef=db.ref('pb_online').push();
+  /* ════════════════════════════════════
+     VIEWPORT → GRID COORDINATE
+  ════════════════════════════════════ */
+  function viewportToCell(clientX, clientY) {
+    /* viewport position relative to its own bounding box */
+    var rect = viewport.getBoundingClientRect();
+    var vx   = clientX - rect.left;
+    var vy   = clientY - rect.top;
+    /* subtract pan, divide by scale */
+    var c = Math.floor((vx - panX) / scale);
+    var r = Math.floor((vy - panY) / scale);
+    return { r: r, c: c };
+  }
+
+  /* ════════════════════════════════════
+     ZOOM (wheel + buttons)
+  ════════════════════════════════════ */
+  function zoomAround(newScale, pivotX, pivotY) {
+    /* pivotX/Y in viewport px — zoom so that point under cursor stays fixed */
+    var ratio = newScale / scale;
+    panX = pivotX - ratio * (pivotX - panX);
+    panY = pivotY - ratio * (pivotY - panY);
+    scale = newScale;
+    applyTransform();
+  }
+
+  function clampScale(s) {
+    return Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
+  }
+
+  viewport.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var rect   = viewport.getBoundingClientRect();
+    var pivotX = e.clientX - rect.left;
+    var pivotY = e.clientY - rect.top;
+
+    var factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    var newScale = clampScale(scale * factor);
+    zoomAround(newScale, pivotX, pivotY);
+  }, { passive: false });
+
+  document.getElementById('zoomIn').addEventListener('click', function () {
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    zoomAround(clampScale(scale * 2), vw / 2, vh / 2);
+  });
+  document.getElementById('zoomOut').addEventListener('click', function () {
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    zoomAround(clampScale(scale / 2), vw / 2, vh / 2);
+  });
+  document.getElementById('zoomReset').addEventListener('click', function () {
+    scale = 4;
+    centreView();
+  });
+
+  /* ════════════════════════════════════
+     PAN (right-click drag  OR  middle-click drag)
+  ════════════════════════════════════ */
+  var panning   = false;
+  var panStartX = 0, panStartY = 0;
+  var panStartPX = 0, panStartPY = 0;
+
+  viewport.addEventListener('mousedown', function (e) {
+    /* right click (2) or middle click (1) → pan */
+    if (e.button === 1 || e.button === 2) {
+      e.preventDefault();
+      panning    = true;
+      panStartX  = e.clientX;
+      panStartY  = e.clientY;
+      panStartPX = panX;
+      panStartPY = panY;
+      viewport.style.cursor = 'grabbing';
+    }
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (panning) {
+      panX = panStartPX + (e.clientX - panStartX);
+      panY = panStartPY + (e.clientY - panStartY);
+      applyTransform();
+    }
+  });
+  window.addEventListener('mouseup', function (e) {
+    if (e.button === 1 || e.button === 2) {
+      panning = false;
+      viewport.style.cursor = 'crosshair';
+    }
+  });
+  viewport.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  /* ── Touch pan (two-finger) + pinch zoom ── */
+  var touchStart = null;
+  viewport.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      touchStart = {
+        x0: e.touches[0].clientX, y0: e.touches[0].clientY,
+        x1: e.touches[1].clientX, y1: e.touches[1].clientY,
+        panX: panX, panY: panY, scale: scale
+      };
+    }
+  }, { passive: false });
+
+  viewport.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2 && touchStart) {
+      e.preventDefault();
+      var rect  = viewport.getBoundingClientRect();
+      var cx0   = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      var cy0   = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+
+      var startDist = Math.hypot(touchStart.x1 - touchStart.x0, touchStart.y1 - touchStart.y0);
+      var nowDist   = Math.hypot(e.touches[1].clientX - e.touches[0].clientX,
+                                 e.touches[1].clientY - e.touches[0].clientY);
+
+      var newScale = clampScale(touchStart.scale * (nowDist / startDist));
+      var ratio    = newScale / touchStart.scale;
+      var startCx  = ((touchStart.x0 + touchStart.x1) / 2) - rect.left;
+      var startCy  = ((touchStart.y0 + touchStart.y1) / 2) - rect.top;
+
+      panX  = cx0 - ratio * (startCx - touchStart.panX);
+      panY  = cy0 - ratio * (startCy - touchStart.panY);
+      scale = newScale;
+      applyTransform();
+    }
+  }, { passive: false });
+
+  viewport.addEventListener('touchend', function (e) {
+    if (e.touches.length < 2) touchStart = null;
+  });
+
+  /* ════════════════════════════════════
+     COOLDOWN
+  ════════════════════════════════════ */
+  var lastPaint = 0;
+  var cdBar     = document.getElementById('cdBar');
+  var cdLabel   = document.getElementById('cdLabel');
+
+  setInterval(function () {
+    if (isAdmin) { cdBar.style.width = '100%'; cdLabel.textContent = '● ADMIN'; cdLabel.style.color = '#ff9020'; return; }
+    var diff = Date.now() - lastPaint;
+    if (diff >= CD_MS) {
+      cdBar.style.width = '100%';
+      cdLabel.textContent = '● готово';
+      cdLabel.style.color = '#44ff88';
+    } else {
+      var pct = (diff / CD_MS * 100).toFixed(0);
+      var sec = Math.ceil((CD_MS - diff) / 1000);
+      cdBar.style.width = pct + '%';
+      cdLabel.textContent = sec + 'с';
+      cdLabel.style.color = '';
+    }
+  }, 80);
+
+  /* ════════════════════════════════════
+     DRAWING
+  ════════════════════════════════════ */
+  var painting = false;
+
+  function paintAt(r, c) {
+    if (!isAdmin && Date.now() - lastPaint < CD_MS) return;
+    var bs   = isAdmin ? brushSize : 1;
+    var pushed = false;
+    for (var dr = 0; dr < bs; dr++) {
+      for (var dc = 0; dc < bs; dc++) {
+        var pr = r + dr, pc = c + dc;
+        if (pr < 0 || pr >= ROWS || pc < 0 || pc >= COLS) continue;
+        if (grid[pr][pc] === selectedColor) continue;
+        grid[pr][pc] = selectedColor;
+        drawCell(pr, pc, selectedColor);
+        if (window.WikiDB) {
+          window.WikiDB.db.ref('pixelbattle/' + pr + '_' + pc).set(selectedColor);
+        }
+        pushed = true;
+      }
+    }
+    if (pushed) lastPaint = Date.now();
+  }
+
+  /* Mouse draw */
+  viewport.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return; /* only left click draws */
+    painting = true;
+    var pos = viewportToCell(e.clientX, e.clientY);
+    paintAt(pos.r, pos.c);
+  });
+  window.addEventListener('mousemove', function (e) {
+    var pos = viewportToCell(e.clientX, e.clientY);
+    lastHoverR = pos.r;
+    lastHoverC = pos.c;
+    document.getElementById('pbCoords').textContent =
+      (pos.c >= 0 && pos.c < COLS && pos.r >= 0 && pos.r < ROWS)
+        ? 'x:' + pos.c + ' y:' + pos.r : 'x:— y:—';
+    updateCursorOverlay();
+    if (painting) paintAt(pos.r, pos.c);
+  });
+  window.addEventListener('mouseup', function (e) {
+    if (e.button === 0) painting = false;
+  });
+  viewport.addEventListener('mouseleave', function () {
+    lastHoverR = -1; lastHoverC = -1;
+    cursor.style.display = 'none';
+  });
+
+  /* Touch draw (single finger) */
+  viewport.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    painting = true;
+    var pos = viewportToCell(e.touches[0].clientX, e.touches[0].clientY);
+    paintAt(pos.r, pos.c);
+  }, { passive: false });
+  viewport.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 1 || !painting) return;
+    e.preventDefault();
+    var pos = viewportToCell(e.touches[0].clientX, e.touches[0].clientY);
+    paintAt(pos.r, pos.c);
+  }, { passive: false });
+  viewport.addEventListener('touchend', function () { painting = false; });
+
+  /* ════════════════════════════════════
+     FIREBASE SYNC
+  ════════════════════════════════════ */
+  function waitDB(cb) {
+    if (window.WikiDB) cb();
+    else setTimeout(function () { waitDB(cb); }, 300);
+  }
+
+  waitDB(function () {
+    var db = window.WikiDB.db;
+
+    /* online presence on battle page */
+    var onRef = db.ref('pb_online').push();
     onRef.set(true);
     onRef.onDisconnect().remove();
-    db.ref('pb_online').on('value',function(snap){
-      document.getElementById('pbOnline').textContent=snap.numChildren();
+    db.ref('pb_online').on('value', function (snap) {
+      document.getElementById('pbOnline').textContent = snap.numChildren();
     });
 
-    // Sync полотна — слушаем ТОЛЬКО изменения (child_changed) после загрузки
-    db.ref('pixelbattle').once('value',function(snap){
-      if(!snap.exists()) return;
-      snap.forEach(function(ch){
-        var p=ch.key.split('_');
-        var r=parseInt(p[0]),c=parseInt(p[1]);
-        var color=ch.val();
-        if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+    /* load full board once */
+    db.ref('pixelbattle').once('value', function (snap) {
+      if (!snap.exists()) return;
+      snap.forEach(function (ch) {
+        var p = ch.key.split('_');
+        var r = +p[0], c = +p[1];
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+          grid[r][c] = ch.val();
+          drawCell(r, c, ch.val());
+        }
       });
     });
 
-    // live updates от других пользователей
-    db.ref('pixelbattle').on('child_changed',function(snap){
-      var p=snap.key.split('_');
-      var r=parseInt(p[0]),c=parseInt(p[1]);
-      var color=snap.val();
-      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+    /* live updates from others */
+    db.ref('pixelbattle').on('child_changed', function (snap) {
+      var p = snap.key.split('_');
+      var r = +p[0], c = +p[1], color = snap.val();
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+        grid[r][c] = color; drawCell(r, c, color);
+      }
     });
-    db.ref('pixelbattle').on('child_added',function(snap){
-      var p=snap.key.split('_');
-      var r=parseInt(p[0]),c=parseInt(p[1]);
-      var color=snap.val();
-      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+    db.ref('pixelbattle').on('child_added', function (snap) {
+      var p = snap.key.split('_');
+      var r = +p[0], c = +p[1], color = snap.val();
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+        grid[r][c] = color; drawCell(r, c, color);
+      }
     });
-    db.ref('pixelbattle').on('child_removed',function(snap){
-      var p=snap.key.split('_');
-      var r=parseInt(p[0]),c=parseInt(p[1]);
-      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]='#222233'; drawCell(r,c,'#222233'); }
+    db.ref('pixelbattle').on('child_removed', function (snap) {
+      var p = snap.key.split('_');
+      var r = +p[0], c = +p[1];
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+        grid[r][c] = '#222233'; drawCell(r, c, '#222233');
+      }
     });
   });
+
 })();
 </script>
 </body>

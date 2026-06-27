@@ -65,15 +65,10 @@
 .msgboard-item-time{font-size:10px;color:var(--text2);margin-top:4px;}
 .msgboard-empty{font-size:12px;color:var(--text2);opacity:.55;}
 
-/* ══ PB ENTRY BUTTON ══ */
-.pb-entry-wrap{display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
-.pb-entry-btn{position:relative;width:170px;height:170px;border-radius:50%;border:2px solid var(--border2);background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;text-decoration:none;color:var(--text);cursor:pointer;overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .18s;}
-.pb-entry-btn:hover{border-color:var(--accent);box-shadow:0 0 28px var(--glow);transform:scale(1.06);}
-.pb-preview-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;border-radius:50%;opacity:.45;pointer-events:none;}
-.pb-entry-img{width:120px;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 4px 14px rgba(0,0,0,.65));transition:transform .18s;pointer-events:none;}
-.pb-entry-btn:hover .pb-entry-img{transform:scale(0.91) translateY(4px);}
-.pb-entry-label{font-family:var(--font);font-size:11px;letter-spacing:.08em;color:var(--text2);position:relative;z-index:1;margin-top:6px;}
-.pb-entry-hint{font-size:10px;color:var(--text2);opacity:.55;letter-spacing:.05em;}
+/* ══ PB BARE BUTTON ══ */
+.pb-bare-btn{display:inline-block;text-decoration:none;transition:transform .15s,filter .15s;}
+.pb-bare-btn:hover .pb-bare-img{transform:scale(0.93) translateY(4px);filter:drop-shadow(0 2px 8px rgba(0,0,0,.7)) brightness(0.9);}
+.pb-bare-img{width:140px;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.6));transition:transform .15s,filter .15s;cursor:pointer;}
 
 /* Popup toast */
 .wiki-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 20px;font-family:var(--font);font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:9990;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;}
@@ -195,17 +190,12 @@
     </div>
   </div>
 
-  <!-- RIGHT: Pixel Battle button -->
+  <!-- RIGHT: Pixel Battle -->
   <div class="community-col">
     <div class="community-col-title">🎨 пиксель баттл</div>
-    <div class="pb-entry-wrap">
-      <a href="pixelbattle.html" class="pb-entry-btn" id="pbEntryBtn">
-        <canvas id="pbPreviewCanvas" class="pb-preview-canvas"></canvas>
-        <img src="pb_button.png" class="pb-entry-img" alt="Пиксель Баттл">
-        <div class="pb-entry-label">Открыть полотно</div>
-      </a>
-      <div class="pb-entry-hint">300×300 пикселей · рисуют все · КД 15 сек</div>
-    </div>
+    <a href="pixelbattle.html" class="pb-bare-btn">
+      <img src="pb_button.png" class="pb-bare-img" alt="Пиксель Баттл">
+    </a>
   </div>
 
 </div>
@@ -487,29 +477,6 @@ function showToast(msg, ms) {
   }
   sendBtn.addEventListener('click', send);
   input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
-})();
-
-// ══ PB PREVIEW — превью полотна на кнопке входа ══
-(function(){
-  var canvas = document.getElementById('pbPreviewCanvas');
-  if(!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var COLS=300, ROWS=300, CELL=1;
-  canvas.width=COLS; canvas.height=ROWS;
-
-  function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); },300); }
-  waitDB(function(){
-    window.WikiDB.db.ref('pixelbattle').on('value',function(snap){
-      ctx.fillStyle='#222233';
-      ctx.fillRect(0,0,COLS,ROWS);
-      if(!snap.exists()) return;
-      snap.forEach(function(ch){
-        var p=ch.key.split('_');
-        var r=parseInt(p[0]),c=parseInt(p[1]),color=ch.val();
-        if(r>=0&&r<ROWS&&c>=0&&c<COLS){ ctx.fillStyle=color; ctx.fillRect(c,r,1,1); }
-      });
-    });
-  });
 })();
 
 // ══ СОРТИРОВКА ПО ПОПУЛЯРНОСТИ — см. wiki-search.js ══
