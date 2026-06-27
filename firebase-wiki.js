@@ -1,4 +1,14 @@
-
+/**
+ * firebase-wiki.js  v3
+ * Подключай на КАЖДУЮ страницу после script.js.
+ *
+ * Защита от обхода через новую вкладку:
+ *  - Все rate-limit записи хранятся в Firebase под ключом deviceId
+ *  - deviceId = стабильный fingerprint браузера (не сессия, не вкладка)
+ *  - Лайк: 1 лайк на deviceId на страницу, навсегда (в Firebase)
+ *  - Комментарий: 1 раз в 5 минут на deviceId на страницу (в Firebase)
+ *  - Пиксель-баттл КД читается из Firebase в pixelbattle.html
+ */
 (function () {
   'use strict';
 
@@ -14,7 +24,7 @@
   };
 
   /* ── Wiki entries map ── */
- var WIKI_ENTRIES = {
+  var WIKI_ENTRIES = {
     'studio-cubikarti':  { name:'Куби карты',   logo:'cubikarti.png',        type:'Студия',       url:'studio-cubikarti.html' },
     'studio-qwer':       { name:'Qwer Team',     logo:'banka.png',            type:'Студия',       url:'studio-qwer.html' },
     'studio-zerooone':   { name:'Zero One',      logo:'zo.jpg',               type:'Студия',       url:'studio-zerooone.html' },
@@ -23,15 +33,7 @@
     'studio-spade':      { name:'Spade Studio',  logo:'spade_studio_ava.png', type:'Команда',      url:'studio-spade.html' },
     'studio-kts':        { name:'KTS',           logo:'kts_ava.jpg',          type:'Мини-команда', url:'studio-kts.html' },
     'author-nateshapiro':{ name:'NateShapiro',   logo:'nate_ava.png',         type:'Автор',        url:'author-nateshapiro.html' },
-    'author-vladislavvc':{ name:'Vladislavvc',   logo:'vladislavvc.jpg',      type:'Автор',        url:'author-vladislavvc.html' },
-    'author-bigsty':     { name:'Bigsty',        logo:'bigsty_ava.jpg',       type:'Автор',        url:'author-bigsty.html' },
     'author-kekovich':   { name:'kekovich_lol',  logo:'kek_ava.png',          type:'Автор',        url:'author-kekovich.html' },
-    'author-tenar52':    { name:'TENAR52',       logo:'tenar52.jpg',          type:'Автор',        url:'author-tenar52.html' },
-    'author-rblbeha':    { name:'RblBEHA',       logo:'riba.jpg',             type:'Автор',        url:'author-rblbeha.html' },
-    'author-feodaller':  { name:'feodaller',     logo:'feo.jpg',              type:'Автор',        url:'author-feodaller.html' },
-    'author-protipro':   { name:'ProTiPro',      logo:'protipro.jpg',         type:'Автор',        url:'author-protipro.html' },
-    'author-qwer':       { name:'Qwer team',     logo:'banka.png',            type:'Автор',        url:'author-qwer.html' },
-    'author-yogurtt':    { name:'YoguRtt_',      logo:'7y.jpg',               type:'Автор',        url:'author-yogurtt.html' },
     'blogger-r1lame':    { name:'r1lame',        logo:'r1.jpg',               type:'Блогер',       url:'blogger-r1lame.html' },
   };
 
@@ -225,13 +227,13 @@
   }
 
   /* ════════════════════════════════════════════════════
-     INJECT UI — лайки + комментарии
+     INJECT UI — лайки + комментарии + никнеймы
   ════════════════════════════════════════════════════ */
   function injectUI(db, ref, pid) {
 
-    var COMMENT_CD = 5 * 60 * 1000; /* 5 минут */
+    var COMMENT_CD = 5 * 60 * 1000;
 
-    /* styles */
+    /* ── styles ── */
     var css = document.createElement('style');
     css.textContent = `
       .wfb-reactions{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:28px 0 0;}
@@ -240,14 +242,15 @@
       .wfb-like-btn.liked{border-color:#ff4060;color:#ff4060;background:rgba(255,64,96,.1);}
       .wfb-like-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
       .wfb-like-btn .lheart{font-size:16px;transition:transform .2s;display:inline-block;}
-      .wfb-like-btn:not(:disabled):hover .lheart,
-      .wfb-like-btn.liked .lheart{transform:scale(1.35);}
+      .wfb-like-btn:not(:disabled):hover .lheart,.wfb-like-btn.liked .lheart{transform:scale(1.35);}
       .wfb-views{font-family:var(--font);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius);}
+
+      /* comments */
       .wfb-comments{margin-top:32px;position:relative;z-index:2;}
       .wfb-comments-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text2);margin-bottom:14px;}
       .wfb-form{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
       .wfb-form-row{display:flex;gap:8px;}
-      .wfb-cd-notice{font-size:11px;color:var(--text2);padding:6px 0;display:none;}
+      .wfb-cd-notice{font-size:11px;color:var(--text2);padding:4px 0;display:none;}
       .wfb-cd-notice.show{display:block;}
       .wfb-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 14px;outline:none;resize:none;transition:border-color .15s,box-shadow .15s;min-height:42px;max-height:120px;}
       .wfb-input:focus{border-color:var(--border2);box-shadow:0 0 0 2px var(--glow);}
@@ -255,9 +258,70 @@
       .wfb-send{font-family:var(--font);font-size:12px;padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;flex-shrink:0;transition:background .15s,transform .12s;}
       .wfb-send:hover{background:var(--accent2);transform:scale(1.05);}
       .wfb-send:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+      /* who-am-i bar above form */
+      .wfb-whoami{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+      .wfb-nick-chip{font-family:var(--font);font-size:12px;color:var(--accent);
+        border:1px solid var(--border2);border-radius:var(--radius);
+        padding:4px 10px;letter-spacing:.04em;}
+      .wfb-nick-hint{font-size:11px;color:var(--text2);}
+
+      /* nickname popup overlay */
+      .wfb-nick-overlay{
+        position:fixed;inset:0;z-index:9000;
+        background:rgba(0,0,0,.6);
+        display:flex;align-items:center;justify-content:center;
+        backdrop-filter:blur(4px);
+        animation:wfbFadeIn .2s ease;
+      }
+      @keyframes wfbFadeIn{from{opacity:0}to{opacity:1}}
+      .wfb-nick-modal{
+        background:var(--bg2);
+        border:1px solid var(--border2);
+        border-radius:12px;
+        padding:28px 28px 24px;
+        max-width:360px;width:calc(100vw - 40px);
+        box-shadow:0 20px 60px rgba(0,0,0,.6);
+        display:flex;flex-direction:column;gap:16px;
+        animation:wfbSlideUp .25s ease;
+      }
+      @keyframes wfbSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+      .wfb-nick-modal-title{
+        font-family:var(--font);font-size:16px;color:var(--text);letter-spacing:.05em;
+      }
+      .wfb-nick-modal-sub{
+        font-size:12px;color:var(--text2);line-height:1.75;margin-top:-8px;
+      }
+      .wfb-nick-modal-warn{
+        font-size:11px;
+        background:rgba(255,160,0,.1);
+        border:1px solid rgba(255,160,0,.35);
+        border-radius:var(--radius);
+        padding:8px 12px;
+        color:rgba(255,180,40,.9);
+        line-height:1.65;
+      }
+      .wfb-nick-field{
+        background:var(--bg3);border:1px solid var(--border2);
+        border-radius:var(--radius);color:var(--text);font-family:var(--font);
+        font-size:15px;padding:11px 14px;outline:none;width:100%;box-sizing:border-box;
+        transition:border-color .15s,box-shadow .15s;letter-spacing:.04em;
+      }
+      .wfb-nick-field:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow);}
+      .wfb-nick-field-err{font-size:11px;color:#ff4060;min-height:16px;}
+      .wfb-nick-confirm{
+        font-family:var(--font);font-size:13px;padding:11px 0;
+        background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+        cursor:pointer;width:100%;transition:background .15s,transform .12s;letter-spacing:.05em;
+      }
+      .wfb-nick-confirm:hover{background:var(--accent2);transform:scale(1.02);}
+      .wfb-nick-confirm:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+      /* comment list */
       .wfb-list{display:flex;flex-direction:column;gap:10px;}
       .wfb-comment{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;animation:fadeUp .3s ease forwards;}
-      .wfb-comment-meta{font-size:10px;color:var(--text2);margin-bottom:5px;display:flex;gap:10px;}
+      .wfb-comment-meta{font-size:10px;color:var(--text2);margin-bottom:5px;display:flex;gap:10px;align-items:center;}
+      .wfb-comment-nick{color:var(--accent);font-size:11px;letter-spacing:.04em;}
       .wfb-comment-text{font-size:12px;color:var(--text);line-height:1.7;word-break:break-word;}
       .wfb-empty{font-size:12px;color:var(--text2);opacity:.6;}
     `;
@@ -266,13 +330,110 @@
     var wrap = document.querySelector('.article-body') || document.querySelector('.article-wrap');
     if (!wrap) return;
 
-    /* ── Reactions row ── */
+    /* ════════════════════════
+       NICKNAME SYSTEM
+    ════════════════════════ */
+    var currentNick = null; /* null = ещё не загружен */
+    var nickRef = db.ref('nicknames/' + safeKey(DEVICE_ID));
+
+    /* Загружаем ник из Firebase */
+    function loadNick(cb) {
+      nickRef.once('value', function (snap) {
+        currentNick = snap.val() || null;
+        cb(currentNick);
+      });
+    }
+
+    /* Попап выбора никнейма */
+    function showNickPopup(onConfirm) {
+      var overlay = document.createElement('div');
+      overlay.className = 'wfb-nick-overlay';
+      overlay.innerHTML =
+        '<div class="wfb-nick-modal">' +
+          '<div class="wfb-nick-modal-title">✏️ Придумай себе ник</div>' +
+          '<div class="wfb-nick-modal-sub">Он будет отображаться под всеми твоими комментариями на сайте.</div>' +
+          '<div class="wfb-nick-modal-warn">' +
+            '⚠️ <b>Ник нельзя будет изменить после подтверждения.</b> Выбирай внимательно!' +
+          '</div>' +
+          '<input class="wfb-nick-field" id="wfbNickField" type="text" maxlength="24" ' +
+            'placeholder="от 2 до 24 символов..." autocomplete="off" spellcheck="false">' +
+          '<div class="wfb-nick-field-err" id="wfbNickErr"></div>' +
+          '<button class="wfb-nick-confirm" id="wfbNickConfirm">Подтвердить ник</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+
+      var field   = document.getElementById('wfbNickField');
+      var errEl   = document.getElementById('wfbNickErr');
+      var confBtn = document.getElementById('wfbNickConfirm');
+
+      /* Закрытие по клику на оверлей (не на модалку) */
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.remove();
+      });
+
+      field.focus();
+
+      field.addEventListener('input', function () {
+        errEl.textContent = '';
+        confBtn.disabled = field.value.trim().length < 2;
+      });
+      confBtn.disabled = true;
+
+      field.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') tryConfirm();
+      });
+
+      confBtn.addEventListener('click', tryConfirm);
+
+      function tryConfirm() {
+        var nick = field.value.trim();
+        if (nick.length < 2) { errEl.textContent = 'Минимум 2 символа.'; return; }
+        if (nick.length > 24) { errEl.textContent = 'Максимум 24 символа.'; return; }
+        if (!/^[a-zA-Zа-яА-ЯёЁ0-9_\-. ]+$/.test(nick)) {
+          errEl.textContent = 'Только буквы, цифры, _  –  .  пробел.'; return;
+        }
+
+        confBtn.disabled = true;
+        confBtn.textContent = 'Сохраняем…';
+
+        /* Проверяем что ник ещё не занят */
+        db.ref('nick_index/' + safeKey(nick.toLowerCase())).once('value', function (snap) {
+          if (snap.exists()) {
+            errEl.textContent = 'Этот ник уже занят. Попробуй другой.';
+            confBtn.disabled = false;
+            confBtn.textContent = 'Подтвердить ник';
+            return;
+          }
+          /* Резервируем ник — записываем индекс и профиль */
+          var updates = {};
+          updates['nick_index/' + safeKey(nick.toLowerCase())] = DEVICE_ID;
+          updates['nicknames/' + safeKey(DEVICE_ID)] = nick;
+          db.ref().update(updates, function (err) {
+            if (err) {
+              errEl.textContent = 'Ошибка сохранения. Попробуй ещё раз.';
+              confBtn.disabled = false;
+              confBtn.textContent = 'Подтвердить ник';
+            } else {
+              currentNick = nick;
+              overlay.remove();
+              onConfirm(nick);
+            }
+          });
+        });
+      }
+    }
+
+    /* ════════════════════════
+       BUILD UI
+    ════════════════════════ */
+
+    /* Reactions row */
     var reactDiv = document.createElement('div');
     reactDiv.className = 'wfb-reactions';
 
     var likeBtn = document.createElement('button');
     likeBtn.className = 'wfb-like-btn';
-    likeBtn.disabled  = true; /* до загрузки из Firebase */
+    likeBtn.disabled  = true;
     likeBtn.innerHTML = '<span class="lheart">♥</span> <span class="lcount">…</span>';
     reactDiv.appendChild(likeBtn);
 
@@ -283,12 +444,16 @@
 
     wrap.insertAdjacentElement('afterend', reactDiv);
 
-    /* ── Comments block ── */
+    /* Comments block */
     var commDiv = document.createElement('div');
     commDiv.className = 'wfb-comments';
     commDiv.innerHTML =
       '<div class="wfb-comments-title">💬 комментарии</div>' +
       '<div class="wfb-form">' +
+        '<div class="wfb-whoami" id="wfbWhoami" style="display:none;">' +
+          '<span class="wfb-nick-hint">ты пишешь как</span>' +
+          '<span class="wfb-nick-chip" id="wfbNickChip"></span>' +
+        '</div>' +
         '<div class="wfb-form-row">' +
           '<textarea class="wfb-input" id="wfbInput" placeholder="Написать комментарий..." rows="1" maxlength="400" disabled></textarea>' +
           '<button class="wfb-send" id="wfbSend" disabled>Отправить</button>' +
@@ -302,8 +467,10 @@
     var sndBtn   = document.getElementById('wfbSend');
     var cdNotice = document.getElementById('wfbCdNotice');
     var cdLeft   = document.getElementById('wfbCdLeft');
+    var whoami   = document.getElementById('wfbWhoami');
+    var nickChip = document.getElementById('wfbNickChip');
 
-    /* ── Live counts ── */
+    /* Live counts */
     ref.child('likes').on('value', function (snap) {
       likeBtn.querySelector('.lcount').textContent = (snap.val() || 0) + ' лайков';
     });
@@ -311,14 +478,13 @@
       viewsBadge.querySelector('.vcount').textContent = (snap.val() || 0) + ' просмотров';
     });
 
-    /* ── Like — проверяем состояние из Firebase ── */
+    /* Like */
     var liked = false;
     window.WikiDB.checkLike(pid, function (isLiked) {
       liked = isLiked;
       likeBtn.disabled = false;
       if (liked) likeBtn.classList.add('liked');
     });
-
     likeBtn.addEventListener('click', function () {
       if (likeBtn.disabled) return;
       likeBtn.disabled = true;
@@ -330,84 +496,92 @@
       });
     });
 
-    /* ── Comment cooldown — проверяем из Firebase ── */
-    var commentUnlocked = false;
-    var cdInterval = null;
+    /* Cooldown logic */
+    var commentUnlocked = false, cdInterval = null;
 
     function checkAndUnlockComment() {
-      window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (remaining) {
-        if (remaining <= 0) {
-          unlockComment();
-        } else {
-          lockComment(remaining);
-        }
+      window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (rem) {
+        if (rem <= 0) unlockComment(); else lockComment(rem);
       });
     }
-
     function unlockComment() {
       commentUnlocked = true;
-      inp.disabled    = false;
-      sndBtn.disabled = false;
+      inp.disabled = false; sndBtn.disabled = false;
       cdNotice.classList.remove('show');
       if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
     }
-
-    function lockComment(remainingMs) {
+    function lockComment(ms) {
       commentUnlocked = false;
-      inp.disabled    = true;
-      sndBtn.disabled = true;
+      inp.disabled = true; sndBtn.disabled = true;
       cdNotice.classList.add('show');
-
-      var endsAt = Date.now() + remainingMs;
-
+      var endsAt = Date.now() + ms;
       if (cdInterval) clearInterval(cdInterval);
       cdInterval = setInterval(function () {
         var left = Math.max(0, endsAt - Date.now());
-        if (left <= 0) {
-          clearInterval(cdInterval); cdInterval = null;
-          /* Перепроверяем из Firebase (на случай если часы разошлись) */
-          checkAndUnlockComment();
-          return;
-        }
-        var m = Math.floor(left / 60000);
-        var s = Math.floor((left % 60000) / 1000);
+        if (left <= 0) { clearInterval(cdInterval); cdInterval = null; checkAndUnlockComment(); return; }
+        var m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
         cdLeft.textContent = (m > 0 ? m + ' мин ' : '') + s + ' сек';
       }, 500);
-
-      /* первый показ */
-      var left = Math.max(0, remainingMs);
-      var m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-      cdLeft.textContent = (m > 0 ? m + ' мин ' : '') + s + ' сек';
+      var l0 = Math.max(0, ms), m0 = Math.floor(l0/60000), s0 = Math.floor((l0%60000)/1000);
+      cdLeft.textContent = (m0 > 0 ? m0 + ' мин ' : '') + s0 + ' сек';
     }
 
-    checkAndUnlockComment();
+    /* Load nick, then unlock form */
+    function setupFormWithNick(nick) {
+      nickChip.textContent = nick;
+      whoami.style.display = 'flex';
+      inp.placeholder = 'Написать комментарий...';
+      checkAndUnlockComment();
+    }
 
-    /* ── Send comment ── */
+    loadNick(function (nick) {
+      if (nick) {
+        setupFormWithNick(nick);
+      } else {
+        /* Нет ника — разблокируем поле но показываем подсказку */
+        inp.disabled = false;
+        inp.placeholder = 'Нажми «Отправить» — сначала выбери ник...';
+        sndBtn.disabled = false;
+      }
+    });
+
+    /* Send */
     function send() {
-      if (!commentUnlocked) return;
       var t = (inp.value || '').trim();
       if (!t) return;
 
-      /* Ещё раз проверяем КД в Firebase перед отправкой (защита от гонок) */
-      window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (remaining) {
-        if (remaining > 0) {
-          lockComment(remaining);
-          return;
-        }
-        /* Ставим метку СНАЧАЛА, потом пишем комментарий */
+      /* Если ника ещё нет — показываем попап */
+      if (!currentNick) {
+        showNickPopup(function (nick) {
+          setupFormWithNick(nick);
+          /* После выбора ника сразу отправляем */
+          doSend(t);
+          inp.value = '';
+        });
+        return;
+      }
+
+      if (!commentUnlocked) return;
+      doSend(t);
+      inp.value = '';
+    }
+
+    function doSend(text) {
+      window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (rem) {
+        if (rem > 0) { lockComment(rem); return; }
         window.WikiDB.stampCooldown('comment_' + pid);
-        ref.child('comments').push({ text: t, ts: Date.now() });
+        ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now() });
         ref.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
-        inp.value = '';
         lockComment(COMMENT_CD);
       });
     }
+
     sndBtn.addEventListener('click', send);
     inp.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
 
-    /* ── Live comments list ── */
+    /* Live comment list */
     var list = document.getElementById('wfbList');
     ref.child('comments').orderByChild('ts').limitToLast(30).on('value', function (snap) {
       if (!snap.exists()) {
@@ -418,10 +592,14 @@
       snap.forEach(function (ch) {
         var d  = ch.val();
         var dt = new Date(d.ts).toLocaleDateString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        var nickHtml = d.nick
+          ? '<span class="wfb-comment-nick">' + esc(d.nick) + '</span>'
+          : '<span>аноним</span>';
         var el = document.createElement('div');
         el.className = 'wfb-comment';
-        el.innerHTML = '<div class="wfb-comment-meta"><span>аноним</span><span>' + dt + '</span></div>'
-                     + '<div class="wfb-comment-text">' + esc(d.text) + '</div>';
+        el.innerHTML =
+          '<div class="wfb-comment-meta">' + nickHtml + '<span>' + dt + '</span></div>' +
+          '<div class="wfb-comment-text">' + esc(d.text) + '</div>';
         list.appendChild(el);
       });
     });
