@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html,body{overflow-y:auto!important;}
+    .adm-wrap{max-width:900px;margin:0 auto;padding:calc(var(--hh)+48px) 28px 100px;display:flex;flex-direction:column;gap:28px;}
+    .adm-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:14px;}
+    .adm-login h2{font-size:18px;color:var(--accent);letter-spacing:.08em;}
+    .adm-pin-input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:20px;padding:12px 20px;outline:none;text-align:center;letter-spacing:.3em;width:200px;}
+    .adm-pin-btn{font-family:var(--font);font-size:14px;padding:11px 28px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;transition:background .15s,transform .12s;}
+    .adm-pin-btn:hover{background:var(--accent2);transform:scale(1.05);}
+    .adm-pin-err{font-size:12px;color:#ff4060;opacity:0;transition:opacity .3s;}
+    .adm-pin-err.show{opacity:1;}
+
+    .adm-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+    .adm-card-title{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);padding-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .adm-stat-row{display:flex;gap:20px;flex-wrap:wrap;}
+    .adm-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;display:flex;flex-direction:column;gap:4px;min-width:120px;}
+    .adm-stat-val{font-size:28px;color:var(--accent);}
+    .adm-stat-label{font-size:11px;color:var(--text2);letter-spacing:.08em;}
+
+    /* Online dot */
+    .online-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#44ff88;box-shadow:0 0 6px #44ff88;animation:onlinePulse 1.5s ease-in-out infinite;}
+    @keyframes onlinePulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* Comment list */
+    .adm-comment-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;}
+    .adm-comment-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:flex-start;gap:10px;}
+    .adm-comment-body{flex:1;}
+    .adm-comment-meta{font-size:10px;color:var(--text2);margin-bottom:4px;display:flex;gap:8px;}
+    .adm-comment-page{color:var(--accent);}
+    .adm-comment-text{font-size:12px;color:var(--text);line-height:1.6;word-break:break-word;}
+    .adm-del-btn{font-family:var(--font);font-size:11px;padding:5px 10px;background:rgba(255,64,60,.12);border:1px solid rgba(255,64,60,.4);border-radius:var(--radius);color:#ff4060;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;}
+    .adm-del-btn:hover{background:rgba(255,64,60,.25);border-color:#ff4060;}
+
+    /* Msgboard list */
+    .adm-msg-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
+    .adm-msg-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;display:flex;align-items:center;gap:10px;}
+    .adm-msg-text{flex:1;font-size:12px;color:var(--text);}
+    .adm-msg-time{font-size:10px;color:var(--text2);flex-shrink:0;}
+
+    /* Buttons row */
+    .adm-btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+    .adm-btn{font-family:var(--font);font-size:12px;padding:9px 18px;border-radius:var(--radius);cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--bg3);color:var(--text);}
+    .adm-btn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.05);}
+    .adm-btn.danger{border-color:rgba(255,64,60,.5);color:#ff4060;background:rgba(255,64,60,.06);}
+    .adm-btn.danger:hover{background:rgba(255,64,60,.15);border-color:#ff4060;}
+
+    /* Pages table */
+    .adm-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .adm-table th{text-align:left;padding:7px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);}
+    .adm-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);}
+    .adm-table tr:hover td{background:var(--bg3);}
+    .adm-table .num{color:var(--accent);font-size:14px;}
+
+    .adm-section-hidden{display:none;}
+    .adm-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 20px;font-family:var(--font);font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;}
+    .adm-toast.show{opacity:1;}
+  </style>
+</head>
+<body>
+<div class="adm-toast" id="admToast"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <a href="main.html" class="logo-text" id="logoText" style="text-decoration:none;color:var(--text);"
+       data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</a>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn">Авторы</a>
+    <a href="bloggers.html" class="nav-btn">Блогеры</a>
+    <a href="studios.html"  class="nav-btn">Студии</a>
+    <a href="events.html"   class="nav-btn">Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle"><span class="theme-icon">🌙</span></button>
+</header>
+
+<!-- LOGIN SCREEN -->
+<div id="admLogin" class="adm-wrap">
+  <div class="adm-login">
+    <h2>🔐 Вход в админ-панель</h2>
+    <input class="adm-pin-input" id="pinInput" type="password" placeholder="••••" maxlength="20">
+    <button class="adm-pin-btn" id="pinBtn">Войти</button>
+    <div class="adm-pin-err" id="pinErr">Неверный пароль</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL (hidden until login) -->
+<div id="admPanel" class="adm-wrap adm-section-hidden">
+
+  <!-- STATS ROW -->
+  <div class="adm-card">
+    <div class="adm-card-title">📊 Статистика сайта</div>
+    <div class="adm-stat-row">
+      <div class="adm-stat">
+        <div class="adm-stat-val" id="statOnline">…</div>
+        <div class="adm-stat-label"><span class="online-dot"></span> онлайн сейчас</div>
+      </div>
+      <div class="adm-stat">
+        <div class="adm-stat-val" id="statViews">…</div>
+        <div class="adm-stat-label">всего просмотров</div>
+      </div>
+      <div class="adm-stat">
+        <div class="adm-stat-val" id="statComments">…</div>
+        <div class="adm-stat-label">комментариев</div>
+      </div>
+      <div class="adm-stat">
+        <div class="adm-stat-val" id="statLikes">…</div>
+        <div class="adm-stat-label">лайков</div>
+      </div>
+      <div class="adm-stat">
+        <div class="adm-stat-val" id="statMsgs">…</div>
+        <div class="adm-stat-label">сообщений на доске</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGES TABLE -->
+  <div class="adm-card">
+    <div class="adm-card-title">📄 Страницы по просмотрам</div>
+    <table class="adm-table">
+      <thead><tr><th>Страница</th><th>👁 Просмотры</th><th>♥ Лайки</th><th>💬 Комм.</th></tr></thead>
+      <tbody id="pagesTable"></tbody>
+    </table>
+  </div>
+
+  <!-- COMMENTS -->
+  <div class="adm-card">
+    <div class="adm-card-title">💬 Все комментарии</div>
+    <div class="adm-comment-list" id="admCommentList"><div style="font-size:12px;color:var(--text2)">Загрузка…</div></div>
+  </div>
+
+  <!-- MESSAGE BOARD -->
+  <div class="adm-card">
+    <div class="adm-card-title">📝 Доска сообщений</div>
+    <div class="adm-btn-row">
+      <button class="adm-btn danger" id="clearMsgboard">🗑 Очистить всю доску</button>
+    </div>
+    <div class="adm-msg-list" id="admMsgList"><div style="font-size:12px;color:var(--text2)">Загрузка…</div></div>
+  </div>
+
+  <!-- PIXEL BATTLE -->
+  <div class="adm-card">
+    <div class="adm-card-title">🎨 Пиксель Баттл</div>
+    <div class="adm-btn-row">
+      <a href="pixelbattle.html" class="adm-btn" target="_blank">🖼 Открыть полотно (без КД)</a>
+      <button class="adm-btn danger" id="clearPixel">🗑 Очистить полотно</button>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:4px;">
+      Ты залогинен как админ — на странице пиксель баттла у тебя нет кулдауна.
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="adm-btn danger" id="admLogout">Выйти из панели</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function(){
+  // ── PIN (хранится только в коде, не в Firebase) ──
+  var ADMIN_PIN = 'medele857';   // ← СМЕНИ НА СВОЙ ПАРОЛЬ
+
+  var loginDiv = document.getElementById('admLogin');
+  var panelDiv = document.getElementById('admPanel');
+  var pinInput = document.getElementById('pinInput');
+  var pinBtn   = document.getElementById('pinBtn');
+  var pinErr   = document.getElementById('pinErr');
+  var toast    = document.getElementById('admToast');
+
+  function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2500); }
+
+  // check session
+  if(sessionStorage.getItem('admAuth')==='1') unlock();
+
+  function unlock(){
+    loginDiv.classList.add('adm-section-hidden');
+    panelDiv.classList.remove('adm-section-hidden');
+    loadData();
+  }
+
+  pinBtn.addEventListener('click', tryLogin);
+  pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
+  function tryLogin(){
+    if(pinInput.value === ADMIN_PIN){
+      sessionStorage.setItem('admAuth','1');
+      pinErr.classList.remove('show');
+      unlock();
+    } else {
+      pinErr.classList.add('show');
+      pinInput.value='';
+      pinInput.focus();
+    }
+  }
+
+  document.getElementById('admLogout').addEventListener('click',function(){
+    sessionStorage.removeItem('admAuth');
+    window.location.reload();
+  });
+
+  // ══ LOAD DATA ══
+  function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); },300); }
+
+  function loadData(){
+    waitDB(function(){
+      var db = window.WikiDB.db;
+
+      /* ── Online presence ── */
+      var myRef = db.ref('online/' + Date.now());
+      myRef.set(true);
+      myRef.onDisconnect().remove();
+      // ping every 20s
+      setInterval(function(){ myRef.set(true); }, 20000);
+      db.ref('online').on('value', function(snap){
+        var n = snap.numChildren();
+        document.getElementById('statOnline').textContent = n;
+      });
+
+      /* ── Pages table ── */
+      var pagesRef = db.ref('pages');
+      pagesRef.on('value', function(snap){
+        var rows = [];
+        var totalViews=0, totalLikes=0, totalComments=0;
+        snap.forEach(function(ch){
+          var d=ch.val()||{};
+          rows.push({ id:ch.key, views:d.views||0, likes:d.likes||0, comments:d.commentCount||0 });
+          totalViews    += d.views||0;
+          totalLikes    += d.likes||0;
+          totalComments += d.commentCount||0;
+        });
+        rows.sort(function(a,b){ return b.views-a.views; });
+
+        document.getElementById('statViews').textContent    = totalViews;
+        document.getElementById('statLikes').textContent    = totalLikes;
+        document.getElementById('statComments').textContent = totalComments;
+
+        var tbody = document.getElementById('pagesTable');
+        tbody.innerHTML = '';
+        rows.forEach(function(r){
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>'+r.id+'</td><td class="num">'+r.views+'</td><td class="num">'+r.likes+'</td><td class="num">'+r.comments+'</td>';
+          tbody.appendChild(tr);
+        });
+      });
+
+      /* ── Msgboard count ── */
+      db.ref('msgboard').on('value', function(snap){
+        document.getElementById('statMsgs').textContent = snap.numChildren();
+        var list = document.getElementById('admMsgList');
+        if(!snap.exists()){ list.innerHTML='<div style="font-size:12px;color:var(--text2)">Пусто</div>'; return; }
+        list.innerHTML='';
+        snap.forEach(function(ch){
+          var d=ch.val();
+          var dt=new Date(d.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          var el=document.createElement('div');
+          el.className='adm-msg-item';
+          el.innerHTML='<span class="adm-msg-text">'+esc(d.text)+'</span>'
+                      +'<span class="adm-msg-time">'+dt+'</span>'
+                      +'<button class="adm-del-btn" data-key="'+ch.key+'">✕</button>';
+          list.appendChild(el);
+        });
+        list.querySelectorAll('.adm-del-btn').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            db.ref('msgboard/'+btn.dataset.key).remove();
+            showToast('🗑 Сообщение удалено');
+          });
+        });
+      });
+
+      /* ── All comments across all pages ── */
+      pagesRef.on('value', function(snap){
+        var all=[];
+        snap.forEach(function(pageCh){
+          var pageId=pageCh.key;
+          var comms=pageCh.val()&&pageCh.val().comments;
+          if(comms) Object.keys(comms).forEach(function(k){ all.push({ pageId:pageId, key:k, data:comms[k] }); });
+        });
+        all.sort(function(a,b){ return b.data.ts-a.data.ts; });
+        var list=document.getElementById('admCommentList');
+        if(!all.length){ list.innerHTML='<div class="wfb-empty">Комментариев нет</div>'; return; }
+        list.innerHTML='';
+        all.forEach(function(item){
+          var dt=new Date(item.data.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          var el=document.createElement('div');
+          el.className='adm-comment-item';
+          el.innerHTML='<div class="adm-comment-body">'
+            +'<div class="adm-comment-meta"><span class="adm-comment-page">'+item.pageId+'</span><span>'+dt+'</span></div>'
+            +'<div class="adm-comment-text">'+esc(item.data.text)+'</div>'
+            +'</div>'
+            +'<button class="adm-del-btn" data-page="'+item.pageId+'" data-key="'+item.key+'">✕ Удалить</button>';
+          list.appendChild(el);
+        });
+        list.querySelectorAll('.adm-del-btn').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            db.ref('pages/'+btn.dataset.page+'/comments/'+btn.dataset.key).remove();
+            db.ref('pages/'+btn.dataset.page+'/commentCount').transaction(function(v){ return Math.max(0,(v||0)-1); });
+            showToast('🗑 Комментарий удалён');
+          });
+        });
+      });
+
+      /* ── Clear msgboard ── */
+      document.getElementById('clearMsgboard').addEventListener('click',function(){
+        if(!confirm('Очистить всю доску сообщений?')) return;
+        db.ref('msgboard').remove();
+        showToast('✅ Доска очищена');
+      });
+
+      /* ── Clear pixel battle ── */
+      document.getElementById('clearPixel').addEventListener('click',function(){
+        if(!confirm('Сбросить пиксель баттл? Все рисунки пропадут.')) return;
+        db.ref('pixelbattle').remove();
+        showToast('✅ Полотно очищено');
+      });
+    });
+  }
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+})();
+</script>
+</body>
+</html>

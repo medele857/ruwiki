@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пиксель Баттл — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html,body{overflow-y:auto!important;}
+
+    .pb-page{
+      padding:calc(var(--hh) + 32px) 0 80px;
+      display:flex;flex-direction:column;align-items:center;gap:0;
+      min-height:100vh;
+    }
+
+    /* ── Top bar ── */
+    .pb-topbar{
+      width:100%;max-width:660px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 16px 16px;
+      flex-wrap:wrap;gap:10px;
+    }
+    .pb-title{
+      font-family:var(--font);font-size:16px;letter-spacing:.08em;
+      color:var(--text);display:flex;align-items:center;gap:8px;
+    }
+    .pb-online-badge{
+      font-size:11px;color:var(--text2);
+      display:flex;align-items:center;gap:5px;
+    }
+    .pb-online-dot{
+      width:7px;height:7px;border-radius:50%;background:#44ff88;
+      box-shadow:0 0 5px #44ff88;animation:onlinePulse 1.5s ease-in-out infinite;
+    }
+    @keyframes onlinePulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* ── Canvas wrapper ── */
+    .pb-canvas-outer{
+      position:relative;
+      border:1px solid var(--border2);
+      border-radius:4px;
+      overflow:hidden;
+      box-shadow:0 0 40px rgba(0,0,0,.6);
+      cursor:crosshair;
+      touch-action:none;
+    }
+    #pbCanvas{
+      display:block;
+      image-rendering:pixelated;
+      image-rendering:crisp-edges;
+    }
+
+    /* ── Zoom controls ── */
+    .pb-zoom-bar{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 16px 0;
+    }
+    .pb-zoom-btn{
+      font-family:var(--font);font-size:14px;
+      width:32px;height:32px;
+      background:var(--bg3);border:1px solid var(--border);
+      border-radius:var(--radius);color:var(--text);cursor:pointer;
+      transition:border-color .15s,transform .12s;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .pb-zoom-btn:hover{border-color:var(--border2);transform:scale(1.1);}
+    .pb-zoom-val{font-size:12px;color:var(--text2);min-width:36px;text-align:center;}
+
+    /* ── Palette ── */
+    .pb-palette-row{
+      display:flex;gap:5px;flex-wrap:wrap;
+      padding:12px 16px 0;
+      max-width:660px;width:100%;
+    }
+    .pb-col{
+      width:26px;height:26px;border-radius:4px;cursor:pointer;
+      border:2px solid transparent;transition:transform .12s,border-color .12s;
+      flex-shrink:0;
+    }
+    .pb-col.active{border-color:#fff;transform:scale(1.2);}
+
+    /* ── Cooldown bar ── */
+    .pb-cd-wrap{
+      width:100%;max-width:660px;padding:10px 16px 0;
+      display:flex;align-items:center;gap:10px;
+    }
+    .pb-cd-bar-outer{
+      flex:1;height:6px;background:var(--bg3);
+      border-radius:3px;overflow:hidden;border:1px solid var(--border);
+    }
+    .pb-cd-bar-inner{
+      height:100%;background:var(--accent);
+      transition:width .1s linear;border-radius:3px;
+    }
+    .pb-cd-label{
+      font-family:var(--font);font-size:11px;
+      color:var(--text2);min-width:40px;text-align:right;
+    }
+    .pb-cd-ready{color:#44ff88;font-size:11px;font-family:var(--font);}
+
+    /* ── Coords tooltip ── */
+    .pb-coords{
+      font-size:11px;color:var(--text2);
+      padding:6px 16px 0;align-self:flex-start;
+    }
+
+    /* ── Back link ── */
+    .pb-back{
+      font-family:var(--font);font-size:11px;
+      color:rgba(255,255,255,.3);text-decoration:none;
+      margin-top:32px;transition:color .15s;
+      align-self:flex-start;padding-left:16px;
+    }
+    .pb-back:hover{color:var(--accent);}
+
+    /* ── Admin badge ── */
+    .pb-admin-badge{
+      font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      color:#ff9020;border:1px solid rgba(255,144,32,.4);
+      border-radius:3px;padding:2px 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <a href="main.html" class="logo-text" id="logoText" style="text-decoration:none;color:var(--text);"
+       data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</a>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="pb-page">
+
+  <div class="pb-topbar">
+    <div class="pb-title">
+      🎨 Пиксель Баттл
+      <span id="pbAdminBadge" class="pb-admin-badge" style="display:none;">ADMIN · без КД</span>
+    </div>
+    <div class="pb-online-badge">
+      <span class="pb-online-dot"></span>
+      <span id="pbOnline">…</span> онлайн
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="pb-canvas-outer" id="pbOuter">
+    <canvas id="pbCanvas"></canvas>
+  </div>
+
+  <!-- Zoom -->
+  <div class="pb-zoom-bar">
+    <button class="pb-zoom-btn" id="zoomOut">−</button>
+    <span class="pb-zoom-val" id="zoomVal">2×</span>
+    <button class="pb-zoom-btn" id="zoomIn">+</button>
+    <span style="font-size:11px;color:var(--text2);margin-left:4px;">скролл или пальцами для зума</span>
+  </div>
+
+  <!-- Palette -->
+  <div class="pb-palette-row" id="pbPalette"></div>
+
+  <!-- Cooldown -->
+  <div class="pb-cd-wrap">
+    <div class="pb-cd-bar-outer">
+      <div class="pb-cd-bar-inner" id="cdBar" style="width:100%"></div>
+    </div>
+    <div class="pb-cd-label" id="cdLabel"><span class="pb-cd-ready">●</span> готово</div>
+  </div>
+
+  <!-- Coords -->
+  <div class="pb-coords" id="pbCoords">x:— y:—</div>
+
+  <a href="main.html" class="pb-back">← На главную</a>
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function(){
+  // ── Config ──
+  var COLS    = 300;
+  var ROWS    = 300;
+  var PALETTE = [
+    '#ff4060','#ff6040','#ff9020','#ffb800','#ffe066',
+    '#b8ff40','#60ff60','#20e080','#40c8ff','#2060ff',
+    '#8040ff','#c080ff','#ff40c0','#ff80b0','#ffffff',
+    '#cccccc','#888899','#445566','#222233','#000000',
+    '#80ffcc','#ff8040','#40ffff','#ff4040','#40ff80'
+  ];
+  var CD_MS   = 15000; // 15 секунд для обычных
+  var ADMIN_PIN = 'medele857'; // тот же пин что в admin.html
+
+  var isAdmin = sessionStorage.getItem('admAuth') === '1';
+  if(isAdmin) document.getElementById('pbAdminBadge').style.display='inline';
+
+  var canvas  = document.getElementById('pbCanvas');
+  var ctx     = canvas.getContext('2d');
+  var outer   = document.getElementById('pbOuter');
+
+  // ── Zoom ──
+  var zoom    = 2;
+  var minZoom = 1, maxZoom = 8;
+
+  canvas.width  = COLS;
+  canvas.height = ROWS;
+  updateZoom();
+
+  function updateZoom(){
+    canvas.style.width  = (COLS * zoom) + 'px';
+    canvas.style.height = (ROWS * zoom) + 'px';
+    document.getElementById('zoomVal').textContent = zoom + '×';
+  }
+
+  document.getElementById('zoomIn').addEventListener('click',  function(){ if(zoom<maxZoom){ zoom*=2; updateZoom(); } });
+  document.getElementById('zoomOut').addEventListener('click', function(){ if(zoom>minZoom){ zoom=Math.max(1,zoom/2); updateZoom(); } });
+
+  outer.addEventListener('wheel', function(e){
+    e.preventDefault();
+    if(e.deltaY<0 && zoom<maxZoom) zoom*=2;
+    else if(e.deltaY>0 && zoom>minZoom) zoom=Math.max(1,zoom/2);
+    updateZoom();
+  }, {passive:false});
+
+  // ── Grid ──
+  var grid = [];
+  for(var r=0;r<ROWS;r++){ grid[r]=[]; for(var c=0;c<COLS;c++) grid[r][c]='#222233'; }
+
+  function drawCell(r,c,color){
+    ctx.fillStyle=color;
+    ctx.fillRect(c,r,1,1);
+  }
+  function redrawAll(){
+    for(var r=0;r<ROWS;r++) for(var c=0;c<COLS;c++) drawCell(r,c,grid[r][c]);
+  }
+  redrawAll();
+
+  // ── Palette ──
+  var selectedColor = PALETTE[0];
+  var paletteEl = document.getElementById('pbPalette');
+  PALETTE.forEach(function(col){
+    var btn = document.createElement('div');
+    btn.className = 'pb-col' + (col===selectedColor?' active':'');
+    btn.style.background = col;
+    btn.title = col;
+    btn.addEventListener('click', function(){
+      selectedColor=col;
+      paletteEl.querySelectorAll('.pb-col').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+    paletteEl.appendChild(btn);
+  });
+
+  // ── Cooldown ──
+  var lastPaint   = 0;
+  var cdBar       = document.getElementById('cdBar');
+  var cdLabel     = document.getElementById('cdLabel');
+
+  function updateCD(){
+    if(isAdmin){ cdBar.style.width='100%'; cdLabel.innerHTML='<span class="pb-cd-ready">● ADMIN</span>'; return; }
+    var now  = Date.now();
+    var diff = now - lastPaint;
+    if(diff >= CD_MS){
+      cdBar.style.width='100%';
+      cdLabel.innerHTML='<span class="pb-cd-ready">● готово</span>';
+    } else {
+      var pct = Math.round(diff/CD_MS*100);
+      var sec = Math.ceil((CD_MS-diff)/1000);
+      cdBar.style.width=pct+'%';
+      cdLabel.textContent=sec+'с';
+    }
+  }
+  setInterval(updateCD, 100);
+
+  // ── Draw ──
+  function getCell(e){
+    var rect = canvas.getBoundingClientRect();
+    // canvas CSS size = COLS*zoom, actual = COLS
+    var x = Math.floor((e.clientX - rect.left) / zoom);
+    var y = Math.floor((e.clientY - rect.top)  / zoom);
+    return {r:y, c:x};
+  }
+
+  function tryPaint(r,c){
+    if(r<0||r>=ROWS||c<0||c>=COLS) return;
+    if(!isAdmin && Date.now()-lastPaint < CD_MS) return;
+    if(grid[r][c]===selectedColor) return;
+    grid[r][c]=selectedColor;
+    drawCell(r,c,selectedColor);
+    lastPaint=Date.now();
+    if(window.WikiDB) window.WikiDB.db.ref('pixelbattle/'+r+'_'+c).set(selectedColor);
+  }
+
+  var painting=false;
+  canvas.addEventListener('mousedown', function(e){ painting=true; var p=getCell(e); tryPaint(p.r,p.c); });
+  canvas.addEventListener('mousemove', function(e){
+    var p=getCell(e);
+    document.getElementById('pbCoords').textContent='x:'+p.c+' y:'+p.r;
+    if(painting) tryPaint(p.r,p.c);
+  });
+  canvas.addEventListener('mouseup',    function(){ painting=false; });
+  canvas.addEventListener('mouseleave', function(){ painting=false; });
+
+  // Touch
+  canvas.addEventListener('touchstart', function(e){ e.preventDefault(); painting=true; var t=e.touches[0],p=getCell(t); tryPaint(p.r,p.c); },{passive:false});
+  canvas.addEventListener('touchmove',  function(e){ e.preventDefault(); var t=e.touches[0],p=getCell(t); if(painting) tryPaint(p.r,p.c); },{passive:false});
+  canvas.addEventListener('touchend',   function(){ painting=false; });
+
+  // ── Firebase sync ──
+  function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); },300); }
+  waitDB(function(){
+    var db=window.WikiDB.db;
+
+    // Онлайн на странице
+    var onRef=db.ref('pb_online').push();
+    onRef.set(true);
+    onRef.onDisconnect().remove();
+    db.ref('pb_online').on('value',function(snap){
+      document.getElementById('pbOnline').textContent=snap.numChildren();
+    });
+
+    // Sync полотна — слушаем ТОЛЬКО изменения (child_changed) после загрузки
+    db.ref('pixelbattle').once('value',function(snap){
+      if(!snap.exists()) return;
+      snap.forEach(function(ch){
+        var p=ch.key.split('_');
+        var r=parseInt(p[0]),c=parseInt(p[1]);
+        var color=ch.val();
+        if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+      });
+    });
+
+    // live updates от других пользователей
+    db.ref('pixelbattle').on('child_changed',function(snap){
+      var p=snap.key.split('_');
+      var r=parseInt(p[0]),c=parseInt(p[1]);
+      var color=snap.val();
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+    });
+    db.ref('pixelbattle').on('child_added',function(snap){
+      var p=snap.key.split('_');
+      var r=parseInt(p[0]),c=parseInt(p[1]);
+      var color=snap.val();
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+    });
+    db.ref('pixelbattle').on('child_removed',function(snap){
+      var p=snap.key.split('_');
+      var r=parseInt(p[0]),c=parseInt(p[1]);
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]='#222233'; drawCell(r,c,'#222233'); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

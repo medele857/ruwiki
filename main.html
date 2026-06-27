@@ -65,15 +65,14 @@
 .msgboard-item-time{font-size:10px;color:var(--text2);margin-top:4px;}
 .msgboard-empty{font-size:12px;color:var(--text2);opacity:.55;}
 
-/* Pixel Battle */
-.pixelbattle-wrap{display:flex;flex-direction:column;gap:10px;}
-.pixelbattle-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.pixelbattle-palette{display:flex;gap:4px;flex-wrap:wrap;}
-.pb-color{width:20px;height:20px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:transform .12s,border-color .12s;flex-shrink:0;}
-.pb-color.active{border-color:#fff;transform:scale(1.2);}
-.pb-canvas-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:inline-flex;background:var(--bg3);cursor:crosshair;}
-.pb-canvas{display:block;image-rendering:pixelated;}
-.pb-hint{font-size:10px;color:var(--text2);opacity:.6;letter-spacing:.05em;}
+/* ══ PB ENTRY BUTTON ══ */
+.pb-entry-wrap{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+.pb-entry-btn{position:relative;width:160px;height:160px;border-radius:50%;border:2px solid var(--border2);background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--text);cursor:pointer;overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .18s;}
+.pb-entry-btn:hover{border-color:var(--accent);box-shadow:0 0 28px var(--glow);transform:scale(1.06);}
+.pb-preview-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;border-radius:50%;opacity:.55;pointer-events:none;}
+.pb-entry-icon{font-size:36px;position:relative;z-index:1;}
+.pb-entry-label{font-family:var(--font);font-size:12px;letter-spacing:.08em;color:var(--text2);position:relative;z-index:1;}
+.pb-entry-hint{font-size:10px;color:var(--text2);opacity:.55;letter-spacing:.05em;}
 
 /* Popup toast */
 .wiki-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 20px;font-family:var(--font);font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:9990;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;}
@@ -195,17 +194,16 @@
     </div>
   </div>
 
-  <!-- RIGHT: Pixel Battle -->
+  <!-- RIGHT: Pixel Battle button -->
   <div class="community-col">
     <div class="community-col-title">🎨 пиксель баттл</div>
-    <div class="pixelbattle-wrap">
-      <div class="pixelbattle-controls">
-        <div class="pixelbattle-palette" id="pbPalette"></div>
-      </div>
-      <div class="pb-canvas-wrap">
-        <canvas class="pb-canvas" id="pbCanvas" width="320" height="160"></canvas>
-      </div>
-      <div class="pb-hint">кликай / тяни чтобы рисовать · общее полотно для всех</div>
+    <div class="pb-entry-wrap">
+      <a href="pixelbattle.html" class="pb-entry-btn" id="pbEntryBtn">
+        <canvas id="pbPreviewCanvas" class="pb-preview-canvas"></canvas>
+        <div class="pb-entry-icon">🎨</div>
+        <div class="pb-entry-label">Открыть полотно</div>
+      </a>
+      <div class="pb-entry-hint">300×300 пикселей · рисуют все · КД 15 сек</div>
     </div>
   </div>
 
@@ -287,67 +285,64 @@ function showToast(msg, ms) {
 
 // ══ POPULAR TOP-3 (from Firebase via WikiDB) ══
 (function(){
-  var ENTRY_MAP = {
-    'studio-cubikarti':{name:'Куби карты',logo:'cubikarti.png',type:'Студия',url:'studio-cubikarti.html'},
-    'studio-qwer':{name:'Qwer Team',logo:'banka.png',type:'Студия',url:'studio-qwer.html'},
-    'studio-zerooone':{name:'Zero One',logo:'zo.jpg',type:'Студия',url:'studio-zerooone.html'},
-    'studio-yourstory':{name:'YourStory',logo:'yst_ava.jpg',type:'Команда',url:'studio-yourstory.html'},
-    'studio-nautilus':{name:'Наутилус',logo:'nautilus_ava.jpg',type:'Студия',url:'studio-nautilus.html'},
-    'studio-spade':{name:'Spade Studio',logo:'spade_studio_ava.png',type:'Команда',url:'studio-spade.html'},
-    'studio-kts':{name:'KTS',logo:'kts_ava.jpg',type:'Мини-команда',url:'studio-kts.html'},
-    'author-nateshapiro':{name:'NateShapiro',logo:'nate_ava.png',type:'Автор',url:'author-nateshapiro.html'},
-    'author-kekovich':{name:'kekovich_lol',logo:'kek_ava.png',type:'Автор',url:'author-kekovich.html'},
-    'blogger-r1lame':{name:'r1lame',logo:'r1.jpg',type:'Блогер',url:'blogger-r1lame.html'},
-  };
-
   var BADGES = [
-    {field:'views',       label:'👁 просмотры',   icon:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>', suffix:'просм.' },
-    {field:'likes',       label:'♥ лайки',        icon:'♥', suffix:'лайков' },
-    {field:'commentCount',label:'💬 комментарии', icon:'💬', suffix:'комм.' },
+    { field:'views',        label:'👁 просмотры',    suffix:'просм.' },
+    { field:'likes',        label:'♥ лайки',         suffix:'лайков' },
+    { field:'commentCount', label:'💬 комментарии',  suffix:'комм.' },
   ];
 
   var grid = document.getElementById('popularGrid');
 
-  function renderCard(entry, data, badge) {
-    var meta = ENTRY_MAP[entry] || {name:entry, logo:'fav.png', type:'?', url:'#'};
+  function renderCard(id, data, badge) {
+    // ждём WikiDB с entries
+    var entries = (window.WikiDB && window.WikiDB.entries) || {};
+    var meta = entries[id];
+    if (!meta) return ''; // неизвестная страница — пропускаем
+
     var statVal = (data && data[badge.field]) || 0;
-    return '<a href="'+meta.url+'" class="popular-card" data-sound>'
-      +'<span class="popular-card-badge">'+badge.label+'</span>'
-      +'<div class="popular-card-row">'
-      +'<img class="popular-card-logo" src="'+meta.logo+'" alt="">'
-      +'<div><div class="popular-card-name">'+meta.name+'</div>'
-      +'<div class="popular-card-type">'+meta.type+'</div></div>'
-      +'</div>'
-      +'<div class="popular-card-stat">'+badge.icon+' '+statVal+' '+badge.suffix+'</div>'
-      +'</a>';
+    return '<a href="' + meta.url + '" class="popular-card" data-sound>'
+      + '<span class="popular-card-badge">' + badge.label + '</span>'
+      + '<div class="popular-card-row">'
+      + '<img class="popular-card-logo" src="' + meta.logo + '" alt="">'
+      + '<div><div class="popular-card-name">' + meta.name + '</div>'
+      + '<div class="popular-card-type">' + meta.type + '</div></div>'
+      + '</div>'
+      + '<div class="popular-card-stat">' + statVal + ' ' + badge.suffix + '</div>'
+      + '</a>';
   }
 
   function loadPopular() {
-    if (!window.WikiDB) { setTimeout(loadPopular, 400); return; }
-    var loaded = 0;
+    if (!window.WikiDB) { setTimeout(loadPopular, 300); return; }
+
+    var done = 0;
     var results = [null, null, null];
 
     BADGES.forEach(function(badge, i) {
       window.WikiDB.getTopByField(badge.field, 1, function(arr) {
-        if (arr.length) results[i] = {entry: arr[0].id, data: arr[0].data, badge: badge};
-        loaded++;
-        if (loaded === BADGES.length) render();
+        if (arr.length) results[i] = { id: arr[0].id, data: arr[0].data, badge: badge };
+        done++;
+        if (done === BADGES.length) render();
       });
     });
 
     function render() {
       grid.innerHTML = '';
+      var anyRendered = false;
       results.forEach(function(r) {
         if (!r) { grid.innerHTML += '<div class="popular-card-skeleton"></div>'; return; }
-        grid.innerHTML += renderCard(r.entry, r.data, r.badge);
+        var html = renderCard(r.id, r.data, r.badge);
+        if (html) { grid.innerHTML += html; anyRendered = true; }
+        else grid.innerHTML += '<div class="popular-card-skeleton"></div>';
       });
-      // re-attach sounds to new links
-      grid.querySelectorAll('[data-sound]').forEach(function(el){
-        el.addEventListener('click', function(){
+      // звук на новые ссылки
+      grid.querySelectorAll('[data-sound]').forEach(function(el) {
+        el.addEventListener('click', function() {
           var a = document.getElementById('galochkaAudio');
-          if(a){a.currentTime=0;a.play();}
+          if (a) { a.currentTime = 0; a.play().catch(function(){}); }
         });
       });
+      // если данных нет вообще — прячем блок
+      if (!anyRendered) document.querySelector('.popular-section').style.display = 'none';
     }
   }
   loadPopular();
@@ -410,100 +405,117 @@ function showToast(msg, ms) {
   input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
 })();
 
-// ══ PIXEL BATTLE (Firebase) ══
+// ══ MSGBOARD — сообщения живут 5 минут, потом автоудаление ══
 (function(){
-  var COLS = 40, ROWS = 20;
-  var CELL = 8; // px per cell on canvas (320x160)
-  var PALETTE = ['#ff4060','#ff9020','#ffe066','#60ff60','#40c8ff','#c080ff','#ffffff','#888899','#222233','#000000','#ff80b0','#80ffcc'];
+  var input   = document.getElementById('msgInput');
+  var sendBtn = document.getElementById('msgSend');
+  var feed    = document.getElementById('msgFeed');
+  var TTL     = 5 * 60 * 1000; // 5 минут в мс
+  var SHOWN   = false;
 
-  var paletteEl = document.getElementById('pbPalette');
-  var canvas    = document.getElementById('pbCanvas');
-  var ctx       = canvas.getContext('2d');
-
-  /* Scale canvas for display */
-  canvas.width  = COLS * CELL;
-  canvas.height = ROWS * CELL;
-  canvas.style.width  = COLS * CELL + 'px';
-  canvas.style.height = ROWS * CELL + 'px';
-
-  var selectedColor = PALETTE[0];
-  var grid = [];
-  for(var r=0;r<ROWS;r++){ grid[r]=[]; for(var c=0;c<COLS;c++) grid[r][c]='#222233'; }
-
-  /* palette buttons */
-  PALETTE.forEach(function(col){
-    var btn = document.createElement('div');
-    btn.className = 'pb-color' + (col===selectedColor?' active':'');
-    btn.style.background = col;
-    btn.title = col;
-    btn.addEventListener('click', function(){
-      selectedColor = col;
-      paletteEl.querySelectorAll('.pb-color').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-    });
-    paletteEl.appendChild(btn);
+  input.addEventListener('focus', function onFocus(){
+    if(SHOWN) return; SHOWN=true;
+    showToast('✏️ напиши что-нибудь — это увидят все 5 минут!', 3200);
+    input.removeEventListener('focus', onFocus);
   });
 
-  function drawCell(r,c,color){
-    ctx.fillStyle = color;
-    ctx.fillRect(c*CELL, r*CELL, CELL, CELL);
-    ctx.strokeStyle = 'rgba(0,0,0,.18)';
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(c*CELL+.25, r*CELL+.25, CELL-.5, CELL-.5);
-  }
-
-  function redrawAll(){
-    for(var r=0;r<ROWS;r++) for(var c=0;c<COLS;c++) drawCell(r,c,grid[r][c]);
-  }
-  redrawAll();
-
-  function getCell(e){
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width  / rect.width;
-    var scaleY = canvas.height / rect.height;
-    var x = (e.clientX - rect.left) * scaleX;
-    var y = (e.clientY - rect.top)  * scaleY;
-    return { r: Math.floor(y/CELL), c: Math.floor(x/CELL) };
-  }
-
-  var painting = false;
-  function paint(e){
-    var pos = getCell(e);
-    if(pos.r<0||pos.r>=ROWS||pos.c<0||pos.c>=COLS) return;
-    if(grid[pos.r][pos.c]===selectedColor) return;
-    grid[pos.r][pos.c]=selectedColor;
-    drawCell(pos.r,pos.c,selectedColor);
-    /* push to Firebase */
-    if(window.WikiDB) window.WikiDB.db.ref('pixelbattle/'+pos.r+'_'+pos.c).set(selectedColor);
-  }
-
-  canvas.addEventListener('mousedown',  function(e){ painting=true; paint(e); });
-  canvas.addEventListener('mousemove',  function(e){ if(painting) paint(e); });
-  canvas.addEventListener('mouseup',    function(){ painting=false; });
-  canvas.addEventListener('mouseleave', function(){ painting=false; });
-  canvas.addEventListener('touchstart', function(e){ e.preventDefault(); painting=true; paint(e.touches[0]); },{passive:false});
-  canvas.addEventListener('touchmove',  function(e){ e.preventDefault(); if(painting) paint(e.touches[0]); },{passive:false});
-  canvas.addEventListener('touchend',   function(){ painting=false; });
-
-  /* sync from Firebase */
   function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); }, 300); }
+  function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderFeed(snap){
+    var now = Date.now();
+    if(!snap || !snap.exists()){ feed.innerHTML='<div class="msgboard-empty">Пока пусто — стань первым!</div>'; return; }
+    feed.innerHTML='';
+    var any = false;
+    snap.forEach(function(ch){
+      var d=ch.val();
+      // скрываем просроченные (их удалит cleanup)
+      if(now - d.ts > TTL) return;
+      any = true;
+      var age   = now - d.ts;
+      var left  = Math.max(0, Math.ceil((TTL - age) / 1000));
+      var mins  = Math.floor(left/60);
+      var secs  = left%60;
+      var timeStr = mins > 0 ? mins+'м '+secs+'с' : secs+'с';
+      var el = document.createElement('div');
+      el.className='msgboard-item';
+      el.dataset.key = ch.key;
+      el.dataset.expires = d.ts + TTL;
+      el.innerHTML='<div class="msgboard-item-text">'+escH(d.text)+'</div>'
+                 +'<div class="msgboard-item-time">исчезнет через <span class="msg-ttl">'+timeStr+'</span></div>';
+      feed.appendChild(el);
+    });
+    if(!any) feed.innerHTML='<div class="msgboard-empty">Пока пусто — стань первым!</div>';
+    feed.scrollTop=feed.scrollHeight;
+  }
+
+  // Живой таймер — обновляет «исчезнет через X» каждую секунду
+  setInterval(function(){
+    var now = Date.now();
+    feed.querySelectorAll('.msgboard-item').forEach(function(el){
+      var expires = parseInt(el.dataset.expires||'0',10);
+      var left = Math.max(0, Math.ceil((expires - now)/1000));
+      var mins = Math.floor(left/60), secs = left%60;
+      var span = el.querySelector('.msg-ttl');
+      if(span) span.textContent = mins>0 ? mins+'м '+secs+'с' : secs+'с';
+      if(left<=0) el.style.opacity='0.3';
+    });
+  }, 1000);
+
+  // Чистим просроченные из Firebase каждую минуту
+  function cleanup(){
+    waitDB(function(){
+      var cutoff = Date.now() - TTL;
+      window.WikiDB.db.ref('msgboard').orderByChild('ts').endAt(cutoff).once('value',function(snap){
+        snap.forEach(function(ch){ ch.ref.remove(); });
+      });
+    });
+  }
+  cleanup();
+  setInterval(cleanup, 60000);
+
   waitDB(function(){
-    window.WikiDB.db.ref('pixelbattle').on('value', function(snap){
+    window.WikiDB.db.ref('msgboard').orderByChild('ts').limitToLast(40).on('value', renderFeed);
+  });
+
+  function send(){
+    var text=(input.value||'').trim();
+    if(!text) return;
+    if(text.length>120){ showToast('Слишком длинно — максимум 120 символов'); return; }
+    waitDB(function(){
+      window.WikiDB.db.ref('msgboard').push({text:text, ts:Date.now()});
+      showToast('✅ Отправлено! Исчезнет через 5 минут', 2200);
+    });
+    input.value='';
+  }
+  sendBtn.addEventListener('click', send);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+})();
+
+// ══ PB PREVIEW — превью полотна на кнопке входа ══
+(function(){
+  var canvas = document.getElementById('pbPreviewCanvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var COLS=300, ROWS=300, CELL=1;
+  canvas.width=COLS; canvas.height=ROWS;
+
+  function waitDB(cb){ if(window.WikiDB) cb(); else setTimeout(function(){ waitDB(cb); },300); }
+  waitDB(function(){
+    window.WikiDB.db.ref('pixelbattle').on('value',function(snap){
+      ctx.fillStyle='#222233';
+      ctx.fillRect(0,0,COLS,ROWS);
       if(!snap.exists()) return;
       snap.forEach(function(ch){
-        var key = ch.key; // "r_c"
-        var parts = key.split('_');
-        var r = parseInt(parts[0]), c = parseInt(parts[1]);
-        var color = ch.val();
-        if(r>=0&&r<ROWS&&c>=0&&c<COLS){ grid[r][c]=color; drawCell(r,c,color); }
+        var p=ch.key.split('_');
+        var r=parseInt(p[0]),c=parseInt(p[1]),color=ch.val();
+        if(r>=0&&r<ROWS&&c>=0&&c<COLS){ ctx.fillStyle=color; ctx.fillRect(c,r,1,1); }
       });
     });
   });
 })();
 
-// ══ СОРТИРОВКА ПО ПОПУЛЯРНОСТИ на страницах авторов/студий/блогеров ══
-// (добавляется через wiki-search.js — см. data-order="views" в карточках)
-// Здесь просто пробрасываем реальные просмотры в wiki-search если открыт не main
+// ══ СОРТИРОВКА ПО ПОПУЛЯРНОСТИ — см. wiki-search.js ══
 </script>
 
 <!-- ══ SETTINGS BUTTON ══ -->
