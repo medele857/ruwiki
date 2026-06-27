@@ -1,14 +1,4 @@
-/**
- * firebase-wiki.js  v3
- * Подключай на КАЖДУЮ страницу после script.js.
- *
- * Защита от обхода через новую вкладку:
- *  - Все rate-limit записи хранятся в Firebase под ключом deviceId
- *  - deviceId = стабильный fingerprint браузера (не сессия, не вкладка)
- *  - Лайк: 1 лайк на deviceId на страницу, навсегда (в Firebase)
- *  - Комментарий: 1 раз в 5 минут на deviceId на страницу (в Firebase)
- *  - Пиксель-баттл КД читается из Firebase в pixelbattle.html
- */
+
 (function () {
   'use strict';
 
@@ -24,7 +14,7 @@
   };
 
   /* ── Wiki entries map ── */
-  var WIKI_ENTRIES = {
+ var WIKI_ENTRIES = {
     'studio-cubikarti':  { name:'Куби карты',   logo:'cubikarti.png',        type:'Студия',       url:'studio-cubikarti.html' },
     'studio-qwer':       { name:'Qwer Team',     logo:'banka.png',            type:'Студия',       url:'studio-qwer.html' },
     'studio-zerooone':   { name:'Zero One',      logo:'zo.jpg',               type:'Студия',       url:'studio-zerooone.html' },
@@ -33,7 +23,15 @@
     'studio-spade':      { name:'Spade Studio',  logo:'spade_studio_ava.png', type:'Команда',      url:'studio-spade.html' },
     'studio-kts':        { name:'KTS',           logo:'kts_ava.jpg',          type:'Мини-команда', url:'studio-kts.html' },
     'author-nateshapiro':{ name:'NateShapiro',   logo:'nate_ava.png',         type:'Автор',        url:'author-nateshapiro.html' },
+    'author-vladislavvc':{ name:'Vladislavvc',   logo:'vladislavvc.jpg',      type:'Автор',        url:'author-vladislavvc.html' },
+    'author-bigsty':     { name:'Bigsty',        logo:'bigsty_ava.jpg',       type:'Автор',        url:'author-bigsty.html' },
     'author-kekovich':   { name:'kekovich_lol',  logo:'kek_ava.png',          type:'Автор',        url:'author-kekovich.html' },
+    'author-tenar52':    { name:'TENAR52',       logo:'tenar52.jpg',          type:'Автор',        url:'author-tenar52.html' },
+    'author-rblbeha':    { name:'RblBEHA',       logo:'riba.jpg',             type:'Автор',        url:'author-rblbeha.html' },
+    'author-feodaller':  { name:'feodaller',     logo:'feo.jpg',              type:'Автор',        url:'author-feodaller.html' },
+    'author-protipro':   { name:'ProTiPro',      logo:'protipro.jpg',         type:'Автор',        url:'author-protipro.html' },
+    'author-qwer':       { name:'Qwer team',     logo:'banka.png',            type:'Автор',        url:'author-qwer.html' },
+    'author-yogurtt':    { name:'YoguRtt_',      logo:'7y.jpg',               type:'Автор',        url:'author-yogurtt.html' },
     'blogger-r1lame':    { name:'r1lame',        logo:'r1.jpg',               type:'Блогер',       url:'blogger-r1lame.html' },
   };
 
