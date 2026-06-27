@@ -2,16 +2,15 @@
 (function () {
   'use strict';
 
- var FIREBASE_CFG = {
-  apiKey:            "AIzaSyAID9ivHW94RB6eMB9qG4kVK7QfK2iStgc",
-  authDomain:        "ruwiki-f1ecb.firebaseapp.com",
-  projectId:         "ruwiki-f1ecb",
-  storageBucket:     "ruwiki-f1ecb.firebasestorage.app",
-  messagingSenderId: "645896740533",
-  appId:             "1:645896740533:web:169a140bb01857fec0a8fc",
-  databaseURL:       "https://ruwiki-f1ecb-default-rtdb.firebaseio.com"
+  var FIREBASE_CFG = {
+    apiKey:            "AIzaSyAID9ivHW94RB6eMB9qG4kVK7QfK2iStgc",
+    authDomain:        "ruwiki-f1ecb.firebaseapp.com",
+    projectId:         "ruwiki-f1ecb",
+    storageBucket:     "ruwiki-f1ecb.firebasestorage.app",
+    messagingSenderId: "645896740533",
+    appId:             "1:645896740533:web:169a140bb01857fec0a8fc",
+    databaseURL:       "https://ruwiki-f1ecb-default-rtdb.firebaseio.com"
 };
-
   var WIKI_ENTRIES = {
     'studio-cubikarti':  { name:'Куби карты',   logo:'cubikarti.png',        type:'Студия',       url:'studio-cubikarti.html' },
     'studio-qwer':       { name:'Qwer Team',     logo:'banka.png',            type:'Студия',       url:'studio-qwer.html' },
