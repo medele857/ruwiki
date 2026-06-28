@@ -18,6 +18,7 @@
     <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
     <a href="studios.html" class="nav-btn" data-sound>Студии</a>
     <a href="events.html"  class="nav-btn" data-sound>Ивенты</a>
+    <a href="posts.html"   class="nav-btn" data-sound>Посты</a>
   </nav>
   <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
 </header>
@@ -28,7 +29,7 @@
   <div class="cards-grid">
 
     <!-- r1lame — laughing emoji canvas -->
-    <a href="blogger-r1lame.html" class="wiki-card" id="r1Card" data-sound data-name="r1lame" data-order="1"
+    <a href="blogger-r1lame.html" class="wiki-card" id="r1Card" data-sound
        style="background:linear-gradient(145deg,#12100a,#1e1c10);border-color:rgba(255,200,50,.35);">
       <canvas class="card-canvas" id="r1Canvas"></canvas>
       <div class="card-body">
@@ -44,6 +45,23 @@
         <span class="card-read-btn" style="border-color:rgba(255,200,60,.5);color:#ffe066;">Читать больше →</span>
       </div>
     </a>
+    <!-- Мыслан — green horror blogger -->
+    <a href="blogger-mslan.html" class="wiki-card" id="mslanCard" data-name="Мыслан" data-order="2" data-sound
+       style="background:linear-gradient(160deg,#001a06 0%,#002b0a 60%,#000f03 100%);border-color:rgba(0,255,60,.35);overflow:hidden;">
+      <canvas class="card-canvas" id="mslanCardCanvas" style="position:absolute;inset:0;z-index:1;background:transparent!important;"></canvas>
+      <div class="card-body" style="position:relative;z-index:2;">
+        <div class="card-logo-row">
+          <img src="mslan_ava.jpg" class="card-logo" alt="Мыслан">
+          <div>
+            <div class="card-title" style="color:#00ff44;">Мыслан</div>
+            <div class="card-tag" style="color:rgba(0,255,60,.65);">Блогер · YouTube · Хоррор</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(0,255,60,.55);">описание</div>
+        <div class="card-desc-text">Популярный ютубер и стример. Необычные челленджи, мрачные прохождения и хоррор-моды по Minecraft.</div>
+        <span class="card-read-btn" style="border-color:rgba(0,255,60,.45);color:#00ff44;">Читать больше →</span>
+      </div>
+    </a>
   </div>
 </div>
 <footer class="site-footer">
@@ -52,7 +70,6 @@
   <a href="https://medele857.github.io/medele/" target="_blank" class="footer-about" data-sound>О нас</a>
 </footer>
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
-<script src="wiki-search.js"></script>
 <script src="script.js"></script>
 
 <!-- ══ SETTINGS BUTTON ══ -->
@@ -104,6 +121,83 @@
     requestAnimationFrame(tick);
   }
   tick();
+})();
+</script>
+
+<script>
+/* ══ MSLAN CARD — floating face + foxy screamer on 20s hover ══ */
+(function(){
+  var card   = document.getElementById('mslanCard');
+  var canvas = document.getElementById('mslanCardCanvas');
+  if(!card || !canvas) return;
+  var ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width  = card.offsetWidth  || 340;
+    canvas.height = card.offsetHeight || 360;
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  /* Floating face */
+  var img = new Image(); img.src = 'mslan_ava.jpg'; var loaded = false;
+  img.onload = function(){ loaded = true; };
+  var ff = { x:120, y:100, s:100, vx:.45, vy:.32, a:0, va:.004, op:.14 };
+  function tick(){
+    var W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    ff.x+=ff.vx; ff.y+=ff.vy; ff.a+=ff.va;
+    if(ff.x-ff.s/2<0||ff.x+ff.s/2>W) ff.vx*=-1;
+    if(ff.y-ff.s/2<0||ff.y+ff.s/2>H) ff.vy*=-1;
+    if(loaded){
+      ctx.save();
+      ctx.translate(ff.x,ff.y); ctx.rotate(ff.a); ctx.globalAlpha=ff.op;
+      ctx.beginPath(); ctx.arc(0,0,ff.s/2,0,Math.PI*2); ctx.clip();
+      ctx.drawImage(img,-ff.s/2,-ff.s/2,ff.s,ff.s);
+      ctx.restore();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  /* Foxy screamer trigger */
+  var foxyFired = false;
+  var hoverTimer = null;
+
+  function triggerFoxy(){
+    var ov = document.getElementById('foxyCardOverlay');
+    if(!ov){
+      ov = document.createElement('div');
+      ov.id = 'foxyCardOverlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#000;display:flex;align-items:center;justify-content:center;';
+      var v = document.createElement('video');
+      v.id = 'foxyCardVideo';
+      v.src = 'foxy.mp4';
+      v.style.cssText = 'width:100%;height:100%;object-fit:cover;pointer-events:none;';
+      v.playsInline = true;
+      ov.appendChild(v);
+      document.body.appendChild(ov);
+    }
+    var vid = ov.querySelector('video');
+    vid.currentTime = 0; vid.muted = false;
+    vid.play().catch(function(){ vid.muted=true; vid.play().catch(function(){}); });
+    var t = setTimeout(function(){ ov.style.display='none'; vid.pause(); vid.muted=true; }, 4000);
+    vid.onended = function(){ clearTimeout(t); ov.style.display='none'; vid.muted=true; };
+
+    /* через 180 сек — обычный screamer */
+    setTimeout(function(){ if(window._armScreamer) window._armScreamer(); }, 180000);
+  }
+
+  card.addEventListener('mouseenter', function(){
+    if(foxyFired) return;
+    hoverTimer = setTimeout(function(){
+      foxyFired = true;
+      triggerFoxy();
+    }, 20000);
+  });
+  card.addEventListener('mouseleave', function(){
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  });
 })();
 </script>
 </body>
