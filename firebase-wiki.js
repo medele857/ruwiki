@@ -180,6 +180,151 @@
       }
     };
 
+    /* ════════════════════════════════════════════════════
+       BAN CHECK — блокируем забаненных устройств
+    ════════════════════════════════════════════════════ */
+    db.ref('bans/' + safeKey(DEVICE_ID)).once('value', function (snap) {
+      if (!snap.exists()) return;
+      var ban = snap.val() || {};
+      showBanScreen(ban.reason || 'Ты заблокирован администратором.');
+    });
+
+    function showBanScreen(reason) {
+      var style = document.createElement('style');
+      style.textContent = `
+        .wfb-ban-screen {
+          position: fixed; inset: 0; z-index: 99999;
+          background: #0a0005;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          text-align: center; padding: 32px;
+          font-family: var(--font, monospace);
+          animation: wfbBanIn .4s ease;
+        }
+        @keyframes wfbBanIn { from{opacity:0} to{opacity:1} }
+        .wfb-ban-icon { font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 0 20px #ff2040); }
+        .wfb-ban-title { font-size: 28px; color: #ff2040; letter-spacing: .1em; margin-bottom: 12px; }
+        .wfb-ban-reason { font-size: 14px; color: rgba(255,80,100,.7); max-width: 420px; line-height: 1.7; }
+        .wfb-ban-id { font-size: 10px; color: rgba(255,255,255,.15); margin-top: 28px; letter-spacing: .05em; }
+      `;
+      document.head.appendChild(style);
+      var el = document.createElement('div');
+      el.className = 'wfb-ban-screen';
+      el.innerHTML =
+        '<div class="wfb-ban-icon">🚫</div>' +
+        '<div class="wfb-ban-title">Доступ заблокирован</div>' +
+        '<div class="wfb-ban-reason">' + esc(reason) + '</div>' +
+        '<div class="wfb-ban-id">ID: ' + DEVICE_ID + '</div>';
+      document.body.appendChild(el);
+      /* Блокируем скролл */
+      document.body.style.overflow = 'hidden';
+    }
+
+    /* ════════════════════════════════════════════════════
+       ANNOUNCEMENT — полноэкранное оповещение
+    ════════════════════════════════════════════════════ */
+    (function () {
+      var css = document.createElement('style');
+      css.textContent = `
+        .wfb-ann-overlay {
+          position: fixed; inset: 0; z-index: 88888;
+          background: rgba(0,0,0,.88);
+          backdrop-filter: blur(8px);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          padding: 32px; text-align: center;
+          animation: wfbAnnIn .4s ease;
+        }
+        @keyframes wfbAnnIn { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+        .wfb-ann-box {
+          background: var(--bg2, #111);
+          border: 1px solid var(--border2, rgba(255,255,255,.15));
+          border-radius: 16px;
+          padding: 36px 40px;
+          max-width: 580px; width: 100%;
+          box-shadow: 0 30px 80px rgba(0,0,0,.7);
+          display: flex; flex-direction: column; gap: 18px;
+          position: relative;
+        }
+        .wfb-ann-label {
+          font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+          color: var(--accent, #7ea6ff); opacity: .7;
+        }
+        .wfb-ann-text {
+          font-family: var(--font, monospace);
+          font-size: 16px; color: var(--text, #fff); line-height: 1.8;
+          white-space: pre-line; word-break: break-word;
+        }
+        .wfb-ann-media {
+          border-radius: 10px; overflow: hidden;
+          max-height: 340px; display: flex; align-items: center; justify-content: center;
+        }
+        .wfb-ann-media img {
+          max-width: 100%; max-height: 340px; object-fit: contain; border-radius: 8px;
+        }
+        .wfb-ann-media video {
+          max-width: 100%; max-height: 340px; border-radius: 8px;
+          outline: none;
+        }
+        .wfb-ann-close {
+          font-family: var(--font, monospace);
+          font-size: 13px; letter-spacing: .06em;
+          padding: 11px 0; width: 100%;
+          background: var(--accent, #5580ff);
+          color: #fff; border: none; border-radius: 8px;
+          cursor: pointer; transition: background .15s, transform .12s;
+          margin-top: 4px;
+        }
+        .wfb-ann-close:hover { filter: brightness(1.15); transform: scale(1.02); }
+      `;
+      document.head.appendChild(css);
+
+      var annShownKey = 'wfb_ann_shown';
+
+      db.ref('announcement').on('value', function (snap) {
+        /* Убираем старый оверлей если он есть */
+        var old = document.getElementById('wfbAnnOverlay');
+        if (old) old.remove();
+
+        if (!snap.exists()) return;
+        var ann = snap.val() || {};
+        if (!ann.active) return;
+
+        /* Не показываем повторно ту же версию если уже закрыл */
+        var shownTs = localStorage.getItem(annShownKey);
+        if (shownTs === String(ann.ts)) return;
+
+        var overlay = document.createElement('div');
+        overlay.className = 'wfb-ann-overlay';
+        overlay.id = 'wfbAnnOverlay';
+
+        var mediaHtml = '';
+        if (ann.mediaUrl) {
+          if (ann.mediaType === 'video') {
+            mediaHtml = '<div class="wfb-ann-media"><video src="' + esc(ann.mediaUrl) + '" autoplay loop muted playsinline controls></video></div>';
+          } else {
+            mediaHtml = '<div class="wfb-ann-media"><img src="' + esc(ann.mediaUrl) + '" alt=""></div>';
+          }
+        }
+
+        overlay.innerHTML =
+          '<div class="wfb-ann-box">' +
+            '<div class="wfb-ann-label">📢 Оповещение от администратора</div>' +
+            (ann.text ? '<div class="wfb-ann-text">' + esc(ann.text) + '</div>' : '') +
+            mediaHtml +
+            '<button class="wfb-ann-close" id="wfbAnnClose">Понятно</button>' +
+          '</div>';
+
+        document.body.appendChild(overlay);
+
+        document.getElementById('wfbAnnClose').addEventListener('click', function () {
+          localStorage.setItem(annShownKey, String(ann.ts));
+          overlay.style.animation = 'wfbAnnIn .3s ease reverse forwards';
+          setTimeout(function () { overlay.remove(); }, 300);
+        });
+      });
+    })();
+
     if (pid === 'main') return;
 
     /* Инициализируем поля страницы */
@@ -568,7 +713,7 @@
       window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (rem) {
         if (rem > 0) { lockComment(rem); return; }
         window.WikiDB.stampCooldown('comment_' + pid);
-        ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now() });
+        ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now(), deviceId: DEVICE_ID });
         ref.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
         lockComment(COMMENT_CD);
       });

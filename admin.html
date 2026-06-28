@@ -61,6 +61,36 @@
     .adm-section-hidden{display:none;}
     .adm-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 20px;font-family:var(--font);font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;}
     .adm-toast.show{opacity:1;}
+
+    /* Ban list */
+    .adm-ban-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
+    .adm-ban-item{background:var(--bg3);border:1px solid rgba(255,64,60,.2);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;}
+    .adm-ban-body{flex:1;}
+    .adm-ban-id{font-size:11px;color:var(--accent);font-family:monospace;margin-bottom:3px;}
+    .adm-ban-reason{font-size:12px;color:var(--text);}
+    .adm-ban-ts{font-size:10px;color:var(--text2);margin-top:2px;}
+    .adm-unban-btn{font-family:var(--font);font-size:11px;padding:5px 10px;background:rgba(0,200,80,.1);border:1px solid rgba(0,200,80,.4);border-radius:var(--radius);color:#00cc50;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;}
+    .adm-unban-btn:hover{background:rgba(0,200,80,.2);border-color:#00cc50;}
+
+    /* Ban form */
+    .adm-ban-form{display:flex;flex-direction:column;gap:8px;}
+    .adm-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 14px;outline:none;width:100%;box-sizing:border-box;transition:border-color .15s;}
+    .adm-input:focus{border-color:var(--border2);}
+    .adm-input-row{display:flex;gap:8px;}
+    .adm-input-row .adm-input{flex:1;}
+
+    /* Announcement editor */
+    .adm-ann-form{display:flex;flex-direction:column;gap:12px;}
+    .adm-ann-textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:10px 14px;outline:none;width:100%;box-sizing:border-box;resize:vertical;min-height:90px;line-height:1.65;transition:border-color .15s;}
+    .adm-ann-textarea:focus{border-color:var(--border2);}
+    .adm-ann-status{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);}
+    .adm-ann-active-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#44ff88;box-shadow:0 0 6px #44ff88;flex-shrink:0;}
+    .adm-ann-inactive-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#666;flex-shrink:0;}
+    .adm-media-type-row{display:flex;gap:8px;}
+    .adm-media-type-btn{font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;}
+    .adm-media-type-btn.active{border-color:var(--accent);color:var(--accent);background:var(--bg);}
+    .adm-ann-preview{border-radius:8px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);padding:8px;display:none;}
+    .adm-ann-preview img,.adm-ann-preview video{max-width:100%;max-height:200px;object-fit:contain;border-radius:4px;display:block;margin:0 auto;}
   </style>
 </head>
 <body>
@@ -155,6 +185,53 @@
     <div style="font-size:11px;color:var(--text2);margin-top:4px;">
       Ты залогинен как админ — на странице пиксель баттла у тебя нет кулдауна.
     </div>
+  </div>
+
+  <!-- ANNOUNCEMENT -->
+  <div class="adm-card">
+    <div class="adm-card-title">📢 Система оповещений</div>
+    <div class="adm-ann-status" id="annStatus">
+      <span class="adm-ann-inactive-dot" id="annDot"></span>
+      <span id="annStatusText">Загрузка…</span>
+    </div>
+    <div class="adm-ann-form">
+      <div style="font-size:11px;color:var(--text2);">Текст оповещения (необязательно)</div>
+      <textarea class="adm-ann-textarea" id="annText" placeholder="Введи текст оповещения..."></textarea>
+
+      <div style="font-size:11px;color:var(--text2);">Медиа — ссылка на изображение или видео (необязательно)</div>
+      <div class="adm-input-row">
+        <input class="adm-input" id="annMediaUrl" placeholder="https://... (ссылка на фото или видео)">
+      </div>
+      <div style="font-size:11px;color:var(--text2);">Тип медиа</div>
+      <div class="adm-media-type-row">
+        <button class="adm-media-type-btn active" data-type="image" id="annTypeImg">🖼 Изображение</button>
+        <button class="adm-media-type-btn" data-type="video" id="annTypeVid">🎬 Видео</button>
+      </div>
+      <div class="adm-ann-preview" id="annPreview"></div>
+      <div class="adm-btn-row">
+        <button class="adm-btn" id="annPreviewBtn">👁 Предпросмотр</button>
+        <button class="adm-btn" id="annPublish" style="border-color:rgba(80,200,120,.5);color:#44cc80;background:rgba(80,200,120,.07);">📢 Опубликовать</button>
+        <button class="adm-btn danger" id="annDeactivate">✕ Скрыть оповещение</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANS -->
+  <div class="adm-card">
+    <div class="adm-card-title">🔨 Баны</div>
+    <div class="adm-ban-form">
+      <div style="font-size:11px;color:var(--text2);">Забанить по Device ID</div>
+      <div class="adm-input-row">
+        <input class="adm-input" id="banIdInput" placeholder="Device ID пользователя...">
+        <input class="adm-input" id="banReasonInput" placeholder="Причина бана..." style="flex:1.5">
+        <button class="adm-btn danger" id="banSubmitBtn" style="white-space:nowrap;">🔨 Забанить</button>
+      </div>
+      <div style="font-size:10px;color:var(--text2);opacity:.7;">
+        Device ID отображается в каждом комментарии ниже (кнопка «⛔ Бан»).
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:6px;">Активные баны</div>
+    <div class="adm-ban-list" id="admBanList"><div style="font-size:12px;color:var(--text2)">Загрузка…</div></div>
   </div>
 
   <div style="text-align:center;">
@@ -289,20 +366,35 @@
         list.innerHTML='';
         all.forEach(function(item){
           var dt=new Date(item.data.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          var devId = item.data.deviceId || '';
           var el=document.createElement('div');
           el.className='adm-comment-item';
           el.innerHTML='<div class="adm-comment-body">'
-            +'<div class="adm-comment-meta"><span class="adm-comment-page">'+item.pageId+'</span><span>'+dt+'</span></div>'
+            +'<div class="adm-comment-meta"><span class="adm-comment-page">'+item.pageId+'</span><span>'+dt+'</span>'
+            +(devId ? '<span style="font-size:10px;color:var(--text2);font-family:monospace;opacity:.6;" title="Device ID">'+devId.slice(0,12)+'…</span>' : '')
+            +'</div>'
             +'<div class="adm-comment-text">'+esc(item.data.text)+'</div>'
             +'</div>'
-            +'<button class="adm-del-btn" data-page="'+item.pageId+'" data-key="'+item.key+'">✕ Удалить</button>';
+            +'<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'
+            +'<button class="adm-del-btn" data-page="'+item.pageId+'" data-key="'+item.key+'">✕ Удалить</button>'
+            +(devId ? '<button class="adm-del-btn" style="background:rgba(255,120,0,.12);border-color:rgba(255,120,0,.4);color:#ff8030;" data-ban-id="'+devId+'">⛔ Бан</button>' : '')
+            +'</div>';
           list.appendChild(el);
         });
-        list.querySelectorAll('.adm-del-btn').forEach(function(btn){
+        list.querySelectorAll('.adm-del-btn[data-page]').forEach(function(btn){
           btn.addEventListener('click',function(){
             db.ref('pages/'+btn.dataset.page+'/comments/'+btn.dataset.key).remove();
             db.ref('pages/'+btn.dataset.page+'/commentCount').transaction(function(v){ return Math.max(0,(v||0)-1); });
             showToast('🗑 Комментарий удалён');
+          });
+        });
+        list.querySelectorAll('.adm-del-btn[data-ban-id]').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            var id = btn.dataset.banId;
+            var reason = prompt('Причина бана для ' + id.slice(0,12) + '…');
+            if(reason === null) return;
+            db.ref('bans/' + id.replace(/[.#$/\[\]]/g,'_')).set({ reason: reason || 'Нарушение правил', ts: Date.now() });
+            showToast('⛔ Пользователь забанен');
           });
         });
       });
@@ -320,6 +412,118 @@
         db.ref('pixelbattle').remove();
         showToast('✅ Полотно очищено');
       });
+
+      /* ════════════════════════════════
+         BAN SYSTEM
+      ════════════════════════════════ */
+      function safeKey(s){ return s.replace(/[.#$/\[\]]/g,'_'); }
+
+      /* Ban list */
+      db.ref('bans').on('value', function(snap){
+        var banList = document.getElementById('admBanList');
+        if(!snap.exists() || !snap.numChildren()){
+          banList.innerHTML='<div style="font-size:12px;color:var(--text2)">Нет активных банов</div>';
+          return;
+        }
+        banList.innerHTML='';
+        snap.forEach(function(ch){
+          var d = ch.val() || {};
+          var dt = new Date(d.ts||0).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          var el = document.createElement('div');
+          el.className = 'adm-ban-item';
+          el.innerHTML =
+            '<div class="adm-ban-body">'
+            +'<div class="adm-ban-id">'+esc(ch.key)+'</div>'
+            +'<div class="adm-ban-reason">'+esc(d.reason||'—')+'</div>'
+            +'<div class="adm-ban-ts">'+dt+'</div>'
+            +'</div>'
+            +'<button class="adm-unban-btn" data-id="'+ch.key+'">✓ Разбанить</button>';
+          banList.appendChild(el);
+        });
+        banList.querySelectorAll('.adm-unban-btn').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            db.ref('bans/'+btn.dataset.id).remove();
+            showToast('✅ Пользователь разбанен');
+          });
+        });
+      });
+
+      /* Manual ban submit */
+      document.getElementById('banSubmitBtn').addEventListener('click',function(){
+        var id = document.getElementById('banIdInput').value.trim();
+        var reason = document.getElementById('banReasonInput').value.trim() || 'Нарушение правил';
+        if(!id){ showToast('⚠️ Введи Device ID'); return; }
+        if(!confirm('Забанить пользователя ' + id.slice(0,16) + '…?')) return;
+        db.ref('bans/' + safeKey(id)).set({ reason: reason, ts: Date.now() });
+        document.getElementById('banIdInput').value = '';
+        document.getElementById('banReasonInput').value = '';
+        showToast('⛔ Пользователь забанен');
+      });
+
+      /* ════════════════════════════════
+         ANNOUNCEMENT SYSTEM
+      ════════════════════════════════ */
+      var annMediaType = 'image';
+
+      /* Media type toggle */
+      document.querySelectorAll('.adm-media-type-btn').forEach(function(btn){
+        btn.addEventListener('click',function(){
+          document.querySelectorAll('.adm-media-type-btn').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          annMediaType = btn.dataset.type;
+        });
+      });
+
+      /* Preview button */
+      document.getElementById('annPreviewBtn').addEventListener('click',function(){
+        var url = document.getElementById('annMediaUrl').value.trim();
+        var preview = document.getElementById('annPreview');
+        if(!url){ preview.style.display='none'; return; }
+        preview.style.display='block';
+        if(annMediaType==='video'){
+          preview.innerHTML='<video src="'+esc(url)+'" controls muted style="max-width:100%;max-height:200px;border-radius:4px;display:block;margin:0 auto;"></video>';
+        } else {
+          preview.innerHTML='<img src="'+esc(url)+'" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:4px;display:block;margin:0 auto;" onerror="this.parentElement.innerHTML=\'<span style=\\\'color:#ff4060;font-size:12px\\\'>Не удалось загрузить изображение</span>\'">';
+        }
+      });
+
+      /* Load current announcement */
+      db.ref('announcement').on('value', function(snap){
+        var dot = document.getElementById('annDot');
+        var txt = document.getElementById('annStatusText');
+        if(!snap.exists() || !snap.val() || !snap.val().active){
+          dot.className='adm-ann-inactive-dot';
+          txt.textContent='Оповещение не активно';
+        } else {
+          var ann = snap.val();
+          dot.className='adm-ann-active-dot';
+          txt.textContent='Активно с ' + new Date(ann.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        }
+      });
+
+      /* Publish */
+      document.getElementById('annPublish').addEventListener('click',function(){
+        var text = document.getElementById('annText').value.trim();
+        var mediaUrl = document.getElementById('annMediaUrl').value.trim();
+        if(!text && !mediaUrl){ showToast('⚠️ Добавь текст или медиа'); return; }
+        if(!confirm('Опубликовать оповещение? Оно появится у всех посетителей сайта.')) return;
+        db.ref('announcement').set({
+          active: true,
+          text: text,
+          mediaUrl: mediaUrl,
+          mediaType: mediaUrl ? annMediaType : '',
+          ts: Date.now()
+        });
+        showToast('📢 Оповещение опубликовано!');
+      });
+
+      /* Deactivate */
+      document.getElementById('annDeactivate').addEventListener('click',function(){
+        if(!confirm('Скрыть оповещение для всех пользователей?')) return;
+        db.ref('announcement/active').set(false);
+        showToast('✅ Оповещение скрыто');
+      });
+
     });
   }
 
