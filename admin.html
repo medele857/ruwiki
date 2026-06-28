@@ -62,6 +62,16 @@
     .adm-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 20px;font-family:var(--font);font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;}
     .adm-toast.show{opacity:1;}
 
+    /* Widget of Day */
+    .adm-wod-form { display:flex; flex-direction:column; gap:10px; }
+    .adm-wod-icon-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .adm-wod-icon-btn { font-size:20px; padding:6px 10px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg3); cursor:pointer; transition:all .15s; }
+    .adm-wod-icon-btn:hover,.adm-wod-icon-btn.active { border-color:var(--accent); background:var(--bg); transform:scale(1.12); }
+    .adm-wod-color-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .adm-wod-color-btn { width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all .15s; flex-shrink:0; }
+    .adm-wod-color-btn:hover,.adm-wod-color-btn.active { border-color:#fff; transform:scale(1.18); }
+    .adm-wod-status { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text2); margin-bottom:4px; }
+
     /* Ban list */
     .adm-ban-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
     .adm-ban-item{background:var(--bg3);border:1px solid rgba(255,64,60,.2);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;}
@@ -185,6 +195,89 @@
     <div style="font-size:11px;color:var(--text2);margin-top:4px;">
       Ты залогинен как админ — на странице пиксель баттла у тебя нет кулдауна.
     </div>
+  </div>
+
+  <!-- WIDGET OF DAY -->
+  <div class="adm-card">
+    <div class="adm-card-title">📌 Виджет дня</div>
+    <div class="adm-wod-status">
+      <span class="adm-ann-inactive-dot" id="wodDot"></span>
+      <span id="wodStatusText">Загрузка…</span>
+    </div>
+    <div class="adm-wod-form">
+      <div style="font-size:11px;color:var(--text2);">Иконка</div>
+      <div class="adm-wod-icon-row" id="wodIconRow">
+        <button class="adm-wod-icon-btn active" data-icon="📌">📌</button>
+        <button class="adm-wod-icon-btn" data-icon="🔥">🔥</button>
+        <button class="adm-wod-icon-btn" data-icon="⚡">⚡</button>
+        <button class="adm-wod-icon-btn" data-icon="🎉">🎉</button>
+        <button class="adm-wod-icon-btn" data-icon="📢">📢</button>
+        <button class="adm-wod-icon-btn" data-icon="💡">💡</button>
+        <button class="adm-wod-icon-btn" data-icon="🎮">🎮</button>
+        <button class="adm-wod-icon-btn" data-icon="👾">👾</button>
+        <button class="adm-wod-icon-btn" data-icon="✨">✨</button>
+        <button class="adm-wod-icon-btn" data-icon="🗺️">🗺️</button>
+      </div>
+      <div style="font-size:11px;color:var(--text2);">Цвет подсветки</div>
+      <div class="adm-wod-color-row" id="wodColorRow">
+        <button class="adm-wod-color-btn active" data-color="rgba(80,120,255,.4)"  style="background:#5080ff;" title="Синий"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(200,60,255,.4)"  style="background:#c83cff;" title="Фиолетовый"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(255,80,80,.4)"   style="background:#ff5050;" title="Красный"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(255,160,0,.4)"   style="background:#ffa000;" title="Оранжевый"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(40,200,100,.4)"  style="background:#28c864;" title="Зелёный"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(0,200,220,.4)"   style="background:#00c8dc;" title="Голубой"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(255,200,0,.4)"   style="background:#ffc800;" title="Жёлтый"></button>
+        <button class="adm-wod-color-btn" data-color="rgba(255,100,180,.4)" style="background:#ff64b4;" title="Розовый"></button>
+      </div>
+      <div style="font-size:11px;color:var(--text2);">Текст</div>
+      <textarea class="adm-ann-textarea" id="wodText" placeholder="Текст виджета..." style="min-height:70px;"></textarea>
+      <div style="font-size:11px;color:var(--text2);">Подпись (необязательно)</div>
+      <input class="adm-input" id="wodAuthor" placeholder="Например: команда вики, или ник автора...">
+      <div class="adm-btn-row">
+        <button class="adm-btn" id="wodPublish" style="border-color:rgba(80,200,120,.5);color:#44cc80;background:rgba(80,200,120,.07);">📌 Опубликовать виджет</button>
+        <button class="adm-btn danger" id="wodHide">✕ Скрыть виджет</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSTS -->
+  <div class="adm-card">
+    <div class="adm-card-title">📝 Создать пост</div>
+    <div class="adm-ann-form">
+      <div style="font-size:11px;color:var(--text2);">От имени кого (выбери верифицированного автора)</div>
+      <select class="adm-input" id="postAuthorSelect"><option value="">— выбери автора —</option></select>
+      <div style="font-size:11px;color:var(--text2);">Заголовок</div>
+      <input class="adm-input" id="postTitle" placeholder="Заголовок поста...">
+      <div style="font-size:11px;color:var(--text2);">Текст поста</div>
+      <textarea class="adm-ann-textarea" id="postText" placeholder="Текст поста..."></textarea>
+      <div style="font-size:11px;color:var(--text2);">Медиа — ссылка (необязательно)</div>
+      <input class="adm-input" id="postMediaUrl" placeholder="https://...">
+      <div class="adm-media-type-row">
+        <button class="adm-media-type-btn active" data-post-type="image" id="postTypeImg">🖼 Изображение</button>
+        <button class="adm-media-type-btn" data-post-type="video" id="postTypeVid">🎬 Видео</button>
+      </div>
+      <div class="adm-btn-row">
+        <button class="adm-btn" id="postPublishBtn" style="border-color:rgba(80,200,120,.5);color:#44cc80;background:rgba(80,200,120,.07);">📝 Опубликовать пост</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">Опубликованные посты</div>
+    <div class="adm-ban-list" id="admPostsList"><div style="font-size:12px;color:var(--text2)">Загрузка…</div></div>
+  </div>
+
+  <!-- VERIFIED AUTHORS -->
+  <div class="adm-card">
+    <div class="adm-card-title">✓ Верифицированные авторы</div>
+    <div class="adm-ban-form">
+      <div style="font-size:11px;color:var(--text2);">Добавить автора</div>
+      <div class="adm-input-row">
+        <input class="adm-input" id="verifyNickInput" placeholder="Никнейм...">
+        <input class="adm-input" id="verifyNameInput" placeholder="Отображаемое имя...">
+        <input class="adm-input" id="verifyAvatarInput" placeholder="Ссылка на аватарку (необязательно)">
+        <button class="adm-btn" id="verifyAddBtn" style="border-color:rgba(80,200,120,.5);color:#44cc80;background:rgba(80,200,120,.07);white-space:nowrap;">✓ Добавить</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:8px;">Текущий список</div>
+    <div class="adm-ban-list" id="admVerifiedList"><div style="font-size:12px;color:var(--text2)">Загрузка…</div></div>
   </div>
 
   <!-- ANNOUNCEMENT -->
@@ -465,10 +558,10 @@
       ════════════════════════════════ */
       var annMediaType = 'image';
 
-      /* Media type toggle */
-      document.querySelectorAll('.adm-media-type-btn').forEach(function(btn){
+      /* Media type toggle — только для announcement кнопок */
+      document.querySelectorAll('.adm-media-type-btn:not([data-post-type])').forEach(function(btn){
         btn.addEventListener('click',function(){
-          document.querySelectorAll('.adm-media-type-btn').forEach(function(b){ b.classList.remove('active'); });
+          document.querySelectorAll('.adm-media-type-btn:not([data-post-type])').forEach(function(b){ b.classList.remove('active'); });
           btn.classList.add('active');
           annMediaType = btn.dataset.type;
         });
@@ -522,6 +615,197 @@
         if(!confirm('Скрыть оповещение для всех пользователей?')) return;
         db.ref('announcement/active').set(false);
         showToast('✅ Оповещение скрыто');
+      });
+
+      /* ════════════════════════════════
+         WIDGET OF DAY
+      ════════════════════════════════ */
+      var wodIcon = '📌';
+      var wodColor = 'rgba(80,120,255,.4)';
+
+      document.querySelectorAll('.adm-wod-icon-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.adm-wod-icon-btn').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          wodIcon = btn.dataset.icon;
+        });
+      });
+      document.querySelectorAll('.adm-wod-color-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.adm-wod-color-btn').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          wodColor = btn.dataset.color;
+        });
+      });
+
+      db.ref('widget_of_day').on('value', function(snap){
+        var dot = document.getElementById('wodDot');
+        var txt = document.getElementById('wodStatusText');
+        if(!snap.exists() || !snap.val() || !snap.val().active){
+          dot.className = 'adm-ann-inactive-dot'; txt.textContent = 'Виджет скрыт';
+        } else {
+          var d = snap.val();
+          dot.className = 'adm-ann-active-dot';
+          txt.textContent = 'Активен: ' + (d.text||'').slice(0,40) + (d.text&&d.text.length>40?'…':'');
+        }
+      });
+
+      document.getElementById('wodPublish').addEventListener('click', function(){
+        var text = document.getElementById('wodText').value.trim();
+        if(!text){ showToast('⚠️ Введи текст виджета'); return; }
+        db.ref('widget_of_day').set({
+          active: true,
+          icon: wodIcon,
+          color: wodColor,
+          text: text,
+          author: document.getElementById('wodAuthor').value.trim(),
+          ts: Date.now()
+        });
+        showToast('📌 Виджет опубликован!');
+      });
+
+      document.getElementById('wodHide').addEventListener('click', function(){
+        db.ref('widget_of_day/active').set(false);
+        showToast('✅ Виджет скрыт');
+      });
+
+      /* ════════════════════════════════
+         VERIFIED AUTHORS
+      ════════════════════════════════ */
+      function refreshVerifiedSelect() {
+        db.ref('verified_authors').once('value', function(snap){
+          var sel = document.getElementById('postAuthorSelect');
+          sel.innerHTML = '<option value="">— выбери автора —</option>';
+          if(snap.exists()) snap.forEach(function(ch){
+            var d = ch.val() || {};
+            var opt = document.createElement('option');
+            opt.value = ch.key;
+            opt.textContent = (d.displayName || ch.key);
+            opt.dataset.avatar = d.avatar || '';
+            sel.appendChild(opt);
+          });
+        });
+      }
+
+      db.ref('verified_authors').on('value', function(snap){
+        var list = document.getElementById('admVerifiedList');
+        refreshVerifiedSelect();
+        if(!snap.exists() || !snap.numChildren()){
+          list.innerHTML='<div style="font-size:12px;color:var(--text2)">Нет верифицированных авторов</div>';
+          return;
+        }
+        list.innerHTML='';
+        snap.forEach(function(ch){
+          var d = ch.val() || {};
+          var el = document.createElement('div');
+          el.className='adm-ban-item';
+          el.innerHTML=
+            '<div class="adm-ban-body">'
+            +'<div class="adm-ban-id" style="color:var(--accent);">✓ '+esc(d.displayName||ch.key)+'</div>'
+            +'<div class="adm-ban-reason" style="font-size:11px;opacity:.6;">ник: '+esc(ch.key)+(d.avatar?'  ·  аватарка: есть':'')+'</div>'
+            +'</div>'
+            +'<button class="adm-del-btn" data-vid="'+ch.key+'">✕ Убрать</button>';
+          list.appendChild(el);
+        });
+        list.querySelectorAll('.adm-del-btn[data-vid]').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            db.ref('verified_authors/'+btn.dataset.vid).remove();
+            showToast('✅ Автор убран из списка');
+          });
+        });
+      });
+
+      document.getElementById('verifyAddBtn').addEventListener('click',function(){
+        var nick = document.getElementById('verifyNickInput').value.trim();
+        var name = document.getElementById('verifyNameInput').value.trim();
+        var avatar = document.getElementById('verifyAvatarInput').value.trim();
+        if(!nick){ showToast('⚠️ Введи никнейм'); return; }
+        db.ref('verified_authors/'+safeKey(nick)).set({
+          displayName: name || nick,
+          avatar: avatar,
+          addedTs: Date.now()
+        });
+        document.getElementById('verifyNickInput').value='';
+        document.getElementById('verifyNameInput').value='';
+        document.getElementById('verifyAvatarInput').value='';
+        showToast('✓ Автор добавлен');
+      });
+
+      /* ════════════════════════════════
+         POSTS
+      ════════════════════════════════ */
+      var postMediaType = 'image';
+
+      document.querySelectorAll('.adm-media-type-btn[data-post-type]').forEach(function(btn){
+        btn.addEventListener('click',function(){
+          document.querySelectorAll('.adm-media-type-btn[data-post-type]').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          postMediaType = btn.dataset.postType;
+        });
+      });
+
+      document.getElementById('postPublishBtn').addEventListener('click',function(){
+        var authorKey = document.getElementById('postAuthorSelect').value;
+        var title = document.getElementById('postTitle').value.trim();
+        var text = document.getElementById('postText').value.trim();
+        var mediaUrl = document.getElementById('postMediaUrl').value.trim();
+
+        if(!authorKey){ showToast('⚠️ Выбери автора'); return; }
+        if(!title && !text){ showToast('⚠️ Добавь заголовок или текст'); return; }
+        if(!confirm('Опубликовать пост?')) return;
+
+        /* Получаем данные автора */
+        db.ref('verified_authors/'+authorKey).once('value', function(snap){
+          var author = snap.val() || {};
+          db.ref('posts').push({
+            authorNick: authorKey,
+            authorName: author.displayName || authorKey,
+            authorAvatar: author.avatar || '',
+            title: title,
+            text: text,
+            mediaUrl: mediaUrl,
+            mediaType: mediaUrl ? postMediaType : '',
+            commentCount: 0,
+            ts: Date.now()
+          }, function(err){
+            if(err){ showToast('❌ Ошибка: '+err.message); return; }
+            document.getElementById('postTitle').value='';
+            document.getElementById('postText').value='';
+            document.getElementById('postMediaUrl').value='';
+            document.getElementById('postAuthorSelect').value='';
+            showToast('✅ Пост опубликован!');
+          });
+        });
+      });
+
+      /* Posts list */
+      db.ref('posts').orderByChild('ts').limitToLast(20).on('value', function(snap){
+        var list = document.getElementById('admPostsList');
+        if(!snap.exists()){ list.innerHTML='<div style="font-size:12px;color:var(--text2)">Постов нет</div>'; return; }
+        list.innerHTML='';
+        var posts=[];
+        snap.forEach(function(ch){ posts.push({id:ch.key, d:ch.val()}); });
+        posts.reverse();
+        posts.forEach(function(p){
+          var d=p.d;
+          var dt=new Date(d.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          var el=document.createElement('div');
+          el.className='adm-ban-item';
+          el.innerHTML=
+            '<div class="adm-ban-body">'
+            +'<div class="adm-ban-id" style="color:var(--text);">'+esc(d.title||'(без заголовка)')+'</div>'
+            +'<div class="adm-ban-reason">'+esc(d.authorName||'')+'  ·  '+dt+'  ·  💬 '+(d.commentCount||0)+'</div>'
+            +'</div>'
+            +'<button class="adm-del-btn" data-postid="'+p.id+'">🗑 Удалить</button>';
+          list.appendChild(el);
+        });
+        list.querySelectorAll('.adm-del-btn[data-postid]').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            if(!confirm('Удалить пост?')) return;
+            db.ref('posts/'+btn.dataset.postid).remove();
+            showToast('🗑 Пост удалён');
+          });
+        });
       });
 
     });
