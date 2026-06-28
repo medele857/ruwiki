@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Посты — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+
+    .posts-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(160deg, #070b14 0%, #0b0f1a 50%, #060a12 100%);
+    }
+    .posts-vignette {
+      position: fixed; inset: 0; z-index: -1;
+      background: radial-gradient(ellipse at 50% 0%, rgba(80,120,255,.06) 0%, transparent 70%);
+    }
+
+    .posts-wrap {
+      position: relative; z-index: 1;
+      max-width: 660px; margin: 0 auto;
+      padding: calc(var(--hh) + 52px) 20px 100px;
+      display: flex; flex-direction: column;
+    }
+
+    /* Header */
+    .posts-header { margin-bottom: 10px; animation: fadeUp .6s ease forwards; opacity: 0; }
+    .posts-header h1 {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: clamp(32px, 6vw, 52px); letter-spacing: .08em; color: var(--text);
+    }
+    .posts-header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+    .posts-divider { height: 1px; background: var(--border); margin: 18px 0 28px; animation: fadeUp .5s ease .1s forwards; opacity: 0; }
+
+    /* ── Write post form (verified only) ── */
+    .write-post-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+      margin-bottom: 24px; display: none;
+      flex-direction: column; gap: 12px;
+      animation: fadeUp .4s ease forwards;
+    }
+    .write-post-box.show { display: flex; }
+    .write-post-label {
+      font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--accent); display: flex; align-items: center; gap: 8px;
+    }
+    .write-post-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--accent); font-size: 8px; color: #fff;
+    }
+    .write-post-input {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px;
+      padding: 9px 14px; outline: none; width: 100%; box-sizing: border-box;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .write-post-input:focus { border-color: var(--border2); box-shadow: 0 0 0 2px var(--glow); }
+    .write-post-textarea {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px; line-height: 1.7;
+      padding: 10px 14px; outline: none; width: 100%; box-sizing: border-box;
+      resize: vertical; min-height: 90px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .write-post-textarea:focus { border-color: var(--border2); box-shadow: 0 0 0 2px var(--glow); }
+    .write-post-media-row { display: flex; gap: 8px; }
+    .write-post-media-row .write-post-input { flex: 1; }
+    .write-post-type-btn {
+      font-family: var(--font); font-size: 11px; padding: 8px 12px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg3); color: var(--text2); cursor: pointer;
+      transition: all .15s; flex-shrink: 0;
+    }
+    .write-post-type-btn.active { border-color: var(--accent); color: var(--accent); background: var(--bg); }
+    .write-post-preview {
+      border-radius: 8px; overflow: hidden; background: var(--bg3);
+      border: 1px solid var(--border); display: none;
+    }
+    .write-post-preview img,
+    .write-post-preview video { max-width: 100%; max-height: 200px; object-fit: contain; display: block; margin: 0 auto; }
+    .write-post-actions { display: flex; gap: 8px; }
+    .write-post-btn {
+      font-family: var(--font); font-size: 12px; letter-spacing: .05em;
+      padding: 9px 18px; border-radius: var(--radius);
+      border: 1px solid rgba(80,200,120,.4);
+      background: rgba(80,200,120,.07); color: #44cc80;
+      cursor: pointer; transition: all .15s;
+    }
+    .write-post-btn:hover { background: rgba(80,200,120,.15); border-color: #44cc80; transform: scale(1.04); }
+    .write-post-btn-preview {
+      font-family: var(--font); font-size: 12px; padding: 9px 14px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg3); color: var(--text2); cursor: pointer; transition: all .15s;
+    }
+    .write-post-btn-preview:hover { border-color: var(--border2); color: var(--text); }
+
+    /* ── Skeletons ── */
+    .post-skeleton {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px; margin-bottom: 20px;
+    }
+    .skel-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .skel-circle { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; background: var(--bg3); animation: skelPulse 1.4s ease-in-out infinite; }
+    .skel-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .skel-line { background: var(--bg3); border-radius: 4px; animation: skelPulse 1.4s ease-in-out infinite; }
+    @keyframes skelPulse { 0%,100%{opacity:.4} 50%{opacity:.85} }
+
+    /* ── Empty ── */
+    .posts-empty {
+      text-align: center; padding: 80px 20px;
+      color: var(--text2); font-size: 13px; letter-spacing: .05em;
+    }
+    .posts-empty-icon { font-size: 40px; display: block; margin-bottom: 14px; opacity: .35; }
+
+    /* ══════════════════════
+       POST CARD
+    ══════════════════════ */
+    .post-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; margin-bottom: 20px; overflow: hidden;
+      animation: postIn .45s ease forwards; opacity: 0;
+      transition: border-color .2s;
+    }
+    .post-card:hover { border-color: var(--border2); }
+    @keyframes postIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+    /* Author */
+    .post-author-row { display: flex; align-items: center; gap: 12px; padding: 18px 20px 0; }
+    .post-author-avatar {
+      width: 42px; height: 42px; border-radius: 8px; object-fit: cover;
+      flex-shrink: 0; border: 1px solid var(--border2); image-rendering: pixelated;
+    }
+    .post-avatar-placeholder {
+      width: 42px; height: 42px; border-radius: 8px; background: var(--bg3);
+      border: 1px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .post-author-name {
+      font-family: var(--font); font-size: 14px; color: var(--text);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .post-verified {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--accent); font-size: 8px; color: #fff; flex-shrink: 0;
+    }
+    .post-time { font-size: 10px; color: var(--text2); margin-top: 2px; letter-spacing: .03em; }
+
+    /* Content */
+    .post-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 22px; letter-spacing: .04em;
+      color: var(--text); padding: 14px 20px 0; line-height: 1.2;
+    }
+    .post-text {
+      font-size: 13px; color: var(--text2); line-height: 1.85;
+      padding: 10px 20px 0; white-space: pre-line; word-break: break-word;
+    }
+
+    /* Media */
+    .post-media {
+      margin: 14px 20px 0; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border); background: #000;
+      display: flex; align-items: center; justify-content: center; max-height: 420px;
+    }
+    .post-media img { width: 100%; max-height: 420px; object-fit: cover; display: block; }
+    .post-media video { width: 100%; max-height: 420px; display: block; outline: none; }
+
+    /* Reactions */
+    .post-reactions { display: flex; gap: 6px; padding: 14px 20px 0; flex-wrap: wrap; }
+    .post-react-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font); font-size: 13px;
+      padding: 5px 11px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text2); cursor: pointer;
+      transition: all .15s; user-select: none;
+    }
+    .post-react-btn:hover { border-color: var(--border2); color: var(--text); transform: scale(1.08); }
+    .post-react-btn.reacted { border-color: var(--accent); background: rgba(80,120,255,.1); color: var(--accent); }
+    .post-react-emoji { font-size: 15px; line-height: 1; }
+    .post-react-count { font-size: 12px; min-width: 8px; }
+
+    /* Comments toggle */
+    .post-comm-toggle {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px; margin-top: 14px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font); font-size: 12px; color: var(--text2);
+      cursor: pointer; transition: color .15s; user-select: none;
+    }
+    .post-comm-toggle:hover { color: var(--accent); }
+    .post-comm-toggle-arrow { margin-left: auto; transition: transform .2s; font-size: 10px; }
+    .post-comm-toggle.open .post-comm-toggle-arrow { transform: rotate(180deg); }
+
+    /* Comments body */
+    .post-comm-body { display: none; border-top: 1px solid var(--border); padding: 16px 20px 20px; }
+    .post-comm-body.open { display: block; }
+
+    .post-comm-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .post-comm-item {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 9px 12px;
+      animation: fadeUp .25s ease forwards;
+    }
+    .post-comm-meta { font-size: 10px; color: var(--text2); margin-bottom: 4px; display: flex; gap: 8px; }
+    .post-comm-nick { color: var(--accent); font-size: 11px; }
+    .post-comm-text { font-size: 12px; color: var(--text); line-height: 1.7; word-break: break-word; }
+    .post-comm-empty { font-size: 12px; color: var(--text2); opacity: .5; }
+
+    /* Comment form */
+    .post-comm-form { display: flex; flex-direction: column; gap: 8px; }
+    .post-comm-whoami { display: none; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+    .post-comm-whoami.show { display: flex; }
+    .post-comm-nick-chip {
+      font-family: var(--font); font-size: 12px; color: var(--accent);
+      border: 1px solid var(--border2); border-radius: var(--radius); padding: 2px 9px;
+    }
+    .post-comm-row { display: flex; gap: 8px; }
+    .post-comm-input {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px;
+      padding: 9px 14px; outline: none; resize: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .post-comm-input:focus { border-color: var(--border2); box-shadow: 0 0 0 2px var(--glow); }
+    .post-comm-input:disabled { opacity: .4; cursor: not-allowed; }
+    .post-comm-send {
+      font-family: var(--font); font-size: 12px; padding: 9px 14px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: var(--radius); cursor: pointer; flex-shrink: 0;
+      transition: background .15s, transform .12s;
+    }
+    .post-comm-send:hover { background: var(--accent2); transform: scale(1.05); }
+    .post-comm-send:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .post-comm-cd { font-size: 11px; color: var(--text2); display: none; }
+    .post-comm-cd.show { display: block; }
+
+    /* Load more */
+    .posts-more { text-align: center; padding: 8px 0 24px; }
+    .posts-more-btn {
+      font-family: var(--font); font-size: 12px; letter-spacing: .06em;
+      padding: 10px 24px; background: var(--bg3);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text2); cursor: pointer; transition: all .15s;
+    }
+    .posts-more-btn:hover { border-color: var(--border2); color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .posts-wrap { padding-left: 12px; padding-right: 12px; }
+      .post-title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="posts-bg"></div>
+<div class="posts-vignette"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+    <a href="posts.html"    class="nav-btn active" data-sound>Посты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<div class="posts-wrap">
+  <div class="posts-header">
+    <h1>Посты</h1>
+    <p>Записи от подтверждённых участников сообщества</p>
+  </div>
+  <div class="posts-divider"></div>
+
+  <!-- Write form (shown only to verified) -->
+  <div class="write-post-box" id="writePostBox">
+    <div class="write-post-label">
+      <span class="write-post-badge">✓</span>
+      Написать пост
+    </div>
+    <input class="write-post-input" id="wpTitle" placeholder="Заголовок (необязательно)..." maxlength="120">
+    <textarea class="write-post-textarea" id="wpText" placeholder="Текст поста..." maxlength="2000"></textarea>
+    <div class="write-post-media-row">
+      <input class="write-post-input" id="wpMediaUrl" placeholder="Ссылка на фото или видео (необязательно)...">
+      <button class="write-post-type-btn active" id="wpTypeImg">🖼</button>
+      <button class="write-post-type-btn" id="wpTypeVid">🎬</button>
+    </div>
+    <div class="write-post-preview" id="wpPreview"></div>
+    <div class="write-post-actions">
+      <button class="write-post-btn" id="wpSubmit">📝 Опубликовать</button>
+      <button class="write-post-btn-preview" id="wpPreviewBtn">👁 Предпросмотр</button>
+    </div>
+  </div>
+
+  <!-- Feed -->
+  <div id="postsFeed">
+    <div class="post-skeleton">
+      <div class="skel-row">
+        <div class="skel-circle"></div>
+        <div class="skel-lines">
+          <div class="skel-line" style="height:13px;width:35%;"></div>
+          <div class="skel-line" style="height:11px;width:22%;"></div>
+        </div>
+      </div>
+      <div class="skel-line" style="height:20px;width:65%;margin-bottom:10px;"></div>
+      <div class="skel-line" style="height:12px;width:90%;margin-bottom:6px;"></div>
+      <div class="skel-line" style="height:12px;width:75%;"></div>
+    </div>
+    <div class="post-skeleton">
+      <div class="skel-row">
+        <div class="skel-circle"></div>
+        <div class="skel-lines">
+          <div class="skel-line" style="height:13px;width:40%;"></div>
+          <div class="skel-line" style="height:11px;width:20%;"></div>
+        </div>
+      </div>
+      <div class="skel-line" style="height:12px;width:80%;margin-bottom:6px;"></div>
+      <div class="skel-line" style="height:12px;width:60%;"></div>
+    </div>
+  </div>
+
+  <div class="posts-more" id="postsMore" style="display:none;">
+    <button class="posts-more-btn" id="postsMoreBtn">Загрузить ещё</button>
+  </div>
+</div>
+
+<a href="settings.html" class="settings-gear-btn" title="Настройки сайта">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+</a>
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function () {
+  var REACTIONS  = ['👍','❤️','😂','😮'];
+  var COMM_CD    = 5 * 60 * 1000;
+  var PAGE_SIZE  = 10;
+
+  var feed       = document.getElementById('postsFeed');
+  var moreWrap   = document.getElementById('postsMore');
+  var moreBtn    = document.getElementById('postsMoreBtn');
+  var writeBox   = document.getElementById('writePostBox');
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function safeKey(s){ return s.replace(/[.#$\/\[\]]/g,'_'); }
+
+  function timeAgo(ts){
+    var d=Date.now()-ts, m=Math.floor(d/60000), h=Math.floor(d/3600000), dd=Math.floor(d/86400000);
+    if(m<1) return 'только что';
+    if(m<60) return m+' мин. назад';
+    if(h<24) return h+' ч. назад';
+    if(dd<7) return dd+' дн. назад';
+    return new Date(ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+  }
+
+  function waitDB(cb){ if(window.WikiDB) cb(window.WikiDB); else setTimeout(function(){ waitDB(cb); },200); }
+
+  /* ════════════════════════════════
+     WRITE FORM — показываем если ник верифицирован
+  ════════════════════════════════ */
+  var myNick = null;
+  var myVerifiedData = null;
+  var wpMediaType = 'image';
+
+  waitDB(function(wdb){
+    var db = wdb.db;
+    var deviceId = wdb.deviceId;
+
+    /* Проверяем ник пользователя */
+    db.ref('nicknames/' + safeKey(deviceId)).once('value', function(snap){
+      var nick = snap.val();
+      if(!nick) return;
+      myNick = nick;
+
+      /* Проверяем есть ли этот ник среди верифицированных */
+      db.ref('verified_authors/' + safeKey(nick)).once('value', function(vsnap){
+        if(!vsnap.exists()) return;
+        myVerifiedData = vsnap.val() || {};
+        writeBox.classList.add('show');
+      });
+    });
+
+    /* Media type toggles */
+    document.getElementById('wpTypeImg').addEventListener('click', function(){
+      wpMediaType = 'image';
+      this.classList.add('active');
+      document.getElementById('wpTypeVid').classList.remove('active');
+    });
+    document.getElementById('wpTypeVid').addEventListener('click', function(){
+      wpMediaType = 'video';
+      this.classList.add('active');
+      document.getElementById('wpTypeImg').classList.remove('active');
+    });
+
+    /* Preview */
+    document.getElementById('wpPreviewBtn').addEventListener('click', function(){
+      var url = document.getElementById('wpMediaUrl').value.trim();
+      var preview = document.getElementById('wpPreview');
+      if(!url){ preview.style.display='none'; return; }
+      preview.style.display='block';
+      if(wpMediaType==='video'){
+        preview.innerHTML='<video src="'+esc(url)+'" controls muted style="max-width:100%;max-height:200px;display:block;margin:0 auto;"></video>';
+      } else {
+        preview.innerHTML='<img src="'+esc(url)+'" style="max-width:100%;max-height:200px;object-fit:contain;display:block;margin:0 auto;">';
+      }
+    });
+
+    /* Submit */
+    document.getElementById('wpSubmit').addEventListener('click', function(){
+      if(!myNick || !myVerifiedData){ return; }
+      var title   = document.getElementById('wpTitle').value.trim();
+      var text    = document.getElementById('wpText').value.trim();
+      var mediaUrl= document.getElementById('wpMediaUrl').value.trim();
+      if(!title && !text){ showToast('⚠️ Добавь заголовок или текст'); return; }
+
+      db.ref('posts').push({
+        authorNick:   safeKey(myNick),
+        authorName:   myVerifiedData.displayName || myNick,
+        authorAvatar: myVerifiedData.avatar || '',
+        title:        title,
+        text:         text,
+        mediaUrl:     mediaUrl,
+        mediaType:    mediaUrl ? wpMediaType : '',
+        commentCount: 0,
+        ts:           Date.now()
+      }, function(err){
+        if(err){ showToast('❌ Ошибка: '+err.message); return; }
+        document.getElementById('wpTitle').value='';
+        document.getElementById('wpText').value='';
+        document.getElementById('wpMediaUrl').value='';
+        document.getElementById('wpPreview').style.display='none';
+        showToast('✅ Пост опубликован!');
+      });
+    });
+
+    /* ════════════════════════════════
+       LOAD POSTS
+    ════════════════════════════════ */
+    var lastTs   = null;
+    var exhausted = false;
+
+    function loadPosts(append){
+      var query = append
+        ? db.ref('posts').orderByChild('ts').endAt(lastTs - 1).limitToLast(PAGE_SIZE)
+        : db.ref('posts').orderByChild('ts').limitToLast(PAGE_SIZE);
+
+      query.once('value', function(snap){
+        if(!append) feed.innerHTML='';
+
+        if(!snap.exists() || !snap.numChildren()){
+          if(!append) feed.innerHTML='<div class="posts-empty"><span class="posts-empty-icon">📭</span>Постов пока нет</div>';
+          moreWrap.style.display='none';
+          exhausted=true; return;
+        }
+
+        var posts=[];
+        snap.forEach(function(ch){ posts.push({id:ch.key, data:ch.val()}); });
+        posts.reverse();
+
+        posts.forEach(function(p,i){
+          lastTs = p.data.ts;
+          feed.appendChild(buildCard(p.id, p.data, db, deviceId, i*0.07));
+        });
+
+        exhausted = posts.length < PAGE_SIZE;
+        moreWrap.style.display = exhausted ? 'none' : 'block';
+      });
+    }
+
+    loadPosts(false);
+    moreBtn.addEventListener('click', function(){ if(!exhausted) loadPosts(true); });
+
+    /* Live: слушаем только новые посты чтобы добавить их сверху без перезагрузки */
+    var firstLoad = true;
+    db.ref('posts').orderByChild('ts').limitToLast(1).on('child_added', function(snap){
+      if(firstLoad){ firstLoad=false; return; }
+      var p = snap.val();
+      var card = buildCard(snap.key, p, db, deviceId, 0);
+      feed.insertBefore(card, feed.firstChild);
+    });
+  });
+
+  /* ════════════════════════════════
+     BUILD CARD
+  ════════════════════════════════ */
+  function buildCard(postId, post, db, deviceId, delay){
+    var card = document.createElement('div');
+    card.className='post-card';
+    card.style.animationDelay = delay+'s';
+
+    /* Author */
+    var avatarHtml = post.authorAvatar
+      ? '<img class="post-author-avatar" src="'+esc(post.authorAvatar)+'" alt="">'
+      : '<div class="post-avatar-placeholder">👤</div>';
+
+    var authorRow = document.createElement('div');
+    authorRow.className='post-author-row';
+    authorRow.innerHTML=
+      avatarHtml+
+      '<div>'+
+        '<div class="post-author-name">'+esc(post.authorName||'Аноним')+
+          '<span class="post-verified" title="Подтверждённый автор">✓</span>'+
+        '</div>'+
+        '<div class="post-time">'+timeAgo(post.ts)+'</div>'+
+      '</div>';
+    card.appendChild(authorRow);
+
+    /* Title */
+    if(post.title){
+      var t=document.createElement('div'); t.className='post-title'; t.textContent=post.title;
+      card.appendChild(t);
+    }
+    /* Text */
+    if(post.text){
+      var tx=document.createElement('div'); tx.className='post-text'; tx.textContent=post.text;
+      card.appendChild(tx);
+    }
+    /* Media */
+    if(post.mediaUrl){
+      var m=document.createElement('div'); m.className='post-media';
+      m.innerHTML= post.mediaType==='video'
+        ? '<video src="'+esc(post.mediaUrl)+'" controls playsinline></video>'
+        : '<img src="'+esc(post.mediaUrl)+'" alt="" loading="lazy">';
+      card.appendChild(m);
+    }
+
+    /* Reactions */
+    var reactRow=document.createElement('div'); reactRow.className='post-reactions';
+    REACTIONS.forEach(function(emoji){
+      var btn=document.createElement('button'); btn.className='post-react-btn';
+      btn.innerHTML='<span class="post-react-emoji">'+emoji+'</span><span class="post-react-count">0</span>';
+      reactRow.appendChild(btn);
+
+      var eKey = emoji.codePointAt(0).toString(16);
+      var refsBase = 'post_reactions/'+postId+'/'+eKey;
+      var myRef = refsBase+'/'+safeKey(deviceId);
+
+      /* live count */
+      db.ref(refsBase).on('value', function(s){
+        btn.querySelector('.post-react-count').textContent = s.numChildren()||0;
+      });
+      /* own reaction */
+      db.ref(myRef).once('value', function(s){ if(s.val()) btn.classList.add('reacted'); });
+      /* toggle */
+      btn.addEventListener('click', function(){
+        db.ref(myRef).once('value', function(s){
+          if(s.val()){ db.ref(myRef).remove(); btn.classList.remove('reacted'); }
+          else { db.ref(myRef).set(true); btn.classList.add('reacted'); }
+        });
+      });
+    });
+    card.appendChild(reactRow);
+
+    /* Comments toggle */
+    var commCount = post.commentCount||0;
+    var toggle=document.createElement('div'); toggle.className='post-comm-toggle';
+    toggle.innerHTML=
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+
+        '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'+
+      '</svg>'+
+      '<span>Комментарии · <span class="cc">'+commCount+'</span></span>'+
+      '<span class="post-comm-toggle-arrow">▼</span>';
+    card.appendChild(toggle);
+
+    /* Comments body */
+    var commBody=document.createElement('div'); commBody.className='post-comm-body';
+    var listEl=document.createElement('div'); listEl.className='post-comm-list';
+    listEl.innerHTML='<div class="post-comm-empty">Загрузка…</div>';
+
+    /* Form */
+    var whoami=document.createElement('div'); whoami.className='post-comm-whoami';
+    whoami.innerHTML='<span style="opacity:.6">ты:</span><span class="post-comm-nick-chip"></span>';
+    var row=document.createElement('div'); row.className='post-comm-row';
+    var inp=document.createElement('textarea'); inp.className='post-comm-input';
+    inp.placeholder='Написать комментарий...'; inp.rows=1; inp.maxLength=400; inp.disabled=true;
+    var snd=document.createElement('button'); snd.className='post-comm-send'; snd.textContent='→'; snd.disabled=true;
+    row.appendChild(inp); row.appendChild(snd);
+    var cdEl=document.createElement('div'); cdEl.className='post-comm-cd';
+    cdEl.innerHTML='⏳ следующий через <b class="cdt"></b>';
+    var formEl=document.createElement('div'); formEl.className='post-comm-form';
+    formEl.appendChild(whoami); formEl.appendChild(row); formEl.appendChild(cdEl);
+    commBody.appendChild(listEl); commBody.appendChild(formEl);
+    card.appendChild(commBody);
+
+    /* Toggle open/close */
+    var loaded=false;
+    toggle.addEventListener('click', function(){
+      var open=commBody.classList.toggle('open');
+      toggle.classList.toggle('open',open);
+      if(open && !loaded){ loaded=true; initComments(); }
+    });
+
+    function initComments(){
+      /* Load comments */
+      db.ref('posts/'+postId+'/comments').orderByChild('ts').limitToLast(40)
+        .on('value', function(snap){
+          var cnt=snap.numChildren();
+          toggle.querySelector('.cc').textContent=cnt;
+          db.ref('posts/'+postId+'/commentCount').set(cnt);
+          listEl.innerHTML='';
+          if(!snap.exists()){
+            listEl.innerHTML='<div class="post-comm-empty">Комментариев нет — будь первым!</div>'; return;
+          }
+          snap.forEach(function(ch){
+            var d=ch.val();
+            var dt=new Date(d.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+            var el=document.createElement('div'); el.className='post-comm-item';
+            el.innerHTML='<div class="post-comm-meta"><span class="post-comm-nick">'+esc(d.nick||'аноним')+'</span><span>'+dt+'</span></div>'
+              +'<div class="post-comm-text">'+esc(d.text)+'</div>';
+            listEl.appendChild(el);
+          });
+        });
+
+      /* Setup form */
+      var nick=null, unlocked=false, cdTimer=null;
+      db.ref('nicknames/'+safeKey(deviceId)).once('value', function(snap){
+        nick=snap.val()||null;
+        if(nick){
+          whoami.querySelector('.post-comm-nick-chip').textContent=nick;
+          whoami.classList.add('show');
+          checkCD();
+        } else {
+          inp.disabled=false; snd.disabled=false;
+          inp.placeholder='Нужен ник — сначала прокомментируй любую статью вики';
+        }
+      });
+
+      function checkCD(){
+        window.WikiDB.checkCooldown('pcomm_'+postId, COMM_CD, function(rem){
+          rem<=0 ? unlock() : lock(rem);
+        });
+      }
+      function unlock(){ unlocked=true; inp.disabled=false; snd.disabled=false; cdEl.classList.remove('show'); if(cdTimer){clearInterval(cdTimer);cdTimer=null;} }
+      function lock(ms){
+        unlocked=false; inp.disabled=true; snd.disabled=true; cdEl.classList.add('show');
+        var ends=Date.now()+ms;
+        if(cdTimer) clearInterval(cdTimer);
+        cdTimer=setInterval(function(){
+          var left=Math.max(0,ends-Date.now());
+          if(left<=0){ clearInterval(cdTimer); checkCD(); return; }
+          var m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
+          cdEl.querySelector('.cdt').textContent=(m?m+' мин ':'')+s+' сек';
+        },500);
+        var m0=Math.floor(ms/60000),s0=Math.floor((ms%60000)/1000);
+        cdEl.querySelector('.cdt').textContent=(m0?m0+' мин ':'')+s0+' сек';
+      }
+
+      function send(){
+        var text=(inp.value||'').trim(); if(!text) return;
+        if(!nick){ showToast('Нужен ник — прокомментируй любую статью вики'); return; }
+        if(!unlocked) return;
+        window.WikiDB.checkCooldown('pcomm_'+postId, COMM_CD, function(rem){
+          if(rem>0){ lock(rem); return; }
+          window.WikiDB.stampCooldown('pcomm_'+postId);
+          db.ref('posts/'+postId+'/comments').push({ text:text, nick:nick, deviceId:safeKey(deviceId), ts:Date.now() });
+          inp.value=''; lock(COMM_CD);
+        });
+      }
+      snd.addEventListener('click', send);
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+    }
+
+    return card;
+  }
+
+  function showToast(msg, dur){
+    var t=document.getElementById('wfbToast');
+    if(!t){ t=document.createElement('div'); t.id='wfbToast'; t.className='wfb-toast'; document.body.appendChild(t); }
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, dur||2800);
+  }
+})();
+</script>
+</body>
+</html>
