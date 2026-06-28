@@ -33,7 +33,7 @@
     'author-qwer':       { name:'Qwer team',     logo:'banka.png',            type:'Автор',        url:'author-qwer.html' },
     'author-yogurtt':    { name:'YoguRtt_',      logo:'7y.jpg',               type:'Автор',        url:'author-yogurtt.html' },
     'blogger-r1lame':    { name:'r1lame',        logo:'r1.jpg',               type:'Блогер',       url:'blogger-r1lame.html' },
-    'blogger-mslan':    { name:'mslan',        logo:'.jpg',               type:'Блогер',       url:'blogger-r1lame.html' },
+    'blogger-mslan':     { name:'mslan',          logo:'mslan_ava.jpg',       type:'Блогер',       url:'blogger-mslan.html' },
   };
 
  
