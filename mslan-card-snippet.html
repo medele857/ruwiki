@@ -1,0 +1,152 @@
+<!-- ══ КАРТОЧКА МЫСЛАНА — вставить в bloggers.html в .cards-grid ══ -->
+<!-- Также добавить data-name и data-order по аналогии с другими карточками -->
+
+<a href="blogger-mslan.html" class="wiki-card mslan-card" data-name="Мыслан" data-order="2" data-sound>
+  <canvas class="card-canvas" id="mslanCardCanvas"></canvas>
+
+  <!-- Фоновое лицо на карточке -->
+  <div class="mslan-face-bg" id="mslanFaceCardBg"></div>
+
+  <div class="card-body">
+    <div class="card-logo-row">
+      <img src="мыслан_ава.jpg" class="card-logo" alt="Мыслан">
+      <div>
+        <div class="card-title">Мыслан</div>
+        <div class="card-tag">Блогер · YouTube · Хоррор</div>
+      </div>
+    </div>
+    <div class="card-desc-label">О блогере</div>
+    <div class="card-desc-text">Популярный русскоязычный ютубер и стример. Необычные челленджи, мрачные прохождения и хоррор-моды по Minecraft.</div>
+    <span class="card-read-btn">Читать →</span>
+  </div>
+</a>
+
+<!-- ══ СТИЛИ для карточки — добавить в <style> bloggers.html ══ -->
+<style>
+.wiki-card.mslan-card {
+  background: linear-gradient(160deg, #001a06 0%, #002b0a 60%, #000f03 100%);
+  border-color: rgba(0,255,60,.35);
+  overflow: hidden;
+}
+.wiki-card.mslan-card:hover {
+  box-shadow: 0 0 40px rgba(0,255,60,.3), 0 12px 44px rgba(0,0,0,.7);
+  border-color: rgba(0,255,60,.7);
+}
+.mslan-face-bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+.mslan-face-bg canvas {
+  position: absolute; inset: 0; width: 100% !important; height: 100% !important;
+  background: transparent !important;
+}
+</style>
+
+<!-- ══ СКРИМЕР НА КАРТОЧКЕ — добавить в <script> bloggers.html ══ -->
+<script>
+(function(){
+  var card = document.querySelector('.mslan-card');
+  if(!card) return;
+
+  /* ── Floating face on card ── */
+  var faceCanvas = document.createElement('canvas');
+  faceCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent;';
+  document.getElementById('mslanFaceCardBg').appendChild(faceCanvas);
+  var fctx = faceCanvas.getContext('2d');
+
+  function resizeFC(){
+    faceCanvas.width  = card.offsetWidth;
+    faceCanvas.height = card.offsetHeight;
+  }
+  resizeFC();
+  window.addEventListener('resize', resizeFC);
+
+  var fimg = new Image(); fimg.src = 'мыслан_ава.jpg'; var floaded = false;
+  fimg.onload = function(){ floaded = true; };
+
+  var ff = { x: 100, y: 80, s: 90, vx: .55, vy: .38, a: 0, va: .006, op: .13 };
+  function ftick(){
+    var W = faceCanvas.width, H = faceCanvas.height;
+    fctx.clearRect(0,0,W,H);
+    ff.x += ff.vx; ff.y += ff.vy; ff.a += ff.va;
+    if(ff.x - ff.s/2 < 0 || ff.x + ff.s/2 > W) ff.vx *= -1;
+    if(ff.y - ff.s/2 < 0 || ff.y + ff.s/2 > H) ff.vy *= -1;
+    if(floaded){
+      fctx.save();
+      fctx.translate(ff.x, ff.y);
+      fctx.rotate(ff.a);
+      fctx.globalAlpha = ff.op;
+      fctx.beginPath();
+      fctx.arc(0, 0, ff.s/2, 0, Math.PI*2);
+      fctx.clip();
+      fctx.drawImage(fimg, -ff.s/2, -ff.s/2, ff.s, ff.s);
+      fctx.restore();
+    }
+    requestAnimationFrame(ftick);
+  }
+  ftick();
+
+  /* ── Screamer on card hover 20s ── */
+  var hoverStart = null;
+  var foxyFired  = false;
+  var hoverTimer = null;
+  var normalTimer = null;
+
+  /* Foxy overlay (если нет — создаём) */
+  function getFoxyOverlay(){
+    var ov = document.getElementById('foxyOverlay');
+    if(ov) return ov;
+    ov = document.createElement('div');
+    ov.id = 'foxyOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#000;display:none;align-items:center;justify-content:center;';
+    ov.innerHTML = '<img src="foxy_screamer.jpg" style="width:100%;height:100%;object-fit:cover;">';
+    document.body.appendChild(ov);
+    return ov;
+  }
+
+  function triggerFoxy(){
+    /* Если уже есть foxy overlay на странице (со страницы Мыслана) — используем его */
+    var existing = document.getElementById('foxyOverlay');
+    if(existing){
+      var vid = existing.querySelector('video');
+      existing.style.display='flex';
+      if(vid){ vid.currentTime=0; vid.muted=false; vid.play().catch(function(){ vid.muted=true; vid.play().catch(function(){}); }); var t=setTimeout(function(){ existing.style.display='none'; if(vid){vid.pause();vid.muted=true;} },4000); vid.onended=function(){ clearTimeout(t); existing.style.display='none'; vid.muted=true; }; }
+      else { setTimeout(function(){ existing.style.display='none'; },4000); }
+      return;
+    }
+    /* Создаём оверлей с видео */
+    var ov = document.createElement('div');
+    ov.id='foxyOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:99998;background:#000;display:flex;align-items:center;justify-content:center;';
+    var v = document.createElement('video');
+    v.src='foxy.mp4'; v.style.cssText='width:100%;height:100%;object-fit:cover;pointer-events:none;';
+    v.muted=false; ov.appendChild(v); document.body.appendChild(ov);
+    v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); });
+    var t=setTimeout(function(){ ov.remove(); },4000);
+    v.onended=function(){ clearTimeout(t); ov.remove(); };
+  }
+
+  function triggerNormal(){
+    /* Вызываем стандартный screamer из script.js */
+    if(window._triggerScreamer) window._triggerScreamer();
+    else if(window._armScreamer)  window._armScreamer();
+  }
+
+  card.addEventListener('mouseenter', function(){
+    if(foxyFired) return; /* уже сработал — не вешаем снова 20с таймер */
+    hoverStart = Date.now();
+    hoverTimer = setTimeout(function(){
+      foxyFired = true;
+      triggerFoxy();
+      /* через 180 сек общего нахождения на странице — обычный */
+      normalTimer = setTimeout(triggerNormal, 180000);
+    }, 20000);
+  });
+
+  card.addEventListener('mouseleave', function(){
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+    hoverStart = null;
+  });
+})();
+</script>
