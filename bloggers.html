@@ -62,6 +62,23 @@
         <span class="card-read-btn" style="border-color:rgba(0,255,60,.45);color:#00ff44;">Читать больше →</span>
       </div>
     </a>
+    <!-- DivX Kar — red/blue gradient -->
+    <a href="blogger-kart.html" class="wiki-card" id="kartCard" data-name="DivX Kar" data-order="3" data-sound
+       style="background:linear-gradient(160deg,#120008 0%,#0a000e 50%,#000816 100%);border-color:rgba(200,40,160,.35);overflow:hidden;">
+      <canvas class="card-canvas" id="kartCanvas"></canvas>
+      <div class="card-body">
+        <div class="card-logo-row">
+          <img src="kart_ava.jpg" class="card-logo" alt="DivX Kar">
+          <div>
+            <div class="card-title" style="background:linear-gradient(90deg,#ff2060,#c040ff,#4060ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">DivX Kar — Карт</div>
+            <div class="card-tag" style="color:rgba(200,80,180,.65);">Блогер · Обзоры модов · Летсплей</div>
+          </div>
+        </div>
+        <div class="card-desc-label" style="color:rgba(200,80,180,.55);">описание</div>
+        <div class="card-desc-text">Обзоры модов и летсплей карт. Снимает на YouTube с 7 лет. Трансформеры, супергерои и многое другое.</div>
+        <span class="card-read-btn" style="border-color:rgba(200,40,160,.45);background:linear-gradient(135deg,rgba(255,20,60,.08),rgba(60,20,255,.08));color:#ff2060;">Читать больше →</span>
+      </div>
+    </a>
   </div>
 </div>
 <footer class="site-footer">
@@ -198,6 +215,49 @@
     clearTimeout(hoverTimer);
     hoverTimer = null;
   });
+})();
+</script>
+
+<script>
+(function(){
+  var card   = document.getElementById('kartCard');
+  var canvas = document.getElementById('kartCanvas');
+  if(!card||!canvas) return;
+  var ctx = canvas.getContext('2d');
+  function resize(){ canvas.width=card.offsetWidth||340; canvas.height=card.offsetHeight||360; }
+  resize(); window.addEventListener('resize',resize);
+
+  var particles = [];
+  for(var i=0;i<40;i++){
+    var red = Math.random()>.5;
+    particles.push({
+      x:Math.random()*340, y:Math.random()*360,
+      s:1+Math.random()*2.5,
+      vx:(Math.random()-.5)*.45,
+      vy:-0.3-Math.random()*.45,
+      op:.08+Math.random()*.22,
+      pulse:Math.random()*Math.PI*2,
+      ps:.018+Math.random()*.028,
+      red:red
+    });
+  }
+  function tick(){
+    var W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(function(p){
+      p.x+=p.vx; p.y+=p.vy; p.pulse+=p.ps;
+      if(p.y+p.s<0){ p.y=H+p.s; p.x=Math.random()*W; }
+      if(p.x<-p.s) p.x=W+p.s;
+      if(p.x>W+p.s) p.x=-p.s;
+      var op=p.op*(.5+.5*Math.sin(p.pulse));
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+      ctx.fillStyle=p.red?'rgba(255,30,80,'+op+')':'rgba(40,80,255,'+op+')';
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
 })();
 </script>
 </body>
