@@ -6,6 +6,13 @@
   <title>Настройки — МапДев Вики</title>
   <link rel="icon" type="image/png" href="fav.png">
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#9b5ff0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="МапДев">
+  <link rel="apple-touch-icon" href="fav.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     html, body { overflow-y: auto; }
@@ -214,6 +221,96 @@
       .settings-grid { grid-template-columns: 1fr; }
       .settings-wrap { padding: 36px 18px 0; }
     }
+
+    /* ── PWA install block ── */
+    .pwa-block {
+      background: linear-gradient(135deg, rgba(80,40,180,.12) 0%, rgba(120,60,220,.08) 100%);
+      border: 1px solid rgba(130,80,220,.35);
+      border-radius: 10px;
+      padding: 24px 22px;
+      display: flex; flex-direction: column; gap: 14px;
+      opacity: 0; animation: fadeUp .7s ease .35s forwards;
+      margin-top: 24px;
+    }
+    .pwa-block:hover { border-color: var(--border2); }
+    .pwa-top { display: flex; align-items: center; gap: 16px; }
+    .pwa-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: linear-gradient(135deg,#5030cc,#9040ee);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(100,40,220,.35);
+    }
+    .pwa-info { flex: 1; }
+    .pwa-title { font-size: 14px; color: var(--text); margin-bottom: 3px; }
+    .pwa-sub { font-size: 11px; color: var(--text2); line-height: 1.65; }
+    .pwa-features {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .pwa-feature {
+      font-family: var(--font); font-size: 10px; letter-spacing: .06em;
+      padding: 4px 10px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text2);
+    }
+    .pwa-install-btn {
+      font-family: var(--font); font-size: 13px; letter-spacing: .07em;
+      padding: 12px 24px; border-radius: var(--radius);
+      background: linear-gradient(135deg,#5030cc,#9040ee);
+      color: #fff; border: none; cursor: pointer;
+      transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 18px rgba(100,40,220,.35);
+    }
+    .pwa-install-btn:hover { transform: scale(1.03); box-shadow: 0 6px 24px rgba(120,40,240,.5); }
+    .pwa-install-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .pwa-installed {
+      display: none; align-items: center; gap: 10px;
+      font-size: 13px; color: #44cc80; padding: 10px 0;
+    }
+    .pwa-installed.show { display: flex; }
+    .pwa-ios-hint {
+      display: none; font-size: 11px; color: var(--text2); line-height: 1.7;
+      border-top: 1px solid var(--border); padding-top: 12px;
+    }
+    .pwa-ios-hint.show { display: block; }
+
+    /* ── Install banner (shown on non-PWA) ── */
+    .pwa-banner {
+      position: fixed; bottom: 80px; right: 20px;
+      z-index: 8000;
+      background: var(--bg2); border: 1px solid rgba(130,80,220,.45);
+      border-radius: 14px; padding: 16px 18px;
+      max-width: 280px; width: calc(100vw - 40px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.55), 0 0 20px rgba(100,40,220,.2);
+      display: none; flex-direction: column; gap: 10px;
+      animation: bannerIn .4s ease;
+    }
+    @keyframes bannerIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+    .pwa-banner.show { display: flex; }
+    .pwa-banner-top { display: flex; align-items: center; gap: 12px; }
+    .pwa-banner-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(135deg,#5030cc,#9040ee);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .pwa-banner-text { flex: 1; }
+    .pwa-banner-title { font-size: 12px; color: var(--text); margin-bottom: 2px; }
+    .pwa-banner-sub { font-size: 10px; color: var(--text2); }
+    .pwa-banner-close {
+      background: none; border: none; color: var(--text2);
+      font-size: 16px; cursor: pointer; padding: 0; line-height: 1;
+      transition: color .15s; flex-shrink: 0; align-self: flex-start;
+    }
+    .pwa-banner-close:hover { color: var(--text); }
+    .pwa-banner-btn {
+      font-family: var(--font); font-size: 11px; letter-spacing: .06em;
+      padding: 9px; border-radius: var(--radius);
+      background: linear-gradient(135deg,#5030cc,#9040ee);
+      color: #fff; border: none; cursor: pointer;
+      transition: all .15s; width: 100%;
+    }
+    .pwa-banner-btn:hover { filter: brightness(1.12); }
+
   </style>
 </head>
 <body>
@@ -228,8 +325,15 @@
     <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
     <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
     <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+    <a href="posts.html"    class="nav-btn" data-sound>Посты</a>
   </nav>
-  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+  <div class="header-right">
+    <a href="messages.html" class="dm-header-btn" data-sound>
+      <span class="dm-btn-icon">💬</span>
+      <span class="dm-btn-label">Личные сообщения</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+  </div>
 </header>
 
 <div class="settings-page">
@@ -310,6 +414,33 @@
       <div class="theme-card light-card" data-theme-val="light">
         <span class="theme-icon">☀️</span>
         Светлая
+      </div>
+    </div>
+
+
+    <!-- PWA install block -->
+    <div class="pwa-block" id="pwaBlock">
+      <div class="pwa-top">
+        <div class="pwa-icon">📱</div>
+        <div class="pwa-info">
+          <div class="pwa-title">МапДев Вики — приложение</div>
+          <div class="pwa-sub">Установи сайт как приложение на телефон или компьютер. Работает офлайн, открывается мгновенно.</div>
+        </div>
+      </div>
+      <div class="pwa-features">
+        <span class="pwa-feature">⚡ Быстрый запуск</span>
+        <span class="pwa-feature">📶 Офлайн режим</span>
+        <span class="pwa-feature">🔔 Без браузера</span>
+        <span class="pwa-feature">🏠 Иконка на экране</span>
+      </div>
+      <button class="pwa-install-btn" id="pwaInstallBtn" disabled>
+        <span>📲</span> Установить приложение
+      </button>
+      <div class="pwa-installed" id="pwaInstalled">
+        ✅ Приложение уже установлено!
+      </div>
+      <div class="pwa-ios-hint" id="pwaIosHint">
+        На iPhone/iPad: нажми <b>Поделиться</b> → <b>На экран «Домой»</b>
       </div>
     </div>
 
@@ -418,5 +549,122 @@
     <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
   </svg>
 </a>
+
+<!-- PWA install banner -->
+<div class="pwa-banner" id="pwaBanner">
+  <div class="pwa-banner-top">
+    <div class="pwa-banner-icon">📱</div>
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Установить МапДев Вики</div>
+      <div class="pwa-banner-sub">Как приложение — быстро и удобно</div>
+    </div>
+    <button class="pwa-banner-close" id="pwaBannerClose">✕</button>
+  </div>
+  <button class="pwa-banner-btn" id="pwaBannerBtn">📲 Установить</button>
+</div>
+
+<script>
+/* ══ PWA ══ */
+(function(){
+  /* Register SW */
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+
+  var deferredPrompt = null;
+  var BANNER_KEY = 'pwa_banner_dismissed';
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+  /* Catch install prompt (Chrome/Android/Desktop) */
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    /* Enable install button */
+    var btn = document.getElementById('pwaInstallBtn');
+    if(btn){ btn.disabled=false; }
+    /* Show banner if not dismissed recently */
+    showBannerIfNeeded();
+  });
+
+  /* Already installed */
+  window.addEventListener('appinstalled', function(){
+    deferredPrompt = null;
+    setInstalled();
+    hideBanner();
+  });
+
+  /* On page load */
+  if(isStandalone){
+    setInstalled();
+  } else if(isIOS){
+    var iosHint = document.getElementById('pwaIosHint');
+    if(iosHint) iosHint.classList.add('show');
+    showBannerIfNeeded();
+  }
+
+  function setInstalled(){
+    var btn = document.getElementById('pwaInstallBtn');
+    var ins = document.getElementById('pwaInstalled');
+    if(btn){ btn.style.display='none'; }
+    if(ins){ ins.classList.add('show'); }
+  }
+
+  /* Install button in settings */
+  var installBtn = document.getElementById('pwaInstallBtn');
+  if(installBtn){
+    installBtn.addEventListener('click', function(){
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(r){
+        if(r.outcome==='accepted') setInstalled();
+        deferredPrompt=null;
+      });
+    });
+  }
+
+  /* Banner */
+  function showBannerIfNeeded(){
+    if(isStandalone) return;
+    var dismissed = localStorage.getItem(BANNER_KEY);
+    if(dismissed && Date.now()-parseInt(dismissed)<7*24*60*60*1000) return; /* 7 дней */
+    setTimeout(function(){
+      var banner = document.getElementById('pwaBanner');
+      if(banner) banner.classList.add('show');
+    }, 2000);
+  }
+
+  function hideBanner(){
+    var banner = document.getElementById('pwaBanner');
+    if(banner) banner.classList.remove('show');
+  }
+
+  var closeBtn = document.getElementById('pwaBannerClose');
+  if(closeBtn){
+    closeBtn.addEventListener('click',function(){
+      hideBanner();
+      localStorage.setItem(BANNER_KEY, String(Date.now()));
+    });
+  }
+
+  var bannerBtn = document.getElementById('pwaBannerBtn');
+  if(bannerBtn){
+    bannerBtn.addEventListener('click',function(){
+      if(deferredPrompt){
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(r){
+          if(r.outcome==='accepted'){ setInstalled(); hideBanner(); }
+          deferredPrompt=null;
+        });
+      } else if(isIOS){
+        hideBanner();
+        /* Scroll to hint in settings */
+        var hint=document.getElementById('pwaIosHint');
+        if(hint){ hint.scrollIntoView({behavior:'smooth'}); }
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>

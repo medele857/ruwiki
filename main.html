@@ -9,6 +9,12 @@
   <meta property="og:description" content="МЭДЭЛЭ, ну ооочень серьезное название">
   <meta property="og:image" content="fav.png">
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#9b5ff0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="МапДев">
+  <link rel="apple-touch-icon" href="fav.png">
   <style>
 /* ══ SPOTLIGHT ══ */
 .spotlight-section{position:relative;overflow:hidden;padding:60px 36px 70px;display:flex;align-items:center;justify-content:center;transition:background 0.6s ease,border-color 0.6s ease;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
@@ -890,5 +896,36 @@ function showToast(msg, ms) {
     <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
   </svg>
 </a>
+
+<!-- PWA banner (shown on non-standalone) -->
+<div style="position:fixed;bottom:80px;right:20px;z-index:8000;background:var(--bg2);border:1px solid rgba(130,80,220,.45);border-radius:14px;padding:16px 18px;max-width:280px;width:calc(100vw - 40px);box-shadow:0 8px 32px rgba(0,0,0,.55);display:none;flex-direction:column;gap:10px;" id="mainPwaBanner">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#5030cc,#9040ee);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📱</div>
+    <div style="flex:1;">
+      <div style="font-size:12px;color:var(--text);margin-bottom:2px;font-family:var(--font);">МапДев Вики — приложение</div>
+      <div style="font-size:10px;color:var(--text2);font-family:var(--font);">Установи как приложение — быстро и удобно</div>
+    </div>
+    <button onclick="localStorage.setItem('pwa_banner_dismissed',Date.now());this.closest('div[id]').style.display='none';" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;align-self:flex-start;">✕</button>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="settings.html#pwa" style="flex:1;font-family:var(--font);font-size:11px;letter-spacing:.06em;padding:9px;border-radius:var(--radius);background:linear-gradient(135deg,#5030cc,#9040ee);color:#fff;border:none;cursor:pointer;text-align:center;text-decoration:none;display:block;">📲 Установить</a>
+    <button onclick="localStorage.setItem('pwa_banner_dismissed',Date.now());this.closest('div[id]').style.display='none';" style="font-family:var(--font);font-size:11px;padding:9px 12px;border-radius:var(--radius);background:var(--bg3);color:var(--text2);border:1px solid var(--border);cursor:pointer;">Позже</button>
+  </div>
+</div>
+
+<script>
+/* PWA SW + banner on main */
+(function(){
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if(isStandalone) return;
+  var dismissed = localStorage.getItem('pwa_banner_dismissed');
+  if(dismissed && Date.now()-parseInt(dismissed) < 7*24*60*60*1000) return;
+  setTimeout(function(){
+    var b = document.getElementById('mainPwaBanner');
+    if(b){ b.style.display='flex'; }
+  }, 3000);
+})();
+</script>
 </body>
 </html>

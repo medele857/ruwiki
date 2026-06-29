@@ -1,0 +1,23 @@
+{
+  "name": "МапДев Вики",
+  "short_name": "МапДев",
+  "description": "Русскоязычная энциклопедия ру-мапдев сообщества Minecraft",
+  "start_url": "/ruwiki/main.html",
+  "scope": "/ruwiki/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e0e12",
+  "theme_color": "#9b5ff0",
+  "lang": "ru",
+  "icons": [
+    { "src": "fav.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "fav.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["games", "entertainment"],
+  "shortcuts": [
+    { "name": "Авторы",   "url": "/ruwiki/authors.html",  "description": "Авторы карт" },
+    { "name": "Студии",   "url": "/ruwiki/studios.html",  "description": "Студии" },
+    { "name": "Посты",    "url": "/ruwiki/posts.html",    "description": "Посты" },
+    { "name": "Сообщения","url": "/ruwiki/messages.html", "description": "Личные сообщения" }
+  ]
+}
