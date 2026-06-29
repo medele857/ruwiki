@@ -142,6 +142,130 @@
 .wiki-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 @media(max-width:768px){.community-section{grid-template-columns:1fr;padding:36px 18px 44px;}}
+
+/* ══ DM HEADER BUTTON ══ */
+.dm-header-btn {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font); font-size: 13px; letter-spacing: .06em;
+  padding: 7px 15px 7px 12px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(135deg, #5060ff 0%, #8040ff 100%);
+  border: 1px solid rgba(140,100,255,.6);
+  box-shadow: 0 0 14px rgba(100,80,255,.35), inset 0 1px 0 rgba(255,255,255,.12);
+  transition: all .18s;
+  overflow: hidden;
+  flex-shrink: 0;
+  order: -1; /* left of nav */
+}
+.dm-header-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.dm-header-btn:hover {
+  transform: scale(1.07);
+  box-shadow: 0 0 24px rgba(120,80,255,.6), inset 0 1px 0 rgba(255,255,255,.18);
+  border-color: rgba(180,140,255,.8);
+}
+.dm-header-btn:hover .dm-btn-icon { transform: rotate(-12deg) scale(1.15); }
+.dm-btn-icon { font-size: 16px; transition: transform .2s; display: inline-block; }
+.dm-btn-label { font-size: 12px; }
+.dm-unread-badge {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  background: #ff3060; color: #fff;
+  font-size: 9px; display: none; align-items: center; justify-content: center;
+  padding: 0 3px; border: 2px solid var(--bg2);
+  font-family: var(--font);
+}
+.dm-unread-badge.show { display: flex; }
+
+/* header-nav flex with dm btn */
+.header-right {
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* ══ DM MAIN BANNER ══ */
+.dm-main-banner {
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--border);
+  padding: 44px 36px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 32px; text-decoration: none; color: inherit;
+  background: linear-gradient(135deg, #0a0818 0%, #110d22 50%, #0a0818 100%);
+  transition: background .3s;
+}
+.dm-main-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(100,60,255,.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.dm-banner-canvas {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: transparent !important;
+}
+.dm-banner-left {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dm-banner-eyebrow {
+  font-family: var(--font); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(160,120,255,.6);
+  display: flex; align-items: center; gap: 8px;
+}
+.dm-banner-eyebrow::before {
+  content: '';
+  display: inline-block; width: 20px; height: 1px;
+  background: rgba(160,120,255,.4);
+}
+.dm-banner-title {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: clamp(28px, 5vw, 48px); letter-spacing: .06em;
+  background: linear-gradient(90deg, #a080ff, #d0b0ff, #8060ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1;
+}
+.dm-banner-sub {
+  font-family: var(--font); font-size: 12px;
+  color: rgba(180,150,255,.5); letter-spacing: .04em; line-height: 1.7;
+  max-width: 340px;
+}
+.dm-banner-cta {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.dm-banner-bigbtn {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+  font-family: var(--font); font-size: 13px; letter-spacing: .07em;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #5040ff 0%, #9040ff 100%);
+  border: 1px solid rgba(160,100,255,.5);
+  border-radius: var(--radius);
+  color: #fff; transition: all .2s;
+  box-shadow: 0 0 20px rgba(100,60,255,.3);
+}
+.dm-main-banner:hover .dm-banner-bigbtn {
+  box-shadow: 0 0 36px rgba(120,60,255,.55);
+  border-color: rgba(200,160,255,.7);
+  transform: scale(1.04);
+}
+.dm-banner-bigbtn-icon { font-size: 28px; }
+.dm-banner-features {
+  display: flex; gap: 16px; font-family: var(--font);
+  font-size: 10px; letter-spacing: .06em; color: rgba(180,150,255,.45);
+}
+@media (max-width: 600px) {
+  .dm-main-banner { flex-direction: column; padding: 32px 18px; }
+  .dm-banner-cta { width: 100%; }
+  .dm-banner-bigbtn { width: 100%; }
+}
+
   </style>
 </head>
 <body>
@@ -167,9 +291,16 @@
     <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
     <a href="posts.html"    class="nav-btn" data-sound>Посты</a>
   </nav>
-  <button class="theme-toggle" id="themeToggle" data-sound title="Сменить тему">
-    <span class="theme-icon">🌙</span>
-  </button>
+  <div class="header-right">
+    <a href="messages.html" class="dm-header-btn" data-sound id="dmHeaderBtn">
+      <span class="dm-btn-icon">💬</span>
+      <span class="dm-btn-label">Личные сообщения</span>
+      <span class="dm-unread-badge" id="dmUnreadBadge"></span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" data-sound title="Сменить тему">
+      <span class="theme-icon">🌙</span>
+    </button>
+  </div>
 </header>
 
 <!-- ══ HERO ══ -->
@@ -234,6 +365,29 @@
     <div class="posts-banner-title">Посты</div>
     <div class="posts-banner-sub">Новости, мысли и обновления от участников сообщества</div>
     <div class="posts-banner-btn">Читать посты &nbsp;→</div>
+  </div>
+</a>
+
+
+<!-- ══ DM BANNER ══ -->
+<a href="messages.html" class="dm-main-banner" data-sound>
+  <canvas class="dm-banner-canvas" id="dmBannerCanvas"></canvas>
+  <div class="dm-banner-left">
+    <div class="dm-banner-eyebrow">только для пользователей с ником</div>
+    <div class="dm-banner-title">Личные сообщения</div>
+    <div class="dm-banner-sub">Пиши напрямую другим участникам сообщества. Текст, медиа по ссылке, реакции и ответы на сообщения.</div>
+    <div class="dm-banner-features">
+      <span>💬 Личные чаты</span>
+      <span>⚡ Реакции</span>
+      <span>↩ Ответы</span>
+      <span>🖼 Медиа</span>
+    </div>
+  </div>
+  <div class="dm-banner-cta">
+    <div class="dm-banner-bigbtn">
+      <span class="dm-banner-bigbtn-icon">💬</span>
+      Открыть сообщения
+    </div>
   </div>
 </a>
 
