@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сообщения — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow: hidden !important; height: 100%; }
+
+    .msg-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(160deg, #07090f 0%, #0b0e18 100%);
+    }
+
+    /* ══ LAYOUT ══ */
+    .msg-wrap {
+      position: fixed;
+      top: var(--hh, 56px); left: 0; right: 0; bottom: 0;
+      display: flex;
+    }
+
+    /* ══ LEFT PANEL — dialogs ══ */
+    .msg-left {
+      width: 280px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      background: var(--bg);
+    }
+    .msg-left-head {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .msg-left-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: .06em; color: var(--text);
+      margin-bottom: 10px;
+    }
+    .msg-search-wrap { position: relative; }
+    .msg-search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 13px; height: 13px; opacity: .4; pointer-events: none;
+    }
+    .msg-search {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px;
+      padding: 8px 10px 8px 30px; outline: none;
+      transition: border-color .15s;
+    }
+    .msg-search:focus { border-color: var(--border2); }
+    .msg-search::placeholder { color: var(--text2); opacity: .6; }
+
+    /* New chat button */
+    .msg-new-btn {
+      margin: 10px 16px 0;
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font); font-size: 12px; letter-spacing: .05em;
+      padding: 9px 14px; border-radius: var(--radius);
+      border: 1px solid rgba(80,120,255,.35);
+      background: rgba(80,120,255,.07); color: var(--accent);
+      cursor: pointer; transition: all .15s;
+    }
+    .msg-new-btn:hover { background: rgba(80,120,255,.15); border-color: var(--accent); }
+
+    /* Dialog list */
+    .msg-dialog-list {
+      flex: 1; overflow-y: auto; padding: 8px 0;
+    }
+    .msg-dialog-list::-webkit-scrollbar { width: 3px; }
+    .msg-dialog-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .msg-dialog-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; cursor: pointer;
+      transition: background .12s;
+      position: relative;
+    }
+    .msg-dialog-item:hover { background: var(--bg2); }
+    .msg-dialog-item.active { background: var(--bg3); }
+    .msg-dialog-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; color: var(--accent);
+      font-family: var(--font);
+    }
+    .msg-dialog-info { flex: 1; min-width: 0; }
+    .msg-dialog-nick { font-family: var(--font); font-size: 13px; color: var(--text); margin-bottom: 2px; }
+    .msg-dialog-preview {
+      font-size: 11px; color: var(--text2); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .msg-dialog-time { font-size: 10px; color: var(--text2); flex-shrink: 0; }
+    .msg-unread-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    .msg-empty-dialogs {
+      padding: 40px 16px; text-align: center;
+      font-size: 12px; color: var(--text2); opacity: .5;
+    }
+
+    /* ══ RIGHT PANEL — chat ══ */
+    .msg-right {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; background: var(--bg);
+    }
+
+    /* Chat header */
+    .msg-chat-head {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0;
+    }
+    .msg-chat-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--accent); font-family: var(--font);
+    }
+    .msg-chat-nick { font-family: var(--font); font-size: 14px; color: var(--text); }
+    .msg-chat-status { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+    /* Welcome screen */
+    .msg-welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--text2); text-align: center; padding: 40px;
+    }
+    .msg-welcome-icon { font-size: 48px; margin-bottom: 16px; opacity: .3; }
+    .msg-welcome-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .06em; color: var(--text); margin-bottom: 8px; }
+    .msg-welcome-sub { font-size: 13px; opacity: .5; }
+
+    /* No nick screen */
+    .msg-nonick {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--text2); text-align: center; padding: 40px;
+    }
+    .msg-nonick-icon { font-size: 44px; margin-bottom: 16px; opacity: .35; }
+    .msg-nonick-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: .06em; color: var(--text); margin-bottom: 8px; }
+    .msg-nonick-sub { font-size: 13px; opacity: .5; line-height: 1.7; }
+
+    /* Messages area */
+    .msg-messages {
+      flex: 1; overflow-y: auto; padding: 20px 20px 8px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .msg-messages::-webkit-scrollbar { width: 3px; }
+    .msg-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* Date divider */
+    .msg-date-divider {
+      text-align: center; font-size: 10px; color: var(--text2);
+      letter-spacing: .08em; padding: 10px 0; opacity: .5;
+    }
+
+    /* Message bubble */
+    .msg-bubble-wrap {
+      display: flex; flex-direction: column;
+      max-width: 68%; margin-bottom: 2px;
+      animation: msgIn .2s ease forwards;
+    }
+    @keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    .msg-bubble-wrap.mine { align-self: flex-end; align-items: flex-end; }
+    .msg-bubble-wrap.theirs { align-self: flex-start; align-items: flex-start; }
+
+    .msg-bubble-nick {
+      font-size: 10px; color: var(--accent); letter-spacing: .05em;
+      margin-bottom: 3px; padding: 0 4px;
+    }
+
+    /* Reply quote */
+    .msg-reply-quote {
+      background: var(--bg3); border-left: 2px solid var(--accent);
+      padding: 5px 8px; border-radius: 4px; margin-bottom: 4px;
+      font-size: 11px; color: var(--text2); max-width: 100%;
+    }
+    .msg-reply-quote-nick { color: var(--accent); font-size: 10px; margin-bottom: 2px; }
+    .msg-reply-quote-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .msg-bubble {
+      padding: 9px 12px; border-radius: 12px;
+      font-family: var(--font); font-size: 13px; line-height: 1.7;
+      word-break: break-word; white-space: pre-wrap;
+      position: relative; cursor: pointer;
+    }
+    .msg-bubble-wrap.mine .msg-bubble {
+      background: var(--accent); color: #fff;
+      border-bottom-right-radius: 3px;
+    }
+    .msg-bubble-wrap.theirs .msg-bubble {
+      background: var(--bg3); color: var(--text);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 3px;
+    }
+
+    /* Media preview */
+    .msg-media-preview {
+      max-width: 100%; border-radius: 8px; overflow: hidden;
+      margin-top: 6px; border: 1px solid var(--border);
+    }
+    .msg-media-preview img { max-width: 260px; max-height: 200px; object-fit: cover; display: block; }
+    .msg-media-preview video { max-width: 260px; max-height: 200px; display: block; outline: none; }
+    .msg-media-link {
+      font-size: 11px; color: var(--accent); text-decoration: none;
+      display: flex; align-items: center; gap: 4px; margin-top: 4px;
+      opacity: .7;
+    }
+    .msg-media-link:hover { opacity: 1; }
+
+    .msg-bubble-time {
+      font-size: 9px; color: inherit; opacity: .45;
+      margin-top: 3px; padding: 0 4px;
+    }
+
+    /* Reactions on bubble */
+    .msg-reactions-row {
+      display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; padding: 0 2px;
+    }
+    .msg-reaction-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 12px; padding: 2px 7px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg3);
+      cursor: pointer; transition: all .12s; user-select: none;
+    }
+    .msg-reaction-chip:hover { border-color: var(--border2); transform: scale(1.1); }
+    .msg-reaction-chip.mine { border-color: var(--accent); background: rgba(80,120,255,.12); }
+    .msg-reaction-chip span { font-size: 10px; color: var(--text2); }
+
+    /* Reaction picker popup */
+    .msg-react-picker {
+      position: fixed; z-index: 1000;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 8px 10px;
+      display: flex; gap: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      animation: fadeUp .15s ease;
+    }
+    .msg-react-pick-btn {
+      font-size: 20px; cursor: pointer; padding: 4px;
+      border-radius: 6px; transition: background .12s, transform .12s;
+      border: none; background: none;
+    }
+    .msg-react-pick-btn:hover { background: var(--bg3); transform: scale(1.2); }
+
+    /* Reply bar */
+    .msg-reply-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 8px 20px; border-top: 1px solid var(--border);
+      background: var(--bg2); flex-shrink: 0;
+    }
+    .msg-reply-bar.show { display: flex; }
+    .msg-reply-bar-text { flex: 1; font-size: 12px; color: var(--text2); }
+    .msg-reply-bar-nick { color: var(--accent); }
+    .msg-reply-bar-close {
+      font-size: 16px; color: var(--text2); cursor: pointer;
+      background: none; border: none; padding: 0;
+      transition: color .12s;
+    }
+    .msg-reply-bar-close:hover { color: var(--text); }
+
+    /* Input area */
+    .msg-input-area {
+      padding: 12px 20px 14px; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 8px;
+      flex-shrink: 0;
+    }
+    .msg-input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .msg-input {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px;
+      padding: 9px 14px; outline: none; resize: none;
+      min-height: 40px; max-height: 120px; line-height: 1.5;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .msg-input:focus { border-color: var(--border2); box-shadow: 0 0 0 2px var(--glow); }
+    .msg-input:disabled { opacity: .4; cursor: not-allowed; }
+    .msg-media-btn {
+      width: 40px; height: 40px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text2); cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all .15s;
+    }
+    .msg-media-btn:hover { border-color: var(--border2); color: var(--text); }
+    .msg-send-btn {
+      width: 40px; height: 40px; border-radius: var(--radius);
+      background: var(--accent); border: none; color: #fff;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, transform .12s;
+    }
+    .msg-send-btn:hover { background: var(--accent2); transform: scale(1.08); }
+    .msg-send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .msg-send-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* Media URL input row */
+    .msg-media-row {
+      display: none; align-items: center; gap: 8px;
+    }
+    .msg-media-row.show { display: flex; }
+    .msg-media-url {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 12px;
+      padding: 7px 12px; outline: none;
+      transition: border-color .15s;
+    }
+    .msg-media-url:focus { border-color: var(--border2); }
+    .msg-media-type-btn {
+      font-family: var(--font); font-size: 11px; padding: 7px 10px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg3); color: var(--text2); cursor: pointer;
+      transition: all .15s; white-space: nowrap;
+    }
+    .msg-media-type-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* ══ NEW CHAT MODAL ══ */
+    .msg-modal-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .msg-modal-overlay.show { display: flex; }
+    .msg-modal {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 28px; width: 100%; max-width: 360px;
+      animation: fadeUp .3s ease forwards;
+    }
+    .msg-modal-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: .06em; color: var(--text); margin-bottom: 16px;
+    }
+    .msg-modal-input {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font); font-size: 13px;
+      padding: 10px 14px; outline: none; margin-bottom: 12px;
+      transition: border-color .15s;
+    }
+    .msg-modal-input:focus { border-color: var(--border2); }
+    .msg-modal-error { font-size: 12px; color: #ff5060; margin-bottom: 10px; display: none; }
+    .msg-modal-error.show { display: block; }
+    .msg-modal-btns { display: flex; gap: 8px; }
+    .msg-modal-ok {
+      flex: 1; font-family: var(--font); font-size: 13px;
+      padding: 10px; border-radius: var(--radius);
+      background: var(--accent); color: #fff; border: none;
+      cursor: pointer; transition: background .15s;
+    }
+    .msg-modal-ok:hover { background: var(--accent2); }
+    .msg-modal-cancel {
+      font-family: var(--font); font-size: 13px;
+      padding: 10px 16px; border-radius: var(--radius);
+      background: var(--bg3); color: var(--text2);
+      border: 1px solid var(--border); cursor: pointer; transition: all .15s;
+    }
+    .msg-modal-cancel:hover { border-color: var(--border2); color: var(--text); }
+
+    /* ══ MOBILE ══ */
+    @media (max-width: 640px) {
+      .msg-left { width: 100%; position: absolute; inset: 0; z-index: 10; transition: transform .25s; }
+      .msg-left.hidden { transform: translateX(-100%); }
+      .msg-right { width: 100%; }
+      .msg-chat-back {
+        display: flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--bg3); border: 1px solid var(--border);
+        cursor: pointer; font-size: 14px; color: var(--text2);
+        transition: all .15s; flex-shrink: 0;
+      }
+    }
+    .msg-chat-back { display: none; }
+  </style>
+</head>
+<body>
+<div class="msg-bg"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+    <a href="posts.html"    class="nav-btn" data-sound>Посты</a>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+</header>
+
+<!-- New chat modal -->
+<div class="msg-modal-overlay" id="newChatModal">
+  <div class="msg-modal">
+    <div class="msg-modal-title">Новый диалог</div>
+    <input class="msg-modal-input" id="newChatNickInput" placeholder="Введи ник собеседника..." maxlength="24" autocomplete="off" spellcheck="false">
+    <div class="msg-modal-error" id="newChatError"></div>
+    <div class="msg-modal-btns">
+      <button class="msg-modal-cancel" id="newChatCancel">Отмена</button>
+      <button class="msg-modal-ok" id="newChatOk">Начать чат →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reaction picker -->
+<div class="msg-react-picker" id="reactPicker" style="display:none;">
+  <button class="msg-react-pick-btn" data-emoji="👍">👍</button>
+  <button class="msg-react-pick-btn" data-emoji="❤️">❤️</button>
+  <button class="msg-react-pick-btn" data-emoji="😂">😂</button>
+  <button class="msg-react-pick-btn" data-emoji="😮">😮</button>
+  <button class="msg-react-pick-btn" data-emoji="😢">😢</button>
+  <button class="msg-react-pick-btn" data-emoji="🔥">🔥</button>
+</div>
+
+<div class="msg-wrap">
+  <!-- LEFT -->
+  <div class="msg-left" id="msgLeft">
+    <div class="msg-left-head">
+      <div class="msg-left-title">Сообщения</div>
+      <div class="msg-search-wrap">
+        <svg class="msg-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="msg-search" id="dialogSearch" placeholder="Поиск по диалогам..." autocomplete="off">
+      </div>
+      <button class="msg-new-btn" id="newChatBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Новый диалог
+      </button>
+    </div>
+    <div class="msg-dialog-list" id="dialogList">
+      <div class="msg-empty-dialogs">Загрузка…</div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="msg-right" id="msgRight">
+    <!-- Welcome / No nick shown by JS -->
+    <div class="msg-welcome" id="msgWelcome">
+      <div class="msg-welcome-icon">💬</div>
+      <div class="msg-welcome-title">Личные сообщения</div>
+      <div class="msg-welcome-sub">Выбери диалог слева или начни новый</div>
+    </div>
+
+    <!-- Chat view (hidden until dialog selected) -->
+    <div id="msgChatView" style="display:none;flex-direction:column;height:100%;">
+      <div class="msg-chat-head" id="msgChatHead">
+        <button class="msg-chat-back" id="msgChatBack">←</button>
+        <div class="msg-chat-avatar" id="chatAvatar">?</div>
+        <div>
+          <div class="msg-chat-nick" id="chatNick">—</div>
+        </div>
+      </div>
+      <div class="msg-messages" id="msgMessages"></div>
+      <div class="msg-reply-bar" id="replyBar">
+        <div class="msg-reply-bar-text">
+          Ответ на: <span class="msg-reply-bar-nick" id="replyBarNick"></span>
+          — <span id="replyBarText"></span>
+        </div>
+        <button class="msg-reply-bar-close" id="replyBarClose">✕</button>
+      </div>
+      <div class="msg-input-area">
+        <div class="msg-media-row" id="mediaRow">
+          <input class="msg-media-url" id="mediaUrlInput" placeholder="Ссылка на фото или видео...">
+          <button class="msg-media-type-btn active" id="mediaTypeImg">🖼</button>
+          <button class="msg-media-type-btn" id="mediaTypeVid">🎬</button>
+        </div>
+        <div class="msg-input-row">
+          <button class="msg-media-btn" id="mediaToggleBtn" title="Прикрепить медиа">📎</button>
+          <textarea class="msg-input" id="msgInput" placeholder="Написать сообщение..." rows="1" maxlength="2000" disabled></textarea>
+          <button class="msg-send-btn" id="msgSendBtn" disabled>
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function(){
+  var REACTIONS = ['👍','❤️','😂','😮','😢','🔥'];
+
+  var myNick    = null;
+  var myDevId   = null;
+  var db        = null;
+  var currentDialog = null; /* { chatId, otherNick } */
+  var replyTo   = null;     /* { msgId, nick, text } */
+  var mediaType = 'image';
+  var msgListener = null;
+
+  function safeKey(s){ return s.replace(/[.#$/\[\] ]/g,'_'); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function chatId(a,b){ return [a,b].sort().join('__'); }
+
+  function timeStr(ts){
+    var d=new Date(ts);
+    var now=new Date();
+    var sameDay=d.toDateString()===now.toDateString();
+    if(sameDay) return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+    return d.getDate()+'.'+(d.getMonth()+1).toString().padStart(2,'0')+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function waitDB(cb){
+    if(window.WikiDB) cb(window.WikiDB);
+    else setTimeout(function(){ waitDB(cb); }, 200);
+  }
+
+  waitDB(function(wdb){
+    db     = wdb.db;
+    myDevId = wdb.deviceId;
+
+    /* Load own nick */
+    db.ref('nicknames/'+safeKey(myDevId)).once('value', function(snap){
+      myNick = snap.val() || null;
+      init();
+    });
+  });
+
+  function init(){
+    if(!myNick){
+      /* No nick — show message */
+      document.getElementById('msgWelcome').innerHTML =
+        '<div class="msg-nonick-icon">🔒</div>'+
+        '<div class="msg-nonick-title">Нужен ник</div>'+
+        '<div class="msg-nonick-sub">Чтобы пользоваться сообщениями,<br>сначала прокомментируй любую статью вики<br>— там выбирается ник.</div>';
+      document.getElementById('newChatBtn').style.display='none';
+      document.getElementById('dialogList').innerHTML='<div class="msg-empty-dialogs">Нет ника</div>';
+      return;
+    }
+
+    loadDialogs();
+    setupNewChat();
+    setupMobile();
+  }
+
+  /* ════════════════════════════
+     DIALOGS LIST
+  ════════════════════════════ */
+  function loadDialogs(){
+    db.ref('dm_index/'+safeKey(myNick)).on('value', function(snap){
+      var list = document.getElementById('dialogList');
+      if(!snap.exists()||!snap.numChildren()){
+        list.innerHTML='<div class="msg-empty-dialogs">Диалогов пока нет.<br>Начни первый!</div>';
+        return;
+      }
+      var items=[];
+      snap.forEach(function(ch){ items.push({nick:ch.key, data:ch.val()||{}}); });
+      items.sort(function(a,b){ return (b.data.lastTs||0)-(a.data.lastTs||0); });
+      renderDialogs(items);
+    });
+  }
+
+  function renderDialogs(items){
+    var q = document.getElementById('dialogSearch').value.trim().toLowerCase();
+    var list = document.getElementById('dialogList');
+    list.innerHTML='';
+    var filtered = items.filter(function(i){ return !q||i.nick.toLowerCase().includes(q); });
+    if(!filtered.length){
+      list.innerHTML='<div class="msg-empty-dialogs">Ничего не найдено</div>'; return;
+    }
+    filtered.forEach(function(item){
+      var el=document.createElement('div');
+      el.className='msg-dialog-item'+(currentDialog&&currentDialog.otherNick===item.nick?' active':'');
+      var unread = item.data.unread>0;
+      el.innerHTML=
+        '<div class="msg-dialog-avatar">'+esc(item.nick[0].toUpperCase())+'</div>'+
+        '<div class="msg-dialog-info">'+
+          '<div class="msg-dialog-nick">'+esc(item.nick)+'</div>'+
+          '<div class="msg-dialog-preview">'+esc((item.data.lastMsg||'').slice(0,40))+'</div>'+
+        '</div>'+
+        (item.data.lastTs?'<div class="msg-dialog-time">'+timeStr(item.data.lastTs)+'</div>':'')+
+        (unread?'<div class="msg-unread-dot"></div>':'');
+      el.addEventListener('click',function(){ openChat(item.nick); });
+      list.appendChild(el);
+    });
+  }
+
+  document.getElementById('dialogSearch').addEventListener('input', function(){
+    /* re-render with filter — trigger snapshot again */
+    db.ref('dm_index/'+safeKey(myNick)).once('value', function(snap){
+      var items=[];
+      if(snap.exists()) snap.forEach(function(ch){ items.push({nick:ch.key, data:ch.val()||{}}); });
+      renderDialogs(items);
+    });
+  });
+
+  /* ════════════════════════════
+     OPEN CHAT
+  ════════════════════════════ */
+  function openChat(otherNick){
+    var cid = chatId(safeKey(myNick), safeKey(otherNick));
+    currentDialog = { chatId: cid, otherNick: otherNick };
+
+    /* Update UI */
+    document.getElementById('chatAvatar').textContent = otherNick[0].toUpperCase();
+    document.getElementById('chatNick').textContent   = otherNick;
+    document.getElementById('msgWelcome').style.display = 'none';
+    var chatView = document.getElementById('msgChatView');
+    chatView.style.display='flex';
+
+    document.getElementById('msgInput').disabled = false;
+    document.getElementById('msgSendBtn').disabled = false;
+
+    /* Mark active dialog */
+    document.querySelectorAll('.msg-dialog-item').forEach(function(el){ el.classList.remove('active'); });
+    document.querySelectorAll('.msg-dialog-item').forEach(function(el){
+      if(el.querySelector('.msg-dialog-nick').textContent===otherNick) el.classList.add('active');
+    });
+
+    /* Clear unread */
+    db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)+'/unread').set(0);
+
+    /* Remove old listener */
+    if(msgListener){ db.ref('dms/'+currentDialog.chatId+'/messages').off('value', msgListener); }
+
+    /* Mobile: hide left panel */
+    if(window.innerWidth<=640){
+      document.getElementById('msgLeft').classList.add('hidden');
+    }
+
+    /* Load messages */
+    var msgsRef = db.ref('dms/'+cid+'/messages').orderByChild('ts').limitToLast(80);
+    msgListener = msgsRef.on('value', function(snap){
+      renderMessages(snap);
+    });
+  }
+
+  /* ════════════════════════════
+     RENDER MESSAGES
+  ════════════════════════════ */
+  function renderMessages(snap){
+    var container = document.getElementById('msgMessages');
+    var wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+    container.innerHTML='';
+
+    if(!snap||!snap.exists()){
+      container.innerHTML='<div style="text-align:center;color:var(--text2);font-size:12px;opacity:.45;padding:40px;">Начни разговор!</div>';
+      return;
+    }
+
+    var lastDate = null;
+    snap.forEach(function(ch){
+      var msg = ch.val(); var msgId = ch.key;
+      var d = new Date(msg.ts);
+      var dateStr = d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+      if(dateStr!==lastDate){
+        var sep=document.createElement('div'); sep.className='msg-date-divider'; sep.textContent=dateStr;
+        container.appendChild(sep); lastDate=dateStr;
+      }
+      container.appendChild(buildBubble(msgId, msg));
+    });
+
+    if(wasAtBottom) container.scrollTop = container.scrollHeight;
+  }
+
+  function buildBubble(msgId, msg){
+    var isMine = msg.nick===myNick;
+    var wrap=document.createElement('div');
+    wrap.className='msg-bubble-wrap '+(isMine?'mine':'theirs');
+    wrap.dataset.msgid = msgId;
+
+    if(!isMine){
+      var nickEl=document.createElement('div'); nickEl.className='msg-bubble-nick'; nickEl.textContent=msg.nick;
+      wrap.appendChild(nickEl);
+    }
+
+    /* Reply quote */
+    if(msg.replyTo){
+      var q=document.createElement('div'); q.className='msg-reply-quote';
+      q.innerHTML='<div class="msg-reply-quote-nick">'+esc(msg.replyTo.nick)+'</div>'+
+        '<div class="msg-reply-quote-text">'+esc((msg.replyTo.text||'📎 медиа').slice(0,60))+'</div>';
+      wrap.appendChild(q);
+    }
+
+    /* Bubble */
+    var bubble=document.createElement('div'); bubble.className='msg-bubble';
+    if(msg.text) bubble.textContent=msg.text;
+
+    /* Media */
+    if(msg.mediaUrl){
+      var mprev=document.createElement('div'); mprev.className='msg-media-preview';
+      if(msg.mediaType==='video'){
+        mprev.innerHTML='<video src="'+esc(msg.mediaUrl)+'" controls playsinline muted style="max-width:260px;max-height:200px;"></video>';
+      } else {
+        mprev.innerHTML='<img src="'+esc(msg.mediaUrl)+'" style="max-width:260px;max-height:200px;object-fit:cover;" onerror="this.style.display=\'none\'">';
+      }
+      var mlink=document.createElement('a'); mlink.className='msg-media-link';
+      mlink.href=msg.mediaUrl; mlink.target='_blank'; mlink.textContent='🔗 Открыть';
+      bubble.appendChild(mprev); bubble.appendChild(mlink);
+    }
+
+    /* Time */
+    var timeEl=document.createElement('div'); timeEl.className='msg-bubble-time'; timeEl.textContent=timeStr(msg.ts);
+    bubble.appendChild(timeEl);
+
+    /* Click → show reaction picker */
+    bubble.addEventListener('click', function(e){
+      e.stopPropagation();
+      showReactPicker(msgId, e.clientX, e.clientY);
+    });
+
+    /* Long press → reply (mobile) */
+    var pressTimer;
+    bubble.addEventListener('touchstart', function(){ pressTimer=setTimeout(function(){ setReplyTo(msgId, msg); },500); });
+    bubble.addEventListener('touchend',   function(){ clearTimeout(pressTimer); });
+
+    /* Right click → reply */
+    bubble.addEventListener('contextmenu', function(e){ e.preventDefault(); setReplyTo(msgId, msg); });
+
+    wrap.appendChild(bubble);
+
+    /* Reactions */
+    if(msg.reactions){
+      var rrow=document.createElement('div'); rrow.className='msg-reactions-row';
+      Object.keys(msg.reactions).forEach(function(emoji){
+        var users=msg.reactions[emoji]||{};
+        var count=Object.keys(users).length; if(!count) return;
+        var mine=!!users[safeKey(myNick)];
+        var chip=document.createElement('div');
+        chip.className='msg-reaction-chip'+(mine?' mine':'');
+        chip.innerHTML=emoji+'<span>'+count+'</span>';
+        chip.addEventListener('click',function(e){ e.stopPropagation(); toggleReaction(msgId,emoji,mine); });
+        rrow.appendChild(chip);
+      });
+      if(rrow.children.length) wrap.appendChild(rrow);
+    }
+
+    return wrap;
+  }
+
+  /* ════════════════════════════
+     REACTION PICKER
+  ════════════════════════════ */
+  var pickerMsgId=null;
+  function showReactPicker(msgId, x, y){
+    pickerMsgId=msgId;
+    var p=document.getElementById('reactPicker');
+    p.style.display='flex';
+    /* Position */
+    var pw=p.offsetWidth||200, ph=p.offsetHeight||50;
+    var left=Math.min(x, window.innerWidth-pw-10);
+    var top=y-ph-10;
+    if(top<10) top=y+10;
+    p.style.left=left+'px'; p.style.top=top+'px';
+  }
+  document.getElementById('reactPicker').querySelectorAll('.msg-react-pick-btn').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(!pickerMsgId||!currentDialog) return;
+      var emoji=btn.dataset.emoji;
+      var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+pickerMsgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
+      ref.once('value',function(snap){ snap.val() ? ref.remove() : ref.set(true); });
+      document.getElementById('reactPicker').style.display='none';
+    });
+  });
+  document.addEventListener('click',function(){ document.getElementById('reactPicker').style.display='none'; });
+
+  function toggleReaction(msgId,emoji,isMine){
+    var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+msgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
+    isMine ? ref.remove() : ref.set(true);
+  }
+
+  function encodeEmoji(e){ return e.codePointAt(0).toString(16); }
+
+  /* ════════════════════════════
+     REPLY
+  ════════════════════════════ */
+  function setReplyTo(msgId, msg){
+    replyTo={msgId:msgId, nick:msg.nick, text:msg.text||'📎 медиа'};
+    document.getElementById('replyBarNick').textContent=msg.nick;
+    document.getElementById('replyBarText').textContent=(msg.text||'📎 медиа').slice(0,50);
+    document.getElementById('replyBar').classList.add('show');
+    document.getElementById('msgInput').focus();
+  }
+  document.getElementById('replyBarClose').addEventListener('click',function(){
+    replyTo=null;
+    document.getElementById('replyBar').classList.remove('show');
+  });
+
+  /* ════════════════════════════
+     MEDIA TOGGLE
+  ════════════════════════════ */
+  document.getElementById('mediaToggleBtn').addEventListener('click',function(){
+    document.getElementById('mediaRow').classList.toggle('show');
+  });
+  document.getElementById('mediaTypeImg').addEventListener('click',function(){
+    mediaType='image';
+    this.classList.add('active');
+    document.getElementById('mediaTypeVid').classList.remove('active');
+  });
+  document.getElementById('mediaTypeVid').addEventListener('click',function(){
+    mediaType='video';
+    this.classList.add('active');
+    document.getElementById('mediaTypeImg').classList.remove('active');
+  });
+
+  /* ════════════════════════════
+     SEND MESSAGE
+  ════════════════════════════ */
+  function sendMessage(){
+    if(!currentDialog||!myNick) return;
+    var text   = document.getElementById('msgInput').value.trim();
+    var media  = document.getElementById('mediaUrlInput').value.trim();
+    if(!text&&!media) return;
+
+    var msg={
+      nick:   myNick,
+      text:   text,
+      ts:     Date.now()
+    };
+    if(media){ msg.mediaUrl=media; msg.mediaType=mediaType; }
+    if(replyTo){ msg.replyTo={ msgId:replyTo.msgId, nick:replyTo.nick, text:replyTo.text }; }
+
+    var cid=currentDialog.chatId;
+    var otherNick=currentDialog.otherNick;
+
+    db.ref('dms/'+cid+'/messages').push(msg, function(err){
+      if(err) return;
+      /* Update index for both */
+      var preview=(text||'📎 медиа').slice(0,50);
+      var ts=msg.ts;
+      db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
+      db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
+        cur=cur||{};
+        cur.lastMsg=preview; cur.lastTs=ts;
+        cur.unread=(cur.unread||0)+1;
+        return cur;
+      });
+      /* Clear inputs */
+      document.getElementById('msgInput').value='';
+      document.getElementById('mediaUrlInput').value='';
+      document.getElementById('mediaRow').classList.remove('show');
+      replyTo=null;
+      document.getElementById('replyBar').classList.remove('show');
+      /* Scroll down */
+      var c=document.getElementById('msgMessages');
+      setTimeout(function(){ c.scrollTop=c.scrollHeight; },100);
+    });
+  }
+
+  document.getElementById('msgSendBtn').addEventListener('click',sendMessage);
+  document.getElementById('msgInput').addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); }
+  });
+
+  /* Auto-resize textarea */
+  document.getElementById('msgInput').addEventListener('input',function(){
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,120)+'px';
+  });
+
+  /* ════════════════════════════
+     NEW CHAT MODAL
+  ════════════════════════════ */
+  function setupNewChat(){
+    document.getElementById('newChatBtn').addEventListener('click',function(){
+      document.getElementById('newChatModal').classList.add('show');
+      document.getElementById('newChatNickInput').value='';
+      document.getElementById('newChatError').classList.remove('show');
+      setTimeout(function(){ document.getElementById('newChatNickInput').focus(); },100);
+    });
+    document.getElementById('newChatCancel').addEventListener('click',function(){
+      document.getElementById('newChatModal').classList.remove('show');
+    });
+    document.getElementById('newChatModal').addEventListener('click',function(e){
+      if(e.target===this) this.classList.remove('show');
+    });
+    document.getElementById('newChatOk').addEventListener('click',startNewChat);
+    document.getElementById('newChatNickInput').addEventListener('keydown',function(e){
+      if(e.key==='Enter') startNewChat();
+    });
+  }
+
+  function startNewChat(){
+    var nick=document.getElementById('newChatNickInput').value.trim();
+    var errEl=document.getElementById('newChatError');
+    if(!nick){ showErr('Введи ник'); return; }
+    if(nick===myNick){ showErr('Нельзя написать самому себе'); return; }
+
+    /* Check if nick exists */
+    db.ref('nick_index/'+nick.toLowerCase()).once('value',function(snap){
+      if(!snap.exists()){
+        showErr('Пользователь с таким ником не найден');
+        return;
+      }
+      document.getElementById('newChatModal').classList.remove('show');
+      /* Add to index if not exists */
+      db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(nick)).once('value',function(s){
+        if(!s.exists()) db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(nick)).set({ lastMsg:'', lastTs:Date.now(), unread:0 });
+        openChat(nick);
+      });
+    });
+
+    function showErr(msg){ errEl.textContent=msg; errEl.classList.add('show'); }
+  }
+
+  /* ════════════════════════════
+     MOBILE BACK
+  ════════════════════════════ */
+  function setupMobile(){
+    document.getElementById('msgChatBack').addEventListener('click',function(){
+      document.getElementById('msgLeft').classList.remove('hidden');
+      currentDialog=null;
+      document.getElementById('msgChatView').style.display='none';
+      document.getElementById('msgWelcome').style.display='flex';
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
