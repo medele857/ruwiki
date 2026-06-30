@@ -449,7 +449,9 @@
 
     ref.child('views').transaction(function (v) { return (v || 0) + 1; });
 
-    injectUI(db, ref, pid);
+    window.WikiDB.onAuthReady(function () {
+      injectUI(db, ref, pid);
+    });
   }
 
   /* ════════════════════════════════════════════════════
