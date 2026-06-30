@@ -138,7 +138,7 @@
   <div id="admSetupBox" style="display:none;max-width:520px;margin:20px auto;padding:16px;border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.6;color:var(--text2);">
     <b style="color:var(--text)">Настройка ещё не завершена.</b><br>
     Нажми «Войти через Google» выше, выбери свой аккаунт. После входа твой uid: <code id="myUidShow" style="user-select:all;color:var(--accent)"></code><br>
-    Скопируй его и вставь в <code>database_rules.json</code> вместо <code>PASTE_YOUR_UID_HERE</code>,
+    Скопируй его и вставь в <code>database_rules.json</code> вместо <code>iw2LFKyFtbf3o859UoMv4Np1w072</code>,
     а также в <code>ADMIN_UID</code> в этом файле (admin.html), затем задеплой правила в Firebase Console.
   </div>
 </div>
@@ -351,7 +351,7 @@
   // ── PIN: просто UX-замок, НЕ источник безопасности.
   // Реальная защита — совпадение auth.uid с ADMIN_UID (см. database rules).
   var ADMIN_PIN  = 'medele857';   // ← смени на свой
-  var ADMIN_UID  = 'PASTE_YOUR_UID_HERE'; // ← после первого открытия страницы вставь сюда свой uid
+  var ADMIN_UID  = 'iw2LFKyFtbf3o859UoMv4Np1w072'; // ← после первого открытия страницы вставь сюда свой uid
 
   var loginDiv = document.getElementById('admLogin');
   var panelDiv = document.getElementById('admPanel');
@@ -373,12 +373,6 @@
   function checkAccess(uid){
     uidErr.style.display = 'none';
     setupBox.style.display = 'none';
-    if (ADMIN_UID === 'PASTE_YOUR_UID_HERE') {
-      // Ещё не настроено — показываем uid для настройки
-      myUidShow.textContent = uid;
-      setupBox.style.display = 'block';
-      return;
-    }
     if (uid !== ADMIN_UID) {
       uidErr.style.display = 'block';
       return; // даже зная PIN, чужой аккаунт не пройдёт — Firebase rules всё равно всё отклонят
