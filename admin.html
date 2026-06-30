@@ -135,12 +135,6 @@
     <div class="adm-pin-err" id="pinErr">Неверный пароль</div>
     <div class="adm-pin-err" id="uidErr" style="display:none;color:#ff6b6b;">Доступ запрещён: этот аккаунт Google — не админ. Войди под нужным аккаунтом.</div>
   </div>
-  <div id="admSetupBox" style="display:none;max-width:520px;margin:20px auto;padding:16px;border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.6;color:var(--text2);">
-    <b style="color:var(--text)">Настройка ещё не завершена.</b><br>
-    Нажми «Войти через Google» выше, выбери свой аккаунт. После входа твой uid: <code id="myUidShow" style="user-select:all;color:var(--accent)"></code><br>
-    Скопируй его и вставь в <code>database_rules.json</code> вместо <code>iw2LFKyFtbf3o859UoMv4Np1w072</code>,
-    а также в <code>ADMIN_UID</code> в этом файле (admin.html), затем задеплой правила в Firebase Console.
-  </div>
 </div>
 
 <!-- ADMIN PANEL (hidden until login) -->
@@ -359,8 +353,6 @@
   var pinBtn   = document.getElementById('pinBtn');
   var pinErr   = document.getElementById('pinErr');
   var uidErr   = document.getElementById('uidErr');
-  var setupBox = document.getElementById('admSetupBox');
-  var myUidShow= document.getElementById('myUidShow');
   var toast    = document.getElementById('admToast');
 
   function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2500); }
@@ -372,7 +364,6 @@
 
   function checkAccess(uid){
     uidErr.style.display = 'none';
-    setupBox.style.display = 'none';
     if (uid !== ADMIN_UID) {
       uidErr.style.display = 'block';
       return; // даже зная PIN, чужой аккаунт не пройдёт — Firebase rules всё равно всё отклонят
@@ -382,13 +373,26 @@
 
   waitAuth(checkAccess);
 
+  // Если страница открылась после redirect-входа (фоллбек на случай блокировки попапа)
+  firebase.auth().getRedirectResult().then(function(result){
+    if (result && result.user) checkAccess(result.user.uid);
+  }).catch(function(err){
+    if (err && err.code) console.error('Redirect sign-in failed:', err);
+  });
+
   document.getElementById('googleBtn').addEventListener('click', function(){
     var provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider).then(function(result){
       checkAccess(result.user.uid);
     }).catch(function(err){
-      console.error('Google sign-in failed:', err);
-      showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
+      console.error('Google popup sign-in failed:', err);
+      // Попап закрылся/заблокировался — пробуем через редирект
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+        showToast('Окно заблокировано — пробую через редирект...');
+        firebase.auth().signInWithRedirect(provider);
+      } else {
+        showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
+      }
     });
   });
 
