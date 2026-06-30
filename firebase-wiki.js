@@ -33,10 +33,14 @@
     'author-qwer':       { name:'Qwer team',     logo:'banka.png',            type:'Автор',        url:'author-qwer.html' },
     'author-yogurtt':    { name:'YoguRtt_',      logo:'7y.jpg',               type:'Автор',        url:'author-yogurtt.html' },
     'blogger-r1lame':    { name:'r1lame',        logo:'r1.jpg',               type:'Блогер',       url:'blogger-r1lame.html' },
-    'blogger-mslan':     { name:'mslan',          logo:'mslan_ava.jpg',       type:'Блогер',       url:'blogger-mslan.html' },
   };
 
- 
+  /* ════════════════════════════════════════════════════
+     DEVICE FINGERPRINT
+     Генерируется один раз, хранится в localStorage.
+     Переживает новые вкладки и перезагрузки.
+     Не зависит от сессии.
+  ════════════════════════════════════════════════════ */
   function getDeviceId() {
     var KEY = '_wdid';
     var id  = localStorage.getItem(KEY);
@@ -84,7 +88,9 @@
   var CDN = 'https://www.gstatic.com/firebasejs/9.22.2/';
   loadScript(CDN + 'firebase-app-compat.js', function () {
     loadScript(CDN + 'firebase-database-compat.js', function () {
-      boot();
+      loadScript(CDN + 'firebase-auth-compat.js', function () {
+        boot();
+      });
     });
   });
 
@@ -98,20 +104,52 @@
   ════════════════════════════════════════════════════ */
   function boot() {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CFG);
-    var db  = firebase.database();
-    var pid = getPageId();
+    var db   = firebase.database();
+    var auth = firebase.auth();
+    var pid  = getPageId();
 
     fixLogoLink();
 
-    /* Онлайн-присутствие */
-    var onlineRef = db.ref('online').push();
-    onlineRef.set(true);
-    onlineRef.onDisconnect().remove();
+    /* ════════════════════════════════════════════════════
+       REAL AUTH (Firebase Anonymous Auth)
+       Заменяет старый localStorage DEVICE_ID.
+       uid выдаётся сервером Firebase — подделать его
+       через консоль браузера/localStorage нельзя.
+    ════════════════════════════════════════════════════ */
+    window.WikiDB = window.WikiDB || {};
+    window.WikiDB.uid = null;
+    window.WikiDB.authReady = false;
+    var authReadyCbs = [];
+    window.WikiDB.onAuthReady = function (cb) {
+      if (window.WikiDB.authReady) cb(window.WikiDB.uid);
+      else authReadyCbs.push(cb);
+    };
+
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        window.WikiDB.uid = user.uid;
+        window.WikiDB.authReady = true;
+        authReadyCbs.forEach(function (cb) { cb(user.uid); });
+        authReadyCbs = [];
+        afterAuth();
+      }
+    });
+    auth.signInAnonymously().catch(function (err) {
+      console.error('Anonymous auth failed:', err);
+    });
+
+    function afterAuth() {
+      /* Онлайн-присутствие */
+      var onlineRef = db.ref('online/' + window.WikiDB.uid);
+      onlineRef.set(true);
+      onlineRef.onDisconnect().remove();
+    }
 
     /* ── Глобальный WikiDB ── */
-    window.WikiDB = {
+    Object.assign(window.WikiDB, {
       db:       db,
-      deviceId: DEVICE_ID,
+      auth:     auth,
+      deviceId: DEVICE_ID, /* оставлено только для чтения старых записей */
       entries:  WIKI_ENTRIES,
 
       getTopByField: function (field, limit, cb) {
@@ -174,7 +212,7 @@
           });
         }
       }
-    };
+    });
 
     /* ════════════════════════════════════════════════════
        BAN CHECK — блокируем забаненных устройств

@@ -125,9 +125,21 @@
 <div id="admLogin" class="adm-wrap">
   <div class="adm-login">
     <h2>🔐 Вход в админ-панель</h2>
+    <button class="adm-pin-btn" id="googleBtn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:14px;">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+      Войти через Google
+    </button>
+    <div style="text-align:center;font-size:11px;color:var(--text2);margin-bottom:14px;">— или PIN (для тех, кто уже вошёл через Google) —</div>
     <input class="adm-pin-input" id="pinInput" type="password" placeholder="••••" maxlength="20">
     <button class="adm-pin-btn" id="pinBtn">Войти</button>
     <div class="adm-pin-err" id="pinErr">Неверный пароль</div>
+    <div class="adm-pin-err" id="uidErr" style="display:none;color:#ff6b6b;">Доступ запрещён: этот аккаунт Google — не админ. Войди под нужным аккаунтом.</div>
+  </div>
+  <div id="admSetupBox" style="display:none;max-width:520px;margin:20px auto;padding:16px;border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.6;color:var(--text2);">
+    <b style="color:var(--text)">Настройка ещё не завершена.</b><br>
+    Нажми «Войти через Google» выше, выбери свой аккаунт. После входа твой uid: <code id="myUidShow" style="user-select:all;color:var(--accent)"></code><br>
+    Скопируй его и вставь в <code>database_rules.json</code> вместо <code>PASTE_YOUR_UID_HERE</code>,
+    а также в <code>ADMIN_UID</code> в этом файле (admin.html), затем задеплой правила в Firebase Console.
   </div>
 </div>
 
@@ -336,20 +348,55 @@
 <script src="firebase-wiki.js"></script>
 <script>
 (function(){
-  // ── PIN (хранится только в коде, не в Firebase) ──
-  var ADMIN_PIN = 'medele857';   // ← СМЕНИ НА СВОЙ ПАРОЛЬ
+  // ── PIN: просто UX-замок, НЕ источник безопасности.
+  // Реальная защита — совпадение auth.uid с ADMIN_UID (см. database rules).
+  var ADMIN_PIN  = 'medele857';   // ← смени на свой
+  var ADMIN_UID  = 'PASTE_YOUR_UID_HERE'; // ← после первого открытия страницы вставь сюда свой uid
 
   var loginDiv = document.getElementById('admLogin');
   var panelDiv = document.getElementById('admPanel');
   var pinInput = document.getElementById('pinInput');
   var pinBtn   = document.getElementById('pinBtn');
   var pinErr   = document.getElementById('pinErr');
+  var uidErr   = document.getElementById('uidErr');
+  var setupBox = document.getElementById('admSetupBox');
+  var myUidShow= document.getElementById('myUidShow');
   var toast    = document.getElementById('admToast');
 
   function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2500); }
 
-  // check session
-  if(sessionStorage.getItem('admAuth')==='1') unlock();
+  function waitAuth(cb){
+    if (window.WikiDB && window.WikiDB.onAuthReady) window.WikiDB.onAuthReady(cb);
+    else setTimeout(function(){ waitAuth(cb); }, 200);
+  }
+
+  function checkAccess(uid){
+    uidErr.style.display = 'none';
+    setupBox.style.display = 'none';
+    if (ADMIN_UID === 'PASTE_YOUR_UID_HERE') {
+      // Ещё не настроено — показываем uid для настройки
+      myUidShow.textContent = uid;
+      setupBox.style.display = 'block';
+      return;
+    }
+    if (uid !== ADMIN_UID) {
+      uidErr.style.display = 'block';
+      return; // даже зная PIN, чужой аккаунт не пройдёт — Firebase rules всё равно всё отклонят
+    }
+    if (sessionStorage.getItem('admAuth') === '1') unlock();
+  }
+
+  waitAuth(checkAccess);
+
+  document.getElementById('googleBtn').addEventListener('click', function(){
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function(result){
+      checkAccess(result.user.uid);
+    }).catch(function(err){
+      console.error('Google sign-in failed:', err);
+      showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
+    });
+  });
 
   function unlock(){
     loginDiv.classList.add('adm-section-hidden');
@@ -360,6 +407,10 @@
   pinBtn.addEventListener('click', tryLogin);
   pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
   function tryLogin(){
+    if (window.WikiDB.uid !== ADMIN_UID) {
+      uidErr.style.display = 'block';
+      return;
+    }
     if(pinInput.value === ADMIN_PIN){
       sessionStorage.setItem('admAuth','1');
       pinErr.classList.remove('show');
