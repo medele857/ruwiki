@@ -496,6 +496,7 @@
 <script>
 (function(){
   var REACTIONS = ['👍','❤️','😂','😮','😢','🔥'];
+  var ADMIN_UID_FOR_DELETE = 'iw2LFKyFtbf3o859UoMv4Np1w072';
 
   var myNick    = null;
   var myDevId   = null;
@@ -524,9 +525,9 @@
 
   waitDB(function(wdb){
     db     = wdb.db;
-    myDevId = wdb.deviceId;
+    myDevId = wdb.uid || wdb.deviceId;
 
-    /* Load own nick */
+    /* Load own nick (по настоящему uid, а не старому deviceId) */
     db.ref('nicknames/'+safeKey(myDevId)).once('value', function(snap){
       myNick = snap.val() || null;
       init();
@@ -548,6 +549,10 @@
     loadDialogs();
     setupNewChat();
     setupMobile();
+
+    /* Автооткрытие диалога по ссылке из баннера: messages.html?with=Ник */
+    var withParam = new URLSearchParams(window.location.search).get('with');
+    if (withParam) openChat(withParam);
   }
 
   /* ════════════════════════════
@@ -607,6 +612,7 @@
   function openChat(otherNick){
     var cid = chatId(safeKey(myNick), safeKey(otherNick));
     currentDialog = { chatId: cid, otherNick: otherNick };
+    window.__wfbActiveDmNick = otherNick;
 
     /* Update UI */
     document.getElementById('chatAvatar').textContent = otherNick[0].toUpperCase();
@@ -726,18 +732,36 @@
 
     wrap.appendChild(bubble);
 
+    /* Delete (свои сообщения — всегда; админ — любые) */
+    var canDelete = isMine || (window.WikiDB && window.WikiDB.uid === ADMIN_UID_FOR_DELETE);
+    if (canDelete) {
+      var delBtn = document.createElement('button');
+      delBtn.className = 'msg-bubble-delete';
+      delBtn.title = 'Удалить сообщение';
+      delBtn.textContent = '✕';
+      delBtn.style.cssText = 'position:absolute;top:-6px;'+(isMine?'left':'right')+':-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(255,80,80,.85);color:#fff;font-size:10px;line-height:18px;cursor:pointer;opacity:0;transition:opacity .15s;z-index:2;';
+      wrap.style.position = 'relative';
+      wrap.addEventListener('mouseenter', function(){ delBtn.style.opacity='1'; });
+      wrap.addEventListener('mouseleave', function(){ delBtn.style.opacity='0'; });
+      delBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (!confirm('Удалить это сообщение?')) return;
+        db.ref('dms/'+currentDialog.chatId+'/messages/'+msgId).remove();
+      });
+      wrap.appendChild(delBtn);
+    }
+
     /* Reactions */
     if(msg.reactions){
       var rrow=document.createElement('div'); rrow.className='msg-reactions-row';
-      Object.keys(msg.reactions).forEach(function(key){
-        var users=msg.reactions[key]||{};
+      Object.keys(msg.reactions).forEach(function(emoji){
+        var users=msg.reactions[emoji]||{};
         var count=Object.keys(users).length; if(!count) return;
         var mine=!!users[safeKey(myNick)];
-        var emoji=decodeEmoji(key);
         var chip=document.createElement('div');
         chip.className='msg-reaction-chip'+(mine?' mine':'');
         chip.innerHTML=emoji+'<span>'+count+'</span>';
-        chip.addEventListener('click',function(e){ e.stopPropagation(); toggleReaction(msgId,key,mine); });
+        chip.addEventListener('click',function(e){ e.stopPropagation(); toggleReaction(msgId,emoji,mine); });
         rrow.appendChild(chip);
       });
       if(rrow.children.length) wrap.appendChild(rrow);
@@ -773,15 +797,12 @@
   });
   document.addEventListener('click',function(){ document.getElementById('reactPicker').style.display='none'; });
 
-  function toggleReaction(msgId,key,isMine){
-    var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+msgId+'/reactions/'+key+'/'+safeKey(myNick));
+  function toggleReaction(msgId,emoji,isMine){
+    var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+msgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
     isMine ? ref.remove() : ref.set(true);
   }
 
-  var EMOJI_KEYS = {'👍':'like','❤️':'heart','😂':'lol','😮':'wow','😢':'sad','🔥':'fire'};
-  var EMOJI_FROM_KEY = {'like':'👍','heart':'❤️','lol':'😂','wow':'😮','sad':'😢','fire':'🔥'};
-  function encodeEmoji(e){ return EMOJI_KEYS[e] || e.codePointAt(0).toString(16); }
-  function decodeEmoji(k){ return EMOJI_FROM_KEY[k] || k; }
+  function encodeEmoji(e){ return e.codePointAt(0).toString(16); }
 
   /* ════════════════════════════
      REPLY

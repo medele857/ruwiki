@@ -143,6 +143,82 @@
       var onlineRef = db.ref('online/' + window.WikiDB.uid);
       onlineRef.set(true);
       onlineRef.onDisconnect().remove();
+
+      /* ════════════════════════════════════════════════════
+         ГЛОБАЛЬНЫЙ БАННЕР НОВЫХ СООБЩЕНИЙ
+         Работает на любой странице сайта, пока он открыт.
+      ════════════════════════════════════════════════════ */
+      db.ref('nicknames/' + window.WikiDB.uid).on('value', function (nickSnap) {
+        var myNick = nickSnap.val();
+        if (!myNick) return; /* ник ещё не выбран — нечего слушать */
+        var dmIndexRef = db.ref('dm_index/' + safeKey(myNick));
+        var knownUnread = {};
+        var firstSnapshot = true;
+
+        dmIndexRef.on('value', function (snap) {
+          if (!snap.exists()) { firstSnapshot = false; return; }
+          snap.forEach(function (ch) {
+            var fromNick = ch.key;
+            var d = ch.val() || {};
+            var unread = d.unread || 0;
+            var prev = knownUnread[fromNick] || 0;
+            /* показываем баннер только если непрочитанных стало БОЛЬШЕ
+               и это не первая загрузка страницы (иначе будет спамить старыми) */
+            if (!firstSnapshot && unread > prev) {
+              showIncomingMessageBanner(fromNick, d.lastMsg || '');
+            }
+            knownUnread[fromNick] = unread;
+          });
+          firstSnapshot = false;
+        });
+      });
+    }
+
+    function showIncomingMessageBanner(fromNick, text) {
+      /* Не показываем, если уже открыта переписка именно с этим человеком на messages.html */
+      if (window.location.pathname.indexOf('messages.html') !== -1 &&
+          window.__wfbActiveDmNick === fromNick) return;
+
+      if (!document.getElementById('wfbDmBannerStyle')) {
+        var css = document.createElement('style');
+        css.id = 'wfbDmBannerStyle';
+        css.textContent =
+          '.wfb-dm-banner{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-120%);' +
+          'z-index:99999;background:var(--bg2,#16161c);border:1px solid var(--border2,#9b5ff0);' +
+          'border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;' +
+          'box-shadow:0 8px 30px rgba(0,0,0,.5);cursor:pointer;max-width:340px;' +
+          'transition:transform .35s cubic-bezier(.2,.9,.3,1.2);font-family:inherit;}' +
+          '.wfb-dm-banner.show{transform:translateX(-50%) translateY(0);}' +
+          '.wfb-dm-banner-ava{width:34px;height:34px;border-radius:50%;background:var(--accent,#9b5ff0);' +
+          'display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;flex-shrink:0;}' +
+          '.wfb-dm-banner-body{min-width:0;}' +
+          '.wfb-dm-banner-nick{font-size:13px;font-weight:bold;color:var(--text,#fff);}' +
+          '.wfb-dm-banner-text{font-size:12px;color:var(--text2,#aaa);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;}';
+        document.head.appendChild(css);
+      }
+
+      var old = document.getElementById('wfbDmBanner');
+      if (old) old.remove();
+
+      var el = document.createElement('div');
+      el.id = 'wfbDmBanner';
+      el.className = 'wfb-dm-banner';
+      el.innerHTML =
+        '<div class="wfb-dm-banner-ava">' + (fromNick[0] || '?').toUpperCase() + '</div>' +
+        '<div class="wfb-dm-banner-body">' +
+          '<div class="wfb-dm-banner-nick">' + fromNick.replace(/</g, '&lt;') + '</div>' +
+          '<div class="wfb-dm-banner-text">' + (text || '').replace(/</g, '&lt;').slice(0, 60) + '</div>' +
+        '</div>';
+      el.addEventListener('click', function () {
+        window.location.href = 'messages.html?with=' + encodeURIComponent(fromNick);
+      });
+      document.body.appendChild(el);
+      requestAnimationFrame(function () { el.classList.add('show'); });
+
+      setTimeout(function () {
+        el.classList.remove('show');
+        setTimeout(function () { el.remove(); }, 400);
+      }, 6000);
     }
 
     /* ── Глобальный WikiDB ── */
