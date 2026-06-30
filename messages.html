@@ -519,13 +519,13 @@
   }
 
   function waitDB(cb){
-    if(window.WikiDB) cb(window.WikiDB);
+    if(window.WikiDB && window.WikiDB.onAuthReady) window.WikiDB.onAuthReady(function(uid){ cb(window.WikiDB, uid); });
     else setTimeout(function(){ waitDB(cb); }, 200);
   }
 
-  waitDB(function(wdb){
+  waitDB(function(wdb, uid){
     db     = wdb.db;
-    myDevId = wdb.uid || wdb.deviceId;
+    myDevId = uid; /* настоящий auth uid, гарантированно готов на этот момент */
 
     /* Load own nick (по настоящему uid, а не старому deviceId) */
     db.ref('nicknames/'+safeKey(myDevId)).once('value', function(snap){
