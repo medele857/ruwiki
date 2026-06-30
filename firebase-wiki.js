@@ -511,7 +511,8 @@
        NICKNAME SYSTEM
     ════════════════════════ */
     var currentNick = null; /* null = ещё не загружен */
-    var nickRef = db.ref('nicknames/' + safeKey(DEVICE_ID));
+    var MY_UID = window.WikiDB.uid || DEVICE_ID; /* uid выдаётся сервером, подделать нельзя */
+    var nickRef = db.ref('nicknames/' + safeKey(MY_UID));
 
     /* Загружаем ник из Firebase */
     function loadNick(cb) {
@@ -583,8 +584,8 @@
           }
           /* Резервируем ник — записываем индекс и профиль */
           var updates = {};
-          updates['nick_index/' + safeKey(nick.toLowerCase())] = DEVICE_ID;
-          updates['nicknames/' + safeKey(DEVICE_ID)] = nick;
+          updates['nick_index/' + safeKey(nick.toLowerCase())] = MY_UID;
+          updates['nicknames/' + safeKey(MY_UID)] = nick;
           db.ref().update(updates, function (err) {
             if (err) {
               errEl.textContent = 'Ошибка сохранения. Попробуй ещё раз.';
@@ -747,7 +748,7 @@
       window.WikiDB.checkCooldown('comment_' + pid, COMMENT_CD, function (rem) {
         if (rem > 0) { lockComment(rem); return; }
         window.WikiDB.stampCooldown('comment_' + pid);
-        ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now(), deviceId: DEVICE_ID });
+        ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now(), deviceId: DEVICE_ID, uid: MY_UID });
         ref.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
         lockComment(COMMENT_CD);
       });
