@@ -1,5 +1,5 @@
 /* ══ МапДев Вики — Service Worker ══ */
-var CACHE = 'mapdev-v1';
+var CACHE = 'mapdev-v2';
 var PRECACHE = [
   'main.html', 'style.css', 'wiki-cards.css',
   'script.js', 'firebase-wiki.js', 'wiki-search.js',
