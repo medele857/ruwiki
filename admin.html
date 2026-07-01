@@ -358,40 +358,11 @@
 
   function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2500); }
 
-  function waitAuth(cb){
-    if (window.WikiDB && window.WikiDB.onAuthReady) window.WikiDB.onAuthReady(cb);
-    else setTimeout(function(){ waitAuth(cb); }, 200);
+  /* Ждём пока firebase-wiki.js загрузит SDK и инициализирует Firebase */
+  function waitFirebase(cb) {
+    if (window.WikiDB && window.WikiDB.db && typeof firebase !== 'undefined' && firebase.auth) cb();
+    else setTimeout(function(){ waitFirebase(cb); }, 150);
   }
-
-  function checkAccess(uid){
-    uidErr.style.display = 'none';
-    if (uid !== ADMIN_UID) {
-      uidErr.style.display = 'block';
-      return; // даже зная PIN, чужой аккаунт не пройдёт — Firebase rules всё равно всё отклонят
-    }
-    if (sessionStorage.getItem('admAuth') === '1') unlock();
-  }
-
-  waitAuth(checkAccess);
-
-  (function waitForFirebaseRedirect() {
-    if (typeof firebase === 'undefined' || !firebase.auth) {
-      setTimeout(waitForFirebaseRedirect, 150); return;
-    }
-    firebase.auth().getRedirectResult().then(function(result){
-      if (result && result.user) checkAccess(result.user.uid);
-    }).catch(function(err){
-      if (err && err.code) console.error('Redirect sign-in failed:', err);
-    });
-  })();
-
-  document.getElementById('googleBtn').addEventListener('click', function(){
-    var provider = new firebase.auth.GoogleAuthProvider();
-    /* GitHub Pages блокирует popup через COOP — используем redirect */
-    firebase.auth().signInWithRedirect(provider).catch(function(err){
-      showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
-    });
-  });
 
   function unlock(){
     loginDiv.classList.add('adm-section-hidden');
@@ -399,13 +370,52 @@
     loadData();
   }
 
+  /* После загрузки Firebase — проверяем редирект и анонимный uid */
+  waitFirebase(function(){
+
+    /* 1. Проверяем результат Google redirect (если вернулись после входа) */
+    firebase.auth().getRedirectResult().then(function(result){
+      if (result && result.user) {
+        var uid = result.user.uid;
+        if (uid === ADMIN_UID) {
+          sessionStorage.setItem('admAuth', '1');
+          sessionStorage.setItem('admUID', uid);
+          unlock();
+        } else {
+          uidErr.style.display = 'block';
+          uidErr.textContent = 'Этот Google аккаунт не является администратором';
+        }
+      }
+    }).catch(function(err){
+      if (err && err.code) showToast('Ошибка входа: ' + (err.code || err.message));
+    });
+
+    /* 2. Если уже авторизован через Google ранее */
+    firebase.auth().onAuthStateChanged(function(user){
+      if (!user || user.isAnonymous) return;
+      if (user.uid === ADMIN_UID && sessionStorage.getItem('admAuth') === '1') {
+        unlock();
+      }
+    });
+
+    /* 3. Кнопка Google — делаем redirect */
+    document.getElementById('googleBtn').addEventListener('click', function(){
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithRedirect(provider).catch(function(err){
+        showToast('Ошибка: ' + (err.message || err.code));
+      });
+    });
+
+  });
+
+  /* PIN проверяется отдельно после Google входа */
   pinBtn.addEventListener('click', tryLogin);
   pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
   function tryLogin(){
-    var uid = (window.WikiDB && window.WikiDB.uid) ? window.WikiDB.uid : null;
-    if (!uid || uid !== ADMIN_UID) {
+    var savedUID = sessionStorage.getItem('admUID');
+    if (!savedUID || savedUID !== ADMIN_UID) {
       uidErr.style.display = 'block';
-      uidErr.textContent = !uid ? 'Войдите через Google сначала' : 'Этот Google аккаунт не является администратором';
+      uidErr.textContent = 'Сначала войдите через Google';
       return;
     }
     if(pinInput.value === ADMIN_PIN){
