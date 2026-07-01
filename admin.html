@@ -376,28 +376,35 @@
 
   waitAuth(checkAccess);
 
-  // Если страница открылась после redirect-входа (фоллбек на случай блокировки попапа)
-  firebase.auth().getRedirectResult().then(function(result){
-    if (result && result.user) checkAccess(result.user.uid);
-  }).catch(function(err){
-    if (err && err.code) console.error('Redirect sign-in failed:', err);
-  });
+  /* Запускаем Google Auth только после загрузки Firebase SDK */
+  function initGoogleAuth() {
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      setTimeout(initGoogleAuth, 100); return;
+    }
 
-  document.getElementById('googleBtn').addEventListener('click', function(){
-    var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function(result){
-      checkAccess(result.user.uid);
+    // Фоллбек после редиректа
+    firebase.auth().getRedirectResult().then(function(result){
+      if (result && result.user) checkAccess(result.user.uid);
     }).catch(function(err){
-      console.error('Google popup sign-in failed:', err);
-      // Попап закрылся/заблокировался — пробуем через редирект
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-        showToast('Окно заблокировано — пробую через редирект...');
-        firebase.auth().signInWithRedirect(provider);
-      } else {
-        showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
-      }
+      if (err && err.code) console.error('Redirect sign-in failed:', err);
     });
-  });
+
+    document.getElementById('googleBtn').addEventListener('click', function(){
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).then(function(result){
+        checkAccess(result.user.uid);
+      }).catch(function(err){
+        console.error('Google popup sign-in failed:', err);
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+          showToast('Окно заблокировано — пробую через редирект...');
+          firebase.auth().signInWithRedirect(provider);
+        } else {
+          showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
+        }
+      });
+    });
+  }
+  initGoogleAuth();
 
   function unlock(){
     loginDiv.classList.add('adm-section-hidden');
