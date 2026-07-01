@@ -251,7 +251,7 @@
 
       /* ── Проверить КД в Firebase (возвращает ms до окончания, 0 = готово) ── */
       checkCooldown: function (scope, cdMs, cb) {
-        var key = 'cd/' + safeKey(scope) + '/' + (window.WikiDB.uid || safeKey(DEVICE_ID));
+        var key = 'cd/' + safeKey(scope) + '/' + safeKey(DEVICE_ID);
         db.ref(key).once('value', function (snap) {
           var last = snap.val() || 0;
           var remaining = Math.max(0, last + cdMs - Date.now());
@@ -261,19 +261,19 @@
 
       /* ── Записать метку КД ── */
       stampCooldown: function (scope) {
-        var key = 'cd/' + safeKey(scope) + '/' + (window.WikiDB.uid || safeKey(DEVICE_ID));
+        var key = 'cd/' + safeKey(scope) + '/' + safeKey(DEVICE_ID);
         db.ref(key).set(Date.now());
       },
 
       /* ── Проверить лайк (возвращает bool) ── */
       checkLike: function (pid, cb) {
-        var key = 'likes_by/' + safeKey(pid) + '/' + (window.WikiDB.uid || safeKey(DEVICE_ID));
+        var key = 'likes_by/' + safeKey(pid) + '/' + safeKey(DEVICE_ID);
         db.ref(key).once('value', function (snap) { cb(!!snap.val()); });
       },
 
       /* ── Поставить/снять лайк ── */
       toggleLike: function (pid, pageRef, liked, onDone) {
-        var key = 'likes_by/' + safeKey(pid) + '/' + (window.WikiDB.uid || safeKey(DEVICE_ID));
+        var key = 'likes_by/' + safeKey(pid) + '/' + safeKey(DEVICE_ID);
         if (liked) {
           /* снимаем */
           db.ref(key).remove();
@@ -293,16 +293,11 @@
     /* ════════════════════════════════════════════════════
        BAN CHECK — блокируем забаненных устройств
     ════════════════════════════════════════════════════ */
-    /* Check ban by uid (primary) and deviceId (legacy) */
-    function checkBan(key) {
-      db.ref('bans/' + key).once('value', function (snap) {
-        if (!snap.exists()) return;
-        var ban = snap.val() || {};
-        showBanScreen(ban.reason || 'Ты заблокирован администратором.');
-      });
-    }
-    checkBan(window.WikiDB.uid);
-    checkBan(safeKey(DEVICE_ID));
+    db.ref('bans/' + safeKey(DEVICE_ID)).once('value', function (snap) {
+      if (!snap.exists()) return;
+      var ban = snap.val() || {};
+      showBanScreen(ban.reason || 'Ты заблокирован администратором.');
+    });
 
     function showBanScreen(reason) {
       var style = document.createElement('style');
