@@ -9,6 +9,20 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Инициализируем Firebase сразу — до любых скриптов
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyAID9ivHW94RB6eMB9qG4kVK7QfK2iStgc",
+        authDomain: "ruwiki-f1ecb.firebaseapp.com",
+        projectId: "ruwiki-f1ecb",
+        storageBucket: "ruwiki-f1ecb.firebasestorage.app",
+        messagingSenderId: "645896740533",
+        appId: "1:645896740533:web:169a140bb01857fec0a8fc",
+        databaseURL: "https://ruwiki-f1ecb-default-rtdb.firebaseio.com"
+      });
+    }
+  </script>
   <style>
     html,body{overflow-y:auto!important;}
     .adm-wrap{max-width:900px;margin:0 auto;padding:calc(var(--hh)+48px) 28px 100px;display:flex;flex-direction:column;gap:28px;}
@@ -376,35 +390,26 @@
 
   waitAuth(checkAccess);
 
-  /* Запускаем Google Auth только после загрузки Firebase SDK */
-  function initGoogleAuth() {
-    if (typeof firebase === 'undefined' || !firebase.auth) {
-      setTimeout(initGoogleAuth, 100); return;
-    }
+  firebase.auth().getRedirectResult().then(function(result){
+    if (result && result.user) checkAccess(result.user.uid);
+  }).catch(function(err){
+    if (err && err.code) console.error('Redirect sign-in failed:', err);
+  });
 
-    // Фоллбек после редиректа
-    firebase.auth().getRedirectResult().then(function(result){
-      if (result && result.user) checkAccess(result.user.uid);
+  document.getElementById('googleBtn').addEventListener('click', function(){
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function(result){
+      checkAccess(result.user.uid);
     }).catch(function(err){
-      if (err && err.code) console.error('Redirect sign-in failed:', err);
+      console.error('Google popup sign-in failed:', err);
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+        showToast('Окно заблокировано — пробую через редирект...');
+        firebase.auth().signInWithRedirect(provider);
+      } else {
+        showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
+      }
     });
-
-    document.getElementById('googleBtn').addEventListener('click', function(){
-      var provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).then(function(result){
-        checkAccess(result.user.uid);
-      }).catch(function(err){
-        console.error('Google popup sign-in failed:', err);
-        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-          showToast('Окно заблокировано — пробую через редирект...');
-          firebase.auth().signInWithRedirect(provider);
-        } else {
-          showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
-        }
-      });
-    });
-  }
-  initGoogleAuth();
+  });
 
   function unlock(){
     loginDiv.classList.add('adm-section-hidden');
