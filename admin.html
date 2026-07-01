@@ -398,16 +398,9 @@
 
   document.getElementById('googleBtn').addEventListener('click', function(){
     var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function(result){
-      checkAccess(result.user.uid);
-    }).catch(function(err){
-      console.error('Google popup sign-in failed:', err);
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-        showToast('Окно заблокировано — пробую через редирект...');
-        firebase.auth().signInWithRedirect(provider);
-      } else {
-        showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
-      }
+    /* GitHub Pages блокирует popup через COOP — используем redirect */
+    firebase.auth().signInWithRedirect(provider).catch(function(err){
+      showToast('Ошибка входа: ' + (err.message || err.code || 'неизвестно'));
     });
   });
 
@@ -420,8 +413,10 @@
   pinBtn.addEventListener('click', tryLogin);
   pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
   function tryLogin(){
-    if (window.WikiDB.uid !== ADMIN_UID) {
+    var uid = (window.WikiDB && window.WikiDB.uid) ? window.WikiDB.uid : null;
+    if (!uid || uid !== ADMIN_UID) {
       uidErr.style.display = 'block';
+      uidErr.textContent = !uid ? 'Войдите через Google сначала' : 'Этот Google аккаунт не является администратором';
       return;
     }
     if(pinInput.value === ADMIN_PIN){

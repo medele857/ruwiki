@@ -303,10 +303,6 @@
     }
     checkBan(window.WikiDB.uid);
     checkBan(safeKey(DEVICE_ID));
-      if (!snap.exists()) return;
-      var ban = snap.val() || {};
-      showBanScreen(ban.reason || 'Ты заблокирован администратором.');
-    });
 
     function showBanScreen(reason) {
       var style = document.createElement('style');
