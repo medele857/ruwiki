@@ -172,6 +172,50 @@
       border: 1px solid rgba(255,200,0,.35); color: #ffc800;
       animation: fadeUp .5s ease .05s forwards; opacity: 0;
     }
+
+    /* Wall banner */
+    .prof-wall {
+      width: 100%; height: 180px; border-radius: 16px;
+      background: var(--bg3); border: 1px solid var(--border);
+      margin-bottom: -40px; position: relative; overflow: hidden;
+      background-size: cover; background-position: center;
+      animation: fadeUp .5s ease forwards; opacity: 0;
+    }
+    .prof-wall-empty {
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; color: var(--text2); font-size: 12px; opacity: .4;
+    }
+    .prof-hero.with-wall { margin-top: 0; }
+
+    /* Wall editor modal */
+    .wall-modal-overlay {
+      position: fixed; inset: 0; z-index: 6000;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .wall-modal-overlay.show { display: flex; }
+    .wall-modal {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 24px; width: 100%; max-width: 620px;
+    }
+    .wall-modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .05em; color: var(--text); margin-bottom: 16px; }
+    .wall-canvas-wrap { position: relative; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #fff; margin-bottom: 14px; }
+    #wallCanvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
+    .wall-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .wall-colors { display: flex; gap: 5px; flex-wrap: wrap; }
+    .wall-color { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform .12s; }
+    .wall-color:hover, .wall-color.active { transform: scale(1.15); border-color: #fff; }
+    .wall-sizes { display: flex; gap: 5px; }
+    .wall-size-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .13s; }
+    .wall-size-btn.active { border-color: var(--accent); background: var(--bg); }
+    .wall-size-dot { border-radius: 50%; background: var(--text); }
+    .wall-tool-btn { font-family: var(--font); font-size: 12px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); cursor: pointer; transition: all .13s; }
+    .wall-tool-btn:hover { border-color: var(--border2); color: var(--text); }
+    .wall-tool-btn.active { border-color: var(--accent); color: var(--accent); }
+    .wall-modal-btns { display: flex; gap: 8px; }
+    .wall-save { flex: 1; font-family: var(--font); font-size: 13px; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; }
+    .wall-save:hover { background: var(--accent2); }
+    .wall-cancel { font-family: var(--font); font-size: 13px; padding: 11px 18px; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
   </style>
 </head>
 <body>
@@ -205,6 +249,30 @@
   </div>
 </div>
 
+<!-- Wall drawing modal -->
+<div class="wall-modal-overlay" id="wallModal">
+  <div class="wall-modal">
+    <div class="wall-modal-title">🎨 Нарисуй свою стену</div>
+    <div class="wall-canvas-wrap">
+      <canvas id="wallCanvas" width="600" height="180"></canvas>
+    </div>
+    <div class="wall-tools">
+      <div class="wall-colors" id="wallColors"></div>
+      <div class="wall-sizes" id="wallSizes">
+        <button class="wall-size-btn active" data-size="4"><span class="wall-size-dot" style="width:4px;height:4px;"></span></button>
+        <button class="wall-size-btn" data-size="10"><span class="wall-size-dot" style="width:10px;height:10px;"></span></button>
+        <button class="wall-size-btn" data-size="20"><span class="wall-size-dot" style="width:18px;height:18px;"></span></button>
+      </div>
+      <button class="wall-tool-btn" id="wallEraser">🧹 Ластик</button>
+      <button class="wall-tool-btn" id="wallClear">🗑 Очистить</button>
+    </div>
+    <div class="wall-modal-btns">
+      <button class="wall-cancel" id="wallCancel">Отмена</button>
+      <button class="wall-save" id="wallSave">Сохранить стену</button>
+    </div>
+  </div>
+</div>
+
 <!-- Edit modal -->
 <div class="prof-modal-overlay" id="editModal">
   <div class="prof-modal">
@@ -228,6 +296,7 @@
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
 <script src="presence.js"></script>
+<script src="textformat.js"></script>
 <script>
 (function(){
   function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
@@ -294,14 +363,19 @@
       ? '<img class="prof-avatar" src="'+esc(avatar)+'" alt="" onerror="this.outerHTML=\'<div class=\\\'prof-avatar-placeholder\\\'>'+esc((nick||'?')[0].toUpperCase())+'</div>\'">'
       : '<div class="prof-avatar-placeholder">'+esc((nick||'?')[0].toUpperCase())+'</div>';
 
+    var wallHtml = prof.wall
+      ? '<div class="prof-wall" style="background-image:url('+prof.wall+');"></div>'
+      : (isOwn ? '<div class="prof-wall"><div class="prof-wall-empty">Нажми «Нарисовать стену» чтобы создать баннер</div></div>' : '');
+
     var html =
-      '<div class="prof-hero">'+
+      wallHtml +
+      '<div class="prof-hero'+(prof.wall?' with-wall':'')+'">'+
         '<div class="prof-avatar-wrap">'+avatarHtml+'</div>'+
         '<div class="prof-info">'+
           '<div class="prof-nick">'+esc(nick||'Аноним')+'<span class="prof-pres" id="profPres"></span></div>'+
           (joined ? '<div class="prof-joined">на сайте с '+joined+'</div>' : '')+
-          (bio ? '<div class="prof-bio">'+esc(bio)+'</div>' : '<div class="prof-bio-empty">Пользователь пока ничего о себе не написал</div>')+
-          (isOwn ? '<button class="prof-edit-btn" id="profEditBtn">✏️ Редактировать профиль</button>' : '')+
+          (bio ? '<div class="prof-bio">'+(window.TextFormat?window.TextFormat.render(bio):esc(bio))+'</div>' : '<div class="prof-bio-empty">Пользователь пока ничего о себе не написал</div>')+
+          (isOwn ? '<button class="prof-edit-btn" id="profEditBtn">✏️ Редактировать профиль</button> <button class="prof-edit-btn" id="profWallBtn">🎨 Нарисовать стену</button>' : '')+
         '</div>'+
       '</div>'+
       '<div class="prof-rep-badge" id="profRepBadge">⭐ <span id="statRep">…</span> репутации</div>'+
@@ -337,6 +411,8 @@
     if(isOwn){
       var editBtn = document.getElementById('profEditBtn');
       if(editBtn) editBtn.addEventListener('click', function(){ openEditModal(prof); });
+      var wallBtn = document.getElementById('profWallBtn');
+      if(wallBtn) wallBtn.addEventListener('click', function(){ openWallEditor(prof.wall); });
     }
   }
 
@@ -391,6 +467,7 @@
     var modal = document.getElementById('editModal');
     document.getElementById('editAvatar').value = prof.avatar || '';
     document.getElementById('editBio').value = prof.bio || '';
+    if(window.TextFormat){ window.TextFormat.attachToolbar(document.getElementById('editBio')); }
     updatePreview();
     modal.classList.add('show');
   }
@@ -429,6 +506,119 @@
       });
     });
   });
+  /* ════════════════════════
+     WALL DRAWING EDITOR
+  ════════════════════════ */
+  var WALL_COLORS = ['#000000','#ffffff','#ff4060','#ff9020','#ffd020','#44cc80','#30a0ff','#9060ff','#ff70c0','#8b5a2b'];
+  var wallCtx=null, wallDrawing=false, wallColor='#000000', wallSize=4, wallEraser=false;
+
+  function initWallCanvas(){
+    var canvas = document.getElementById('wallCanvas');
+    wallCtx = canvas.getContext('2d');
+
+    /* Colors palette */
+    var colorsEl = document.getElementById('wallColors');
+    if(!colorsEl.children.length){
+      WALL_COLORS.forEach(function(c, i){
+        var b = document.createElement('button');
+        b.className = 'wall-color' + (i===0?' active':'');
+        b.style.background = c;
+        b.dataset.color = c;
+        b.addEventListener('click', function(){
+          wallColor = c; wallEraser = false;
+          document.getElementById('wallEraser').classList.remove('active');
+          colorsEl.querySelectorAll('.wall-color').forEach(function(x){ x.classList.remove('active'); });
+          b.classList.add('active');
+        });
+        colorsEl.appendChild(b);
+      });
+    }
+
+    /* Sizes */
+    document.querySelectorAll('.wall-size-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.wall-size-btn').forEach(function(x){ x.classList.remove('active'); });
+        btn.classList.add('active');
+        wallSize = parseInt(btn.dataset.size);
+      });
+    });
+
+    /* Eraser */
+    document.getElementById('wallEraser').addEventListener('click', function(){
+      wallEraser = !wallEraser;
+      this.classList.toggle('active', wallEraser);
+    });
+
+    /* Clear */
+    document.getElementById('wallClear').addEventListener('click', function(){
+      wallCtx.fillStyle = '#ffffff';
+      wallCtx.fillRect(0,0,canvas.width,canvas.height);
+    });
+
+    /* Drawing */
+    function getPos(e){
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      var cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      var cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      return { x: cx*scaleX, y: cy*scaleY };
+    }
+    function draw(e){
+      if(!wallDrawing) return;
+      e.preventDefault();
+      var p = getPos(e);
+      wallCtx.fillStyle = wallEraser ? '#ffffff' : wallColor;
+      wallCtx.beginPath();
+      wallCtx.arc(p.x, p.y, wallSize, 0, Math.PI*2);
+      wallCtx.fill();
+    }
+    canvas.addEventListener('mousedown', function(e){ wallDrawing=true; draw(e); });
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', function(){ wallDrawing=false; });
+    canvas.addEventListener('touchstart', function(e){ wallDrawing=true; draw(e); });
+    canvas.addEventListener('touchmove', draw);
+    window.addEventListener('touchend', function(){ wallDrawing=false; });
+  }
+
+  function openWallEditor(existingWall){
+    document.getElementById('wallModal').classList.add('show');
+    initWallCanvas();
+    var canvas = document.getElementById('wallCanvas');
+    /* Загружаем существующую стену или белый фон */
+    wallCtx.fillStyle = '#ffffff';
+    wallCtx.fillRect(0,0,canvas.width,canvas.height);
+    if(existingWall){
+      var img = new Image();
+      img.onload = function(){ wallCtx.drawImage(img,0,0,canvas.width,canvas.height); };
+      img.src = existingWall;
+    }
+  }
+
+  document.getElementById('wallCancel').addEventListener('click', function(){
+    document.getElementById('wallModal').classList.remove('show');
+  });
+  document.getElementById('wallModal').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('show');
+  });
+  document.getElementById('wallSave').addEventListener('click', function(){
+    var canvas = document.getElementById('wallCanvas');
+    /* Сжимаем в JPEG для экономии места */
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    if(dataUrl.length > 195000){
+      /* Слишком большое — жмём сильнее */
+      dataUrl = canvas.toDataURL('image/jpeg', 0.4);
+    }
+    db.ref('profiles/'+safeKey(myUid)).update({ wall: dataUrl, nick: myNick }, function(err){
+      if(!err){
+        document.getElementById('wallModal').classList.remove('show');
+        loadProfile(myUid, myNick);
+      } else {
+        alert('Ошибка сохранения (возможно стена слишком большая)');
+      }
+    });
+  });
+
 })();
 </script>
 </body>
