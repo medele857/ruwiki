@@ -519,8 +519,11 @@
   }
 
   function waitDB(cb){
-    if(window.WikiDB) cb(window.WikiDB);
-    else setTimeout(function(){ waitDB(cb); }, 200);
+    if(window.WikiDB && window.WikiDB.onAuthReady){
+      window.WikiDB.onAuthReady(function(uid){ cb(window.WikiDB); });
+    } else {
+      setTimeout(function(){ waitDB(cb); }, 200);
+    }
   }
 
   waitDB(function(wdb){
@@ -528,7 +531,7 @@
     myDevId = wdb.deviceId;
     myUid   = wdb.uid || '';
 
-    /* Load own nick */
+    /* Load own nick — ищем по uid (как хранит firebase-wiki.js) */
     db.ref('nicknames/'+safeKey(myUid || myDevId)).once('value', function(snap){
       myNick = snap.val() || null;
       init();
