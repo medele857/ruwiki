@@ -158,6 +158,11 @@
       .prof-hero { flex-direction: column; align-items: center; text-align: center; }
       .prof-stats { grid-template-columns: 1fr; }
     }
+
+    .prof-pres { font-family: var(--font); font-size: 12px; padding: 3px 10px; border-radius: 12px; letter-spacing: .03em; margin-left: 4px; }
+    .prof-pres.online { background: rgba(68,221,102,.15); color: #44dd66; }
+    .prof-pres.recent { background: rgba(255,176,32,.15); color: #ffb020; }
+    .prof-pres.offline { background: var(--bg3); color: var(--text2); }
   </style>
 </head>
 <body>
@@ -213,6 +218,7 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
+<script src="presence.js"></script>
 <script>
 (function(){
   function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
@@ -283,7 +289,7 @@
       '<div class="prof-hero">'+
         '<div class="prof-avatar-wrap">'+avatarHtml+'</div>'+
         '<div class="prof-info">'+
-          '<div class="prof-nick">'+esc(nick||'Аноним')+'</div>'+
+          '<div class="prof-nick">'+esc(nick||'Аноним')+'<span class="prof-pres" id="profPres"></span></div>'+
           (joined ? '<div class="prof-joined">на сайте с '+joined+'</div>' : '')+
           (bio ? '<div class="prof-bio">'+esc(bio)+'</div>' : '<div class="prof-bio-empty">Пользователь пока ничего о себе не написал</div>')+
           (isOwn ? '<button class="prof-edit-btn" id="profEditBtn">✏️ Редактировать профиль</button>' : '')+
@@ -298,6 +304,14 @@
       '<div id="profComments"><div class="prof-comments-empty">Загрузка…</div></div>';
 
     document.getElementById('profContent').innerHTML = html;
+
+    /* Онлайн-статус */
+    if(window.WikiPresence){
+      window.WikiPresence.watch(nick, function(status){
+        var pe = document.getElementById('profPres');
+        if(pe){ pe.className = 'prof-pres ' + status; pe.textContent = '● ' + window.WikiPresence.labelOf(status); }
+      });
+    }
 
     /* Статистика */
     db.ref('profiles/'+safeKey(uid)).once('value', function(snap){

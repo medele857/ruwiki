@@ -111,6 +111,11 @@
       .podium-2 .podium-avatar, .podium-2 .podium-avatar-ph,
       .podium-3 .podium-avatar, .podium-3 .podium-avatar-ph { width: 58px; height: 58px; }
     }
+
+    .top-pres-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+    .top-pres-dot.online { background:#44dd66; box-shadow:0 0 5px #44dd66; }
+    .top-pres-dot.recent { background:#ffb020; }
+    .top-pres-dot.offline { background:#555; }
   </style>
 </head>
 <body>
@@ -134,6 +139,7 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
+<script src="presence.js"></script>
 <script>
 (function(){
   function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
@@ -211,12 +217,18 @@
         '<div class="top-rank">'+(i+4)+'</div>'+
         avatarHtml(u, 'top-avatar', 'top-avatar-ph')+
         '<div class="top-row-info">'+
-          '<div class="top-row-nick">'+esc(u.nick)+'</div>'+
+          '<div class="top-row-nick"><span class="top-pres-dot offline" data-pres="'+esc(u.nick)+'"></span>'+esc(u.nick)+'</div>'+
           '<div class="top-row-stats">💬 '+u.comments+' · 👍 '+u.likes+' · ✉️ '+u.msgs+'</div>'+
         '</div>'+
         '<div class="top-row-score">'+u.score+'</div>';
       listEl.appendChild(a);
     });
+    /* Онлайн-статусы */
+    if(window.WikiPresence){
+      document.querySelectorAll('[data-pres]').forEach(function(dot){
+        window.WikiPresence.watch(dot.dataset.pres, function(status){ dot.className = 'top-pres-dot ' + status; });
+      });
+    }
   }
 
   /* Floating particles bg */

@@ -144,6 +144,24 @@
       onlineRef.set(true);
       onlineRef.onDisconnect().remove();
 
+      /* Presence по нику: online + lastSeen (для «был недавно») */
+      db.ref('nicknames/' + window.WikiDB.uid).once('value', function (nSnap) {
+        var myNick = nSnap.val();
+        if (!myNick) return;
+        var presRef = db.ref('presence/' + safeKey(myNick));
+        function beat() {
+          presRef.set({ online: true, lastSeen: Date.now() });
+        }
+        presRef.onDisconnect().update({ online: false, lastSeen: Date.now() });
+        beat();
+        /* Обновляем каждые 25 сек пока страница открыта */
+        setInterval(beat, 25000);
+        /* При закрытии вкладки */
+        window.addEventListener('beforeunload', function () {
+          presRef.update({ online: false, lastSeen: Date.now() });
+        });
+      });
+
       /* ════════════════════════════════════════════════════
          ГЛОБАЛЬНЫЙ БАННЕР НОВЫХ СООБЩЕНИЙ
          Работает на любой странице сайта, пока он открыт.

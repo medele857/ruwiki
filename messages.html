@@ -382,6 +382,19 @@
       }
     }
     .msg-chat-back { display: none; }
+
+    /* Presence dot */
+    .pres-dot-wrap { position: relative; display: inline-block; flex-shrink: 0; }
+    .pres-dot {
+      position: absolute; bottom: 0; right: 0;
+      width: 11px; height: 11px; border-radius: 50%;
+      border: 2px solid var(--bg); box-sizing: border-box;
+    }
+    .pres-dot.online { background: #44dd66; box-shadow: 0 0 6px #44dd66; }
+    .pres-dot.recent { background: #ffb020; }
+    .pres-dot.offline { background: #555; }
+    .msg-chat-status.online { color: #44dd66; }
+    .msg-chat-status.recent { color: #ffb020; }
   </style>
 </head>
 <body>
@@ -462,6 +475,7 @@
         <div class="msg-chat-avatar" id="chatAvatar">?</div>
         <div>
           <div class="msg-chat-nick" id="chatNick">—</div>
+          <div class="msg-chat-status" id="chatStatus"></div>
         </div>
       </div>
       <div class="msg-messages" id="msgMessages"></div>
@@ -493,6 +507,7 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
+<script src="presence.js"></script>
 <script>
 (function(){
   var REACTIONS = ['👍','❤️','😂','😮','😢','🔥'];
@@ -618,7 +633,7 @@
       el.className='msg-dialog-item'+(currentDialog&&currentDialog.otherNick===item.nick?' active':'');
       var unread = item.data.unread>0;
       el.innerHTML=
-        '<div class="msg-dialog-avatar-slot">'+avatarEl(item.nick, avatarCache[item.nick]||'', 38)+'</div>'+
+        '<div class="pres-dot-wrap"><div class="msg-dialog-avatar-slot" style="display:inline-block;">'+avatarEl(item.nick, avatarCache[item.nick]||'', 38)+'</div><div class="pres-dot offline" data-presdot></div></div>'+
         '<div class="msg-dialog-info">'+
           '<div class="msg-dialog-nick">'+esc(item.nick)+'</div>'+
           '<div class="msg-dialog-preview">'+esc((item.data.lastMsg||'').slice(0,40))+'</div>'+
@@ -633,6 +648,13 @@
         getAvatar(item.nick, function(av){
           var slot = el.querySelector('.msg-dialog-avatar-slot');
           if(slot) slot.innerHTML = avatarEl(item.nick, av, 38);
+        });
+      }
+      /* Онлайн-статус — точка на аватарке */
+      if(window.WikiPresence){
+        window.WikiPresence.watch(item.nick, function(status){
+          var dot = el.querySelector('[data-presdot]');
+          if(dot) dot.className = 'pres-dot ' + status;
         });
       }
     });
@@ -662,6 +684,14 @@
       if(slot) slot.innerHTML = avatarEl(otherNick, av, 36);
     });
     document.getElementById('chatNick').innerHTML = '<a href="profile.html?nick='+encodeURIComponent(otherNick)+'" style="color:inherit;text-decoration:none;">'+esc(otherNick)+'</a>';
+    /* Онлайн-статус собеседника */
+    var statusEl = document.getElementById('chatStatus');
+    if(window.WikiPresence){
+      window.WikiPresence.watch(otherNick, function(status){
+        statusEl.className = 'msg-chat-status ' + status;
+        statusEl.textContent = window.WikiPresence.labelOf(status);
+      });
+    }
     document.getElementById('msgWelcome').style.display = 'none';
     var chatView = document.getElementById('msgChatView');
     chatView.style.display='flex';
