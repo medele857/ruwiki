@@ -529,7 +529,7 @@
     myUid   = wdb.uid || '';
 
     /* Load own nick */
-    db.ref('nicknames/'+safeKey(myDevId)).once('value', function(snap){
+    db.ref('nicknames/'+safeKey(myUid || myDevId)).once('value', function(snap){
       myNick = snap.val() || null;
       init();
     });
