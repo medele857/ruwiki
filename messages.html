@@ -67,6 +67,55 @@
     }
     .msg-new-btn:hover { background: rgba(80,120,255,.15); border-color: var(--accent); }
 
+    /* Create dropdown menu */
+    .msg-new-wrap { position: relative; margin: 10px 16px 0; }
+    .msg-new-wrap .msg-new-btn { margin: 0; width: 100%; }
+    .msg-new-menu {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 6px; display: none;
+      box-shadow: 0 8px 30px rgba(0,0,0,.5);
+    }
+    .msg-new-menu.show { display: block; animation: fadeUp .18s ease; }
+    .msg-new-menu-item {
+      display: block; width: 100%; text-align: left;
+      font-family: var(--font); font-size: 13px; color: var(--text);
+      padding: 9px 12px; border: none; background: none; border-radius: 6px;
+      cursor: pointer; transition: background .12s;
+    }
+    .msg-new-menu-item:hover { background: var(--bg3); }
+
+    /* Tabs */
+    .msg-tabs { display: flex; gap: 4px; padding: 10px 16px 0; }
+    .msg-tab {
+      flex: 1; font-family: var(--font); font-size: 11px; letter-spacing: .03em;
+      padding: 7px 4px; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg3); color: var(--text2); cursor: pointer;
+      transition: all .13s; text-align: center;
+    }
+    .msg-tab.active { border-color: var(--border2); color: var(--accent); background: var(--bg); }
+
+    /* Group/channel icons */
+    .msg-dialog-group-icon {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      background: linear-gradient(135deg, #5090ff, #8040ff);
+    }
+    .msg-dialog-channel-icon { background: linear-gradient(135deg, #ff9020, #ff5060); }
+
+    .msg-chat-members { font-size: 11px; color: var(--text2); }
+    .msg-chat-manage {
+      margin-left: auto; font-family: var(--font); font-size: 11px;
+      padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg3); color: var(--text2); cursor: pointer; transition: all .13s;
+    }
+    .msg-chat-manage:hover { border-color: var(--border2); color: var(--text); }
+
+    .msg-channel-readonly {
+      padding: 14px 20px; text-align: center; font-size: 12px;
+      color: var(--text2); border-top: 1px solid var(--border); background: var(--bg2);
+    }
+
     /* Dialog list */
     .msg-dialog-list {
       flex: 1; overflow-y: auto; padding: 8px 0;
@@ -428,6 +477,46 @@
   </div>
 </div>
 
+<!-- Create group/channel modal -->
+<div class="msg-modal-overlay" id="groupModal">
+  <div class="msg-modal">
+    <div class="msg-modal-title" id="groupModalTitle">Новая группа</div>
+    <input class="msg-modal-input" id="groupNameInput" placeholder="Название..." maxlength="40" autocomplete="off">
+    <input class="msg-modal-input" id="groupAvatarInput" placeholder="Ссылка на аватарку (необязательно)" autocomplete="off">
+    <div class="msg-modal-error" id="groupError"></div>
+    <div class="msg-modal-btns">
+      <button class="msg-modal-cancel" id="groupCancel">Отмена</button>
+      <button class="msg-modal-ok" id="groupOk">Создать →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Join channel modal -->
+<div class="msg-modal-overlay" id="joinModal">
+  <div class="msg-modal">
+    <div class="msg-modal-title">Найти канал</div>
+    <input class="msg-modal-input" id="joinNameInput" placeholder="Название канала..." maxlength="40" autocomplete="off">
+    <div class="msg-modal-error" id="joinError"></div>
+    <div class="msg-modal-btns">
+      <button class="msg-modal-cancel" id="joinCancel">Отмена</button>
+      <button class="msg-modal-ok" id="joinOk">Вступить →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add member modal -->
+<div class="msg-modal-overlay" id="addMemberModal">
+  <div class="msg-modal">
+    <div class="msg-modal-title">Добавить участника</div>
+    <input class="msg-modal-input" id="addMemberInput" placeholder="Ник пользователя..." maxlength="24" autocomplete="off">
+    <div class="msg-modal-error" id="addMemberError"></div>
+    <div class="msg-modal-btns">
+      <button class="msg-modal-cancel" id="addMemberCancel">Отмена</button>
+      <button class="msg-modal-ok" id="addMemberOk">Добавить →</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reaction picker -->
 <div class="msg-react-picker" id="reactPicker" style="display:none;">
   <button class="msg-react-pick-btn" data-emoji="👍">👍</button>
@@ -449,10 +538,18 @@
         </svg>
         <input class="msg-search" id="dialogSearch" placeholder="Поиск по диалогам..." autocomplete="off">
       </div>
-      <button class="msg-new-btn" id="newChatBtn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Новый диалог
-      </button>
+      <div class="msg-new-wrap">
+        <button class="msg-new-btn" id="newChatBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Создать
+        </button>
+        <div class="msg-new-menu" id="newMenu">
+          <button class="msg-new-menu-item" data-create="chat">💬 Новый диалог</button>
+          <button class="msg-new-menu-item" data-create="group">👥 Новая группа</button>
+          <button class="msg-new-menu-item" data-create="channel">📢 Новый канал</button>
+          <button class="msg-new-menu-item" data-create="join">🔍 Найти канал</button>
+        </div>
+      </div>
     </div>
     <div class="msg-dialog-list" id="dialogList">
       <div class="msg-empty-dialogs">Загрузка…</div>
@@ -508,6 +605,7 @@
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
 <script src="presence.js"></script>
+<script src="textformat.js"></script>
 <script>
 (function(){
   var REACTIONS = ['👍','❤️','😂','😮','😢','🔥'];
@@ -520,6 +618,7 @@
   var replyTo   = null;     /* { msgId, nick, text } */
   var mediaType = 'image';
   var msgListener = null;
+  var msgListenerRef = null;
 
   function safeKey(s){ return s.replace(/[.#$/\[\] ]/g,'_'); }
   var avatarCache = {};
@@ -587,6 +686,7 @@
   });
 
   function init(){
+    if(window.TextFormat){ try{ window.TextFormat.attachToolbar(document.getElementById('msgInput')); }catch(e){} }
     if(!myNick){
       /* No nick — show message */
       document.getElementById('msgWelcome').innerHTML =
@@ -604,31 +704,90 @@
   }
 
   /* ════════════════════════════
-     DIALOGS LIST
+     DIALOGS LIST (DMs + groups)
   ════════════════════════════ */
+  var dmItems = [], groupItems = [];
+
   function loadDialogs(){
+    /* DMs */
     db.ref('dm_index/'+safeKey(myNick)).on('value', function(snap){
-      var list = document.getElementById('dialogList');
-      if(!snap.exists()||!snap.numChildren()){
-        list.innerHTML='<div class="msg-empty-dialogs">Диалогов пока нет.<br>Начни первый!</div>';
-        return;
-      }
-      var items=[];
-      snap.forEach(function(ch){ items.push({nick:ch.key, data:ch.val()||{}}); });
-      items.sort(function(a,b){ return (b.data.lastTs||0)-(a.data.lastTs||0); });
-      renderDialogs(items);
+      dmItems = [];
+      if(snap.exists()) snap.forEach(function(ch){ dmItems.push({ kind:'dm', nick:ch.key, data:ch.val()||{} }); });
+      mergeAndRender();
     });
+    /* Groups/channels */
+    db.ref('user_groups/'+safeKey(myNick)).on('value', function(snap){
+      groupItems = [];
+      if(!snap.exists()){ mergeAndRender(); return; }
+      var gids = [];
+      snap.forEach(function(ch){ gids.push(ch.key); });
+      var loaded = 0;
+      if(!gids.length){ mergeAndRender(); return; }
+      gids.forEach(function(gid){
+        db.ref('groups/'+gid).once('value', function(gs){
+          if(gs.exists()){
+            var g = gs.val();
+            /* последнее сообщение */
+            var lastMsg='', lastTs=g.createdTs||0;
+            if(g.messages){
+              var keys = Object.keys(g.messages);
+              var last = g.messages[keys[keys.length-1]];
+              if(last){ lastMsg = (last.nick?last.nick+': ':'')+(last.text||'📎 медиа'); lastTs = last.ts; }
+            }
+            groupItems.push({ kind:'group', gid:gid, data:g, lastMsg:lastMsg, lastTs:lastTs });
+          }
+          loaded++;
+          if(loaded===gids.length) mergeAndRender();
+        });
+      });
+    });
+  }
+
+  function mergeAndRender(){
+    var all = [];
+    dmItems.forEach(function(d){ all.push({ kind:'dm', nick:d.nick, data:d.data, lastTs:d.data.lastTs||0 }); });
+    groupItems.forEach(function(g){ all.push({ kind:'group', gid:g.gid, gdata:g.data, lastMsg:g.lastMsg, lastTs:g.lastTs||0 }); });
+    all.sort(function(a,b){ return (b.lastTs||0)-(a.lastTs||0); });
+    renderDialogs(all);
   }
 
   function renderDialogs(items){
     var q = document.getElementById('dialogSearch').value.trim().toLowerCase();
     var list = document.getElementById('dialogList');
     list.innerHTML='';
-    var filtered = items.filter(function(i){ return !q||i.nick.toLowerCase().includes(q); });
+    var filtered = items.filter(function(i){
+      var name = i.kind==='dm' ? i.nick : (i.gdata?i.gdata.name:'');
+      return !q || name.toLowerCase().includes(q);
+    });
     if(!filtered.length){
-      list.innerHTML='<div class="msg-empty-dialogs">Ничего не найдено</div>'; return;
+      list.innerHTML='<div class="msg-empty-dialogs">Диалогов пока нет.<br>Создай первый!</div>'; return;
     }
     filtered.forEach(function(item){
+      if(item.kind==='group') renderGroupItem(item, list);
+      else renderDmItem(item, list);
+    });
+  }
+
+  function renderGroupItem(item, list){
+    var g = item.gdata;
+    var isChannel = g.type==='channel';
+    var el=document.createElement('div');
+    el.className='msg-dialog-item'+(currentGroup&&currentGroup.gid===item.gid?' active':'');
+    var iconHtml = g.avatar
+      ? '<img src="'+esc(g.avatar)+'" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
+      : '<div class="'+(isChannel?'msg-dialog-channel-icon':'msg-dialog-group-icon')+'">'+(isChannel?'📢':'👥')+'</div>';
+    el.innerHTML =
+      iconHtml +
+      '<div class="msg-dialog-info">'+
+        '<div class="msg-dialog-nick">'+(isChannel?'📢 ':'👥 ')+esc(g.name)+'</div>'+
+        '<div class="msg-dialog-preview">'+esc((item.lastMsg||'').slice(0,40))+'</div>'+
+      '</div>'+
+      (item.lastTs?'<div class="msg-dialog-time">'+timeStr(item.lastTs)+'</div>':'');
+    el.addEventListener('click',function(){ openGroup(item.gid); });
+    list.appendChild(el);
+  }
+
+  function renderDmItem(item, list){
       var el=document.createElement('div');
       el.className='msg-dialog-item'+(currentDialog&&currentDialog.otherNick===item.nick?' active':'');
       var unread = item.data.unread>0;
@@ -657,16 +816,10 @@
           if(dot) dot.className = 'pres-dot ' + status;
         });
       }
-    });
   }
 
   document.getElementById('dialogSearch').addEventListener('input', function(){
-    /* re-render with filter — trigger snapshot again */
-    db.ref('dm_index/'+safeKey(myNick)).once('value', function(snap){
-      var items=[];
-      if(snap.exists()) snap.forEach(function(ch){ items.push({nick:ch.key, data:ch.val()||{}}); });
-      renderDialogs(items);
-    });
+    mergeAndRender();
   });
 
   /* ════════════════════════════
@@ -675,6 +828,14 @@
   function openChat(otherNick){
     var cid = chatId(safeKey(myNick), safeKey(otherNick));
     currentDialog = { chatId: cid, otherNick: otherNick };
+    currentGroup = null;
+    /* Убираем manage-кнопку и readonly от групп */
+    var head = document.getElementById('msgChatHead');
+    var oldManage = head.querySelector('.msg-chat-manage');
+    if(oldManage) oldManage.remove();
+    var ro = document.getElementById('channelReadonly');
+    if(ro) ro.remove();
+    document.querySelector('.msg-input-area').style.display = 'flex';
 
     /* Update UI */
     var chatAvatarEl = document.getElementById('chatAvatar');
@@ -709,7 +870,7 @@
     db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)+'/unread').set(0);
 
     /* Remove old listener */
-    if(msgListener){ db.ref('dms/'+currentDialog.chatId+'/messages').off('value', msgListener); }
+    if(msgListenerRef && msgListener){ try{ msgListenerRef.off('value', msgListener); }catch(e){} }
 
     /* Mobile: hide left panel */
     if(window.innerWidth<=640){
@@ -718,6 +879,7 @@
 
     /* Load messages */
     var msgsRef = db.ref('dms/'+cid+'/messages').orderByChild('ts').limitToLast(80);
+    msgListenerRef = msgsRef;
     msgListener = msgsRef.on('value', function(snap){
       renderMessages(snap);
     });
@@ -772,7 +934,7 @@
 
     /* Bubble */
     var bubble=document.createElement('div'); bubble.className='msg-bubble';
-    if(msg.text) bubble.textContent=msg.text;
+    if(msg.text){ var tspan=document.createElement('span'); tspan.innerHTML=(window.TextFormat?window.TextFormat.render(msg.text):esc(msg.text)); bubble.appendChild(tspan); }
 
     /* Media */
     if(msg.mediaUrl){
@@ -847,15 +1009,23 @@
       e.stopPropagation();
       if(!pickerMsgId||!currentDialog) return;
       var emoji=btn.dataset.emoji;
-      var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+pickerMsgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
+      var base=msgBasePath(); if(!base) return;
+      var ref=db.ref(base+pickerMsgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
       ref.once('value',function(snap){ snap.val() ? ref.remove() : ref.set(true); });
       document.getElementById('reactPicker').style.display='none';
     });
   });
   document.addEventListener('click',function(){ document.getElementById('reactPicker').style.display='none'; });
 
+  function msgBasePath(){
+    if(currentGroup) return 'groups/'+currentGroup.gid+'/messages/';
+    if(currentDialog) return 'dms/'+currentDialog.chatId+'/messages/';
+    return null;
+  }
+
   function toggleReaction(msgId,key,isMine){
-    var ref=db.ref('dms/'+currentDialog.chatId+'/messages/'+msgId+'/reactions/'+key+'/'+safeKey(myNick));
+    var base = msgBasePath(); if(!base) return;
+    var ref=db.ref(base+msgId+'/reactions/'+key+'/'+safeKey(myNick));
     isMine ? ref.remove() : ref.set(true);
   }
 
@@ -900,30 +1070,48 @@
      SEND MESSAGE
   ════════════════════════════ */
   function sendMessage(){
-    if(!currentDialog||!myNick) return;
+    if(!myNick) return;
+
     var text   = document.getElementById('msgInput').value.trim();
     var media  = document.getElementById('mediaUrlInput').value.trim();
     if(!text&&!media) return;
 
-    var msg={
-      nick:   myNick,
-      uid:    myUid,
-      text:   text,
-      ts:     Date.now()
-    };
+    var msg={ nick: myNick, uid: myUid, text: text, ts: Date.now() };
     if(media){ msg.mediaUrl=media; msg.mediaType=mediaType; }
     if(replyTo){ msg.replyTo={ msgId:replyTo.msgId, nick:replyTo.nick, text:replyTo.text }; }
 
+    function clearInputs(){
+      document.getElementById('msgInput').value='';
+      document.getElementById('mediaUrlInput').value='';
+      document.getElementById('mediaRow').classList.remove('show');
+      replyTo=null;
+      document.getElementById('replyBar').classList.remove('show');
+      var c=document.getElementById('msgMessages');
+      setTimeout(function(){ c.scrollTop=c.scrollHeight; },100);
+    }
+
+    /* ── Группа/канал ── */
+    if(currentGroup){
+      var g = currentGroup.data;
+      if(g.type==='channel' && g.owner!==myNick) return; /* в канале пишет только владелец */
+      db.ref('groups/'+currentGroup.gid+'/messages').push(msg, function(err){
+        if(err) return;
+        if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); }
+        clearInputs();
+      });
+      return;
+    }
+
+    /* ── Личка ── */
+    if(!currentDialog) return;
     var cid=currentDialog.chatId;
     var otherNick=currentDialog.otherNick;
 
     db.ref('dms/'+cid+'/messages').push(msg, function(err){
       if(err) return;
-      /* Update index for both */
       var preview=(text||'📎 медиа').slice(0,50);
       var ts=msg.ts;
       db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
-      /* Профиль: счётчик сообщений */
       if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); pr.child('joinedTs').transaction(function(v){return v||Date.now();}); }
       db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
         cur=cur||{};
@@ -931,15 +1119,7 @@
         cur.unread=(cur.unread||0)+1;
         return cur;
       });
-      /* Clear inputs */
-      document.getElementById('msgInput').value='';
-      document.getElementById('mediaUrlInput').value='';
-      document.getElementById('mediaRow').classList.remove('show');
-      replyTo=null;
-      document.getElementById('replyBar').classList.remove('show');
-      /* Scroll down */
-      var c=document.getElementById('msgMessages');
-      setTimeout(function(){ c.scrollTop=c.scrollHeight; },100);
+      clearInputs();
     });
   }
 
@@ -955,15 +1135,36 @@
   });
 
   /* ════════════════════════════
-     NEW CHAT MODAL
+     CREATE MENU (chat/group/channel/join)
   ════════════════════════════ */
   function setupNewChat(){
-    document.getElementById('newChatBtn').addEventListener('click',function(){
+    var menu = document.getElementById('newMenu');
+
+    document.getElementById('newChatBtn').addEventListener('click',function(e){
+      e.stopPropagation();
+      menu.classList.toggle('show');
+    });
+    document.addEventListener('click',function(){ menu.classList.remove('show'); });
+    menu.addEventListener('click',function(e){ e.stopPropagation(); });
+
+    menu.querySelectorAll('[data-create]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        menu.classList.remove('show');
+        var type = btn.dataset.create;
+        if(type==='chat') openNewChatModal();
+        else if(type==='group') openGroupModal('group');
+        else if(type==='channel') openGroupModal('channel');
+        else if(type==='join') openJoinModal();
+      });
+    });
+
+    /* ── New chat modal ── */
+    function openNewChatModal(){
       document.getElementById('newChatModal').classList.add('show');
       document.getElementById('newChatNickInput').value='';
       document.getElementById('newChatError').classList.remove('show');
       setTimeout(function(){ document.getElementById('newChatNickInput').focus(); },100);
-    });
+    }
     document.getElementById('newChatCancel').addEventListener('click',function(){
       document.getElementById('newChatModal').classList.remove('show');
     });
@@ -974,30 +1175,227 @@
     document.getElementById('newChatNickInput').addEventListener('keydown',function(e){
       if(e.key==='Enter') startNewChat();
     });
+
+    /* ── Group/Channel create modal ── */
+    var createType = 'group';
+    function openGroupModal(type){
+      createType = type;
+      document.getElementById('groupModalTitle').textContent = type==='group' ? 'Новая группа' : 'Новый канал';
+      document.getElementById('groupNameInput').value='';
+      document.getElementById('groupAvatarInput').value='';
+      document.getElementById('groupError').classList.remove('show');
+      document.getElementById('groupModal').classList.add('show');
+      setTimeout(function(){ document.getElementById('groupNameInput').focus(); },100);
+    }
+    document.getElementById('groupCancel').addEventListener('click',function(){
+      document.getElementById('groupModal').classList.remove('show');
+    });
+    document.getElementById('groupModal').addEventListener('click',function(e){
+      if(e.target===this) this.classList.remove('show');
+    });
+    document.getElementById('groupOk').addEventListener('click',function(){ createGroup(createType); });
+
+    /* ── Join channel modal ── */
+    function openJoinModal(){
+      document.getElementById('joinNameInput').value='';
+      document.getElementById('joinError').classList.remove('show');
+      document.getElementById('joinModal').classList.add('show');
+      setTimeout(function(){ document.getElementById('joinNameInput').focus(); },100);
+    }
+    document.getElementById('joinCancel').addEventListener('click',function(){
+      document.getElementById('joinModal').classList.remove('show');
+    });
+    document.getElementById('joinModal').addEventListener('click',function(e){
+      if(e.target===this) this.classList.remove('show');
+    });
+    document.getElementById('joinOk').addEventListener('click',joinChannel);
+    document.getElementById('joinNameInput').addEventListener('keydown',function(e){
+      if(e.key==='Enter') joinChannel();
+    });
   }
 
   function startNewChat(){
     var nick=document.getElementById('newChatNickInput').value.trim();
     var errEl=document.getElementById('newChatError');
+    function showErr(msg){ errEl.textContent=msg; errEl.classList.add('show'); }
     if(!nick){ showErr('Введи ник'); return; }
     if(nick===myNick){ showErr('Нельзя написать самому себе'); return; }
 
-    /* Check if nick exists */
     db.ref('nick_index/'+nick.toLowerCase()).once('value',function(snap){
-      if(!snap.exists()){
-        showErr('Пользователь с таким ником не найден');
-        return;
-      }
+      if(!snap.exists()){ showErr('Пользователь с таким ником не найден'); return; }
       document.getElementById('newChatModal').classList.remove('show');
-      /* Add to index if not exists */
       db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(nick)).once('value',function(s){
         if(!s.exists()) db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(nick)).set({ lastMsg:'', lastTs:Date.now(), unread:0 });
         openChat(nick);
       });
     });
-
-    function showErr(msg){ errEl.textContent=msg; errEl.classList.add('show'); }
   }
+
+  /* ════════════════════════════
+     CREATE GROUP / CHANNEL
+  ════════════════════════════ */
+  function createGroup(type){
+    var name = document.getElementById('groupNameInput').value.trim();
+    var avatar = document.getElementById('groupAvatarInput').value.trim();
+    var errEl = document.getElementById('groupError');
+    function showErr(m){ errEl.textContent=m; errEl.classList.add('show'); }
+    if(name.length < 2){ showErr('Название минимум 2 символа'); return; }
+
+    if(type==='channel'){
+      /* Проверяем уникальность названия канала */
+      db.ref('channels_public/'+safeKey(name.toLowerCase())).once('value',function(snap){
+        if(snap.exists()){ showErr('Канал с таким названием уже есть'); return; }
+        doCreate();
+      });
+    } else {
+      doCreate();
+    }
+
+    function doCreate(){
+      var gid = db.ref('groups').push().key;
+      var members = {}; members[safeKey(myNick)] = true;
+      var groupData = {
+        name: name, type: type, owner: myNick,
+        avatar: avatar, createdTs: Date.now(), members: members
+      };
+      var updates = {};
+      updates['groups/'+gid] = groupData;
+      updates['user_groups/'+safeKey(myNick)+'/'+gid] = true;
+      if(type==='channel'){
+        updates['channels_public/'+safeKey(name.toLowerCase())] = gid;
+      }
+      db.ref().update(updates, function(err){
+        if(err){ showErr('Ошибка создания'); return; }
+        document.getElementById('groupModal').classList.remove('show');
+        openGroup(gid);
+      });
+    }
+  }
+
+  /* ════════════════════════════
+     JOIN CHANNEL BY NAME
+  ════════════════════════════ */
+  function joinChannel(){
+    var name = document.getElementById('joinNameInput').value.trim();
+    var errEl = document.getElementById('joinError');
+    function showErr(m){ errEl.textContent=m; errEl.classList.add('show'); }
+    if(!name){ showErr('Введи название'); return; }
+
+    db.ref('channels_public/'+safeKey(name.toLowerCase())).once('value',function(snap){
+      var gid = snap.val();
+      if(!gid){ showErr('Канал не найден'); return; }
+      var updates = {};
+      updates['groups/'+gid+'/members/'+safeKey(myNick)] = true;
+      updates['user_groups/'+safeKey(myNick)+'/'+gid] = true;
+      db.ref().update(updates, function(err){
+        if(err){ showErr('Ошибка вступления'); return; }
+        document.getElementById('joinModal').classList.remove('show');
+        openGroup(gid);
+      });
+    });
+  }
+
+  /* ════════════════════════════
+     OPEN GROUP / CHANNEL
+  ════════════════════════════ */
+  var currentGroup = null; /* {gid, data} */
+
+  function openGroup(gid){
+    db.ref('groups/'+gid).once('value', function(snap){
+      if(!snap.exists()) return;
+      var g = snap.val();
+      currentGroup = { gid: gid, data: g };
+      currentDialog = null;
+
+      /* Header */
+      var isChannel = g.type === 'channel';
+      var isOwner = g.owner === myNick;
+      var memberCount = g.members ? Object.keys(g.members).length : 0;
+
+      var chatAvatarEl = document.getElementById('chatAvatar');
+      chatAvatarEl.innerHTML = g.avatar
+        ? '<img src="'+esc(g.avatar)+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">'
+        : '<div class="'+(isChannel?'msg-dialog-channel-icon':'msg-dialog-group-icon')+'" style="width:36px;height:36px;">'+(isChannel?'📢':'👥')+'</div>';
+
+      document.getElementById('chatNick').textContent = g.name;
+      var statusEl = document.getElementById('chatStatus');
+      statusEl.className = 'msg-chat-status';
+      statusEl.textContent = (isChannel?'Канал':'Группа')+' · '+memberCount+' участн.';
+
+      /* Manage button for owner */
+      var head = document.getElementById('msgChatHead');
+      var oldManage = head.querySelector('.msg-chat-manage');
+      if(oldManage) oldManage.remove();
+      if(isOwner && !isChannel){
+        var manageBtn = document.createElement('button');
+        manageBtn.className = 'msg-chat-manage';
+        manageBtn.textContent = '➕ Участник';
+        manageBtn.addEventListener('click', function(){ openAddMember(gid); });
+        head.appendChild(manageBtn);
+      }
+
+      document.getElementById('msgWelcome').style.display = 'none';
+      document.getElementById('msgChatView').style.display = 'flex';
+
+      if(window.innerWidth<=640) document.getElementById('msgLeft').classList.add('hidden');
+
+      /* Права на запись: в канале только владелец */
+      var canWrite = !isChannel || isOwner;
+      var inputArea = document.querySelector('.msg-input-area');
+      var readonlyNotice = document.getElementById('channelReadonly');
+      if(readonlyNotice) readonlyNotice.remove();
+      if(canWrite){
+        inputArea.style.display = 'flex';
+        document.getElementById('msgInput').disabled = false;
+        document.getElementById('msgSendBtn').disabled = false;
+      } else {
+        inputArea.style.display = 'none';
+        var notice = document.createElement('div');
+        notice.id = 'channelReadonly';
+        notice.className = 'msg-channel-readonly';
+        notice.textContent = '📢 Только владелец канала может писать сообщения';
+        inputArea.parentNode.appendChild(notice);
+      }
+
+      /* Load messages */
+      if(msgListenerRef && msgListener){ try{ msgListenerRef.off('value', msgListener); }catch(e){} }
+      var msgsRef = db.ref('groups/'+gid+'/messages').orderByChild('ts').limitToLast(80);
+      msgListenerRef = msgsRef;
+      msgListener = msgsRef.on('value', function(snap){ renderMessages(snap); });
+    });
+  }
+
+  /* Add member (owner only, groups) */
+  var addMemberGid = null;
+  function openAddMember(gid){
+    addMemberGid = gid;
+    document.getElementById('addMemberInput').value='';
+    document.getElementById('addMemberError').classList.remove('show');
+    document.getElementById('addMemberModal').classList.add('show');
+    setTimeout(function(){ document.getElementById('addMemberInput').focus(); },100);
+  }
+  document.getElementById('addMemberCancel').addEventListener('click',function(){
+    document.getElementById('addMemberModal').classList.remove('show');
+  });
+  document.getElementById('addMemberModal').addEventListener('click',function(e){
+    if(e.target===this) this.classList.remove('show');
+  });
+  document.getElementById('addMemberOk').addEventListener('click',function(){
+    var nick = document.getElementById('addMemberInput').value.trim();
+    var errEl = document.getElementById('addMemberError');
+    function showErr(m){ errEl.textContent=m; errEl.classList.add('show'); }
+    if(!nick){ showErr('Введи ник'); return; }
+    db.ref('nick_index/'+nick.toLowerCase()).once('value',function(snap){
+      if(!snap.exists()){ showErr('Пользователь не найден'); return; }
+      var updates = {};
+      updates['groups/'+addMemberGid+'/members/'+safeKey(nick)] = true;
+      updates['user_groups/'+safeKey(nick)+'/'+addMemberGid] = true;
+      db.ref().update(updates, function(err){
+        if(err){ showErr('Ошибка'); return; }
+        document.getElementById('addMemberModal').classList.remove('show');
+      });
+    });
+  });
 
   /* ════════════════════════════
      MOBILE BACK
@@ -1005,7 +1403,7 @@
   function setupMobile(){
     document.getElementById('msgChatBack').addEventListener('click',function(){
       document.getElementById('msgLeft').classList.remove('hidden');
-      currentDialog=null;
+      currentDialog=null; currentGroup=null;
       document.getElementById('msgChatView').style.display='none';
       document.getElementById('msgWelcome').style.display='flex';
     });

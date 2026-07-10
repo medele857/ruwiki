@@ -344,6 +344,7 @@
 <audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
+<script src="textformat.js"></script>
 <script>
 (function () {
   var REACTIONS  = ['👍','❤️','😂','😮'];
@@ -400,6 +401,9 @@
       this.classList.add('active');
       document.getElementById('wpTypeVid').classList.remove('active');
     });
+    /* Панель форматирования для поста */
+    if(window.TextFormat){ window.TextFormat.attachToolbar(document.getElementById('wpText')); }
+
     document.getElementById('wpTypeVid').addEventListener('click', function(){
       wpMediaType = 'video';
       this.classList.add('active');
@@ -526,7 +530,8 @@
     }
     /* Text */
     if(post.text){
-      var tx=document.createElement('div'); tx.className='post-text'; tx.textContent=post.text;
+      var tx=document.createElement('div'); tx.className='post-text';
+      tx.innerHTML = (window.TextFormat ? window.TextFormat.render(post.text) : esc(post.text));
       card.appendChild(tx);
     }
     /* Media */
