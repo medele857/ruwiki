@@ -126,15 +126,9 @@
 <div id="admLogin" class="adm-wrap">
   <div class="adm-login">
     <h2>🔐 Вход в админ-панель</h2>
-    <button class="adm-pin-btn" id="googleBtn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-bottom:14px;">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-      Войти через Google
-    </button>
-    <div style="text-align:center;font-size:11px;color:var(--text2);margin-bottom:14px;">— или PIN (для тех, кто уже вошёл через Google) —</div>
-    <input class="adm-pin-input" id="pinInput" type="password" placeholder="••••" maxlength="20">
+    <input class="adm-pin-input" id="pinInput" type="password" placeholder="Пароль..." maxlength="40" autocomplete="off">
     <button class="adm-pin-btn" id="pinBtn">Войти</button>
     <div class="adm-pin-err" id="pinErr">Неверный пароль</div>
-    <div class="adm-pin-err" id="uidErr" style="display:none;color:#ff6b6b;">Доступ запрещён: этот аккаунт Google — не админ. Войди под нужным аккаунтом.</div>
   </div>
 </div>
 
@@ -343,25 +337,19 @@
 <script src="firebase-wiki.js"></script>
 <script>
 (function(){
-  // ── PIN: просто UX-замок, НЕ источник безопасности.
-  // Реальная защита — совпадение auth.uid с ADMIN_UID (см. database rules).
-  var ADMIN_PIN  = 'medele857';   // ← смени на свой
-  var ADMIN_UID  = 'vXjYHmxN2BXDLiJExs98YGJmfy62'; // ← после первого открытия страницы вставь сюда свой uid
-
   var loginDiv = document.getElementById('admLogin');
   var panelDiv = document.getElementById('admPanel');
   var pinInput = document.getElementById('pinInput');
   var pinBtn   = document.getElementById('pinBtn');
   var pinErr   = document.getElementById('pinErr');
-  var uidErr   = document.getElementById('uidErr');
   var toast    = document.getElementById('admToast');
 
   function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2500); }
 
-  /* Ждём пока firebase-wiki.js загрузит SDK и инициализирует Firebase */
-  function waitFirebase(cb) {
-    if (window.WikiDB && window.WikiDB.db && typeof firebase !== 'undefined' && firebase.auth) cb();
-    else setTimeout(function(){ waitFirebase(cb); }, 150);
+  /* ── SHA-256 хэширование пароля ── */
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
   }
 
   function unlock(){
@@ -370,63 +358,49 @@
     loadData();
   }
 
-  /* После загрузки Firebase — проверяем редирект и анонимный uid */
-  waitFirebase(function(){
+  /* Уже вошёл в этой сессии */
+  if (sessionStorage.getItem('admAuth') === '1') {
+    waitDB(function(){ unlock(); });
+  }
 
-    /* 1. Проверяем результат Google redirect (если вернулись после входа) */
-    firebase.auth().getRedirectResult().then(function(result){
-      if (result && result.user) {
-        var uid = result.user.uid;
-        if (uid === ADMIN_UID) {
-          sessionStorage.setItem('admAuth', '1');
-          sessionStorage.setItem('admUID', uid);
-          unlock();
-        } else {
-          uidErr.style.display = 'block';
-          uidErr.textContent = 'Этот Google аккаунт не является администратором';
-        }
-      }
-    }).catch(function(err){
-      if (err && err.code) showToast('Ошибка входа: ' + (err.code || err.message));
-    });
-
-    /* 2. Если уже авторизован через Google ранее */
-    firebase.auth().onAuthStateChanged(function(user){
-      if (!user || user.isAnonymous) return;
-      if (user.uid === ADMIN_UID && sessionStorage.getItem('admAuth') === '1') {
-        unlock();
-      }
-    });
-
-    /* 3. Кнопка Google — делаем redirect */
-    document.getElementById('googleBtn').addEventListener('click', function(){
-      var provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithRedirect(provider).catch(function(err){
-        showToast('Ошибка: ' + (err.message || err.code));
-      });
-    });
-
-  });
-
-  /* PIN проверяется отдельно после Google входа */
+  /* Хэш пароля хранится в Firebase: admin_config/pwHash
+     Пароль НЕ в коде. Сравниваем хэш введённого с хэшем в базе. */
   pinBtn.addEventListener('click', tryLogin);
   pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin(); });
-  function tryLogin(){
-    var savedUID = sessionStorage.getItem('admUID');
-    if (!savedUID || savedUID !== ADMIN_UID) {
-      uidErr.style.display = 'block';
-      uidErr.textContent = 'Сначала войдите через Google';
-      return;
-    }
-    if(pinInput.value === ADMIN_PIN){
-      sessionStorage.setItem('admAuth','1');
-      pinErr.classList.remove('show');
-      unlock();
-    } else {
-      pinErr.classList.add('show');
-      pinInput.value='';
-      pinInput.focus();
-    }
+
+  async function tryLogin(){
+    var entered = pinInput.value;
+    if(!entered){ return; }
+    pinBtn.disabled = true;
+    pinBtn.textContent = 'Проверка…';
+
+    var enteredHash = await sha256(entered);
+
+    waitDB(function(){
+      window.WikiDB.db.ref('admin_config/pwHash').once('value', function(snap){
+        var storedHash = snap.val();
+        pinBtn.disabled = false;
+        pinBtn.textContent = 'Войти';
+
+        if(!storedHash){
+          /* Первый запуск — хэша ещё нет. Показываем подсказку. */
+          pinErr.textContent = 'Пароль не настроен. Добавь admin_config/pwHash в Firebase.';
+          pinErr.classList.add('show');
+          return;
+        }
+
+        if(enteredHash === storedHash){
+          sessionStorage.setItem('admAuth','1');
+          pinErr.classList.remove('show');
+          unlock();
+        } else {
+          pinErr.textContent = 'Неверный пароль';
+          pinErr.classList.add('show');
+          pinInput.value='';
+          pinInput.focus();
+        }
+      });
+    });
   }
 
   document.getElementById('admLogout').addEventListener('click',function(){
