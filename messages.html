@@ -519,22 +519,39 @@
   }
 
   function waitDB(cb){
-    if(window.WikiDB && window.WikiDB.onAuthReady){
-      window.WikiDB.onAuthReady(function(uid){ cb(window.WikiDB); });
+    if(window.WikiDB && window.WikiDB.db){
+      /* Ждём пока uid будет готов */
+      if(window.WikiDB.uid){
+        cb(window.WikiDB);
+      } else if(window.WikiDB.onAuthReady){
+        window.WikiDB.onAuthReady(function(){ cb(window.WikiDB); });
+      } else {
+        setTimeout(function(){ waitDB(cb); }, 200);
+      }
     } else {
       setTimeout(function(){ waitDB(cb); }, 200);
     }
   }
 
   waitDB(function(wdb){
-    db     = wdb.db;
+    db      = wdb.db;
     myDevId = wdb.deviceId;
     myUid   = wdb.uid || '';
 
-    /* Load own nick — ищем по uid (как хранит firebase-wiki.js) */
-    db.ref('nicknames/'+safeKey(myUid || myDevId)).once('value', function(snap){
-      myNick = snap.val() || null;
-      init();
+    /* Load own nick — пробуем по uid, потом по deviceId (legacy) */
+    var uidKey = safeKey(myUid);
+    db.ref('nicknames/'+uidKey).once('value', function(snap){
+      var nick = snap.val();
+      if(nick){
+        myNick = nick;
+        init();
+      } else {
+        /* фоллбэк на старый deviceId ключ */
+        db.ref('nicknames/'+safeKey(myDevId)).once('value', function(snap2){
+          myNick = snap2.val() || null;
+          init();
+        });
+      }
     });
   });
 
