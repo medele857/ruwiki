@@ -272,6 +272,28 @@
   .dm-banner-bigbtn { width: 100%; }
 }
 
+
+/* ══ TOP USERS FLOATING BTN ══ */
+.top-users-fab {
+  position: fixed; bottom: 28px; right: 28px; z-index: 900;
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 30px;
+  background: linear-gradient(135deg, #ffb800, #ff8a00);
+  border: 1px solid rgba(255,200,0,.5);
+  color: #1a1000; font-family: var(--font); font-size: 13px; letter-spacing: .04em;
+  text-decoration: none; font-weight: bold;
+  box-shadow: 0 4px 20px rgba(255,160,0,.4);
+  transition: all .2s;
+  animation: topFabIn .5s ease .8s both;
+}
+@keyframes topFabIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+.top-users-fab:hover { transform: scale(1.08) translateY(-2px); box-shadow: 0 8px 30px rgba(255,160,0,.6); }
+.top-users-fab-icon { font-size: 18px; }
+@media (max-width: 600px) {
+  .top-users-fab { bottom: 20px; right: 16px; padding: 10px 16px; font-size: 12px; }
+  .top-users-fab-label { display: none; }
+}
+
   </style>
 </head>
 <body>
@@ -889,6 +911,13 @@ function showToast(msg, ms) {
   });
 })();
 </script>
+
+
+<!-- ══ TOP USERS BUTTON ══ -->
+<a href="top.html" class="top-users-fab" data-sound>
+  <span class="top-users-fab-icon">👑</span>
+  <span class="top-users-fab-label">Топ активных</span>
+</a>
 
 <!-- ══ SETTINGS BUTTON ══ -->
 <a href="settings.html" class="settings-gear-btn" title="Настройки сайта">

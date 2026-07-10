@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Топ пользователей — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    .top-bg {
+      position: fixed; inset: 0; z-index: -2;
+      background: linear-gradient(160deg,#0a0812 0%,#100a1e 50%,#080610 100%);
+    }
+    .top-bg-glow {
+      position: fixed; inset: 0; z-index: -1;
+      background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 55%);
+      opacity: .5;
+    }
+    #topBgCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5; }
+
+    .top-wrap { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 60px 24px 100px; }
+
+    /* Header */
+    .top-header { text-align: center; margin-bottom: 40px; animation: fadeUp .6s ease forwards; opacity: 0; }
+    .top-crown { font-size: 52px; margin-bottom: 12px; filter: drop-shadow(0 0 20px rgba(255,200,0,.5)); }
+    .top-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px,7vw,60px);
+      letter-spacing: .06em;
+      background: linear-gradient(90deg, #ffd700, #ffaa00, #ffd700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .top-subtitle { font-size: 13px; color: var(--text2); margin-top: 8px; letter-spacing: .04em; }
+
+    .top-close {
+      position: fixed; top: 24px; right: 24px; z-index: 10;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--bg2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2); text-decoration: none; font-size: 18px;
+      transition: all .15s;
+    }
+    .top-close:hover { border-color: var(--border2); color: var(--text); transform: rotate(90deg) scale(1.1); }
+
+    /* Podium — top 3 */
+    .top-podium {
+      display: flex; align-items: flex-end; justify-content: center; gap: 12px;
+      margin-bottom: 36px;
+      animation: fadeUp .6s ease .15s forwards; opacity: 0;
+    }
+    .podium-place { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .podium-avatar-wrap { position: relative; }
+    .podium-avatar {
+      border-radius: 50%; object-fit: cover; background: var(--bg3);
+      border: 3px solid var(--border2);
+    }
+    .podium-avatar-ph {
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+    .podium-1 .podium-avatar, .podium-1 .podium-avatar-ph { width: 92px; height: 92px; border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,.5); }
+    .podium-1 .podium-avatar-ph { font-size: 40px; }
+    .podium-2 .podium-avatar, .podium-2 .podium-avatar-ph { width: 72px; height: 72px; border-color: #c0c0d0; box-shadow: 0 0 22px rgba(192,192,208,.4); }
+    .podium-2 .podium-avatar-ph { font-size: 32px; }
+    .podium-3 .podium-avatar, .podium-3 .podium-avatar-ph { width: 72px; height: 72px; border-color: #cd7f32; box-shadow: 0 0 22px rgba(205,127,50,.4); }
+    .podium-3 .podium-avatar-ph { font-size: 32px; }
+    .podium-medal {
+      position: absolute; bottom: -6px; right: -6px;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; background: var(--bg2); border: 1px solid var(--border2);
+    }
+    .podium-nick {
+      font-family: var(--font); font-size: 13px; color: var(--text);
+      text-decoration: none; max-width: 90px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap; text-align: center;
+    }
+    .podium-nick:hover { color: var(--accent); }
+    .podium-score { font-size: 11px; color: var(--accent); font-family: 'Bebas Neue', sans-serif; letter-spacing: .05em; }
+    .podium-1 { order: 2; } .podium-2 { order: 1; } .podium-3 { order: 3; }
+
+    /* List — rest */
+    .top-list { display: flex; flex-direction: column; gap: 8px; animation: fadeUp .6s ease .3s forwards; opacity: 0; }
+    .top-row {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 16px;
+      text-decoration: none; transition: all .15s;
+    }
+    .top-row:hover { border-color: var(--border2); transform: translateX(4px); background: var(--bg3); }
+    .top-rank { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--text2); width: 28px; text-align: center; flex-shrink: 0; }
+    .top-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--bg3); border: 1px solid var(--border); flex-shrink: 0; }
+    .top-avatar-ph {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+    .top-row-info { flex: 1; min-width: 0; }
+    .top-row-nick { font-family: var(--font); font-size: 14px; color: var(--text); }
+    .top-row-stats { font-size: 10px; color: var(--text2); margin-top: 2px; }
+    .top-row-score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--accent); flex-shrink: 0; }
+
+    .top-loading, .top-empty { text-align: center; padding: 60px; color: var(--text2); font-size: 14px; }
+
+    @media (max-width: 500px) {
+      .podium-1 .podium-avatar, .podium-1 .podium-avatar-ph { width: 76px; height: 76px; }
+      .podium-2 .podium-avatar, .podium-2 .podium-avatar-ph,
+      .podium-3 .podium-avatar, .podium-3 .podium-avatar-ph { width: 58px; height: 58px; }
+    }
+  </style>
+</head>
+<body>
+<div class="top-bg"></div>
+<div class="top-bg-glow"></div>
+<canvas id="topBgCanvas"></canvas>
+
+<a href="main.html" class="top-close" title="Закрыть">✕</a>
+
+<div class="top-wrap">
+  <div class="top-header">
+    <div class="top-crown">👑</div>
+    <div class="top-title">Топ активных</div>
+    <div class="top-subtitle">Самые активные участники сообщества</div>
+  </div>
+
+  <div id="topPodium"></div>
+  <div id="topList"><div class="top-loading">Загрузка рейтинга…</div></div>
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function(){
+  function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function waitDB(cb){
+    if(window.WikiDB && window.WikiDB.db) cb(window.WikiDB);
+    else setTimeout(function(){ waitDB(cb); },200);
+  }
+
+  waitDB(function(wdb){
+    var db = wdb.db;
+    db.ref('profiles').once('value', function(snap){
+      var users = [];
+      if(snap.exists()){
+        snap.forEach(function(ch){
+          var d = ch.val() || {};
+          if(!d.nick) return;
+          var score = (d.commentCount||0)*3 + (d.likesGiven||0) + (d.msgCount||0)*2;
+          users.push({
+            nick: d.nick, avatar: d.avatar||'', score: score,
+            comments: d.commentCount||0, likes: d.likesGiven||0, msgs: d.msgCount||0
+          });
+        });
+      }
+      users.sort(function(a,b){ return b.score - a.score; });
+      render(users);
+    });
+  });
+
+  function avatarHtml(u, cls, phCls){
+    if(u.avatar){
+      return '<img class="'+cls+'" src="'+esc(u.avatar)+'" onerror="this.outerHTML=\'<div class=\\\''+phCls+'\\\'>'+esc(u.nick[0].toUpperCase())+'</div>\'">';
+    }
+    return '<div class="'+phCls+'">'+esc(u.nick[0].toUpperCase())+'</div>';
+  }
+
+  function render(users){
+    if(!users.length){
+      document.getElementById('topList').innerHTML = '<div class="top-empty">Пока нет активных пользователей</div>';
+      return;
+    }
+
+    /* Podium top-3 */
+    var podiumEl = document.getElementById('topPodium');
+    var top3 = users.slice(0,3);
+    if(top3.length >= 1){
+      podiumEl.className = 'top-podium';
+      var medals = ['🥇','🥈','🥉'];
+      var placeClasses = ['podium-1','podium-2','podium-3'];
+      var html = '';
+      top3.forEach(function(u, i){
+        html += '<div class="podium-place '+placeClasses[i]+'">'+
+          '<div class="podium-avatar-wrap">'+
+            avatarHtml(u, 'podium-avatar', 'podium-avatar-ph')+
+            '<div class="podium-medal">'+medals[i]+'</div>'+
+          '</div>'+
+          '<a href="profile.html?nick='+encodeURIComponent(u.nick)+'" class="podium-nick">'+esc(u.nick)+'</a>'+
+          '<div class="podium-score">'+u.score+' очков</div>'+
+        '</div>';
+      });
+      podiumEl.innerHTML = html;
+    }
+
+    /* List 4+ */
+    var listEl = document.getElementById('topList');
+    var rest = users.slice(3);
+    if(!rest.length){ listEl.innerHTML = ''; return; }
+    listEl.innerHTML = '';
+    rest.forEach(function(u, i){
+      var a = document.createElement('a');
+      a.href = 'profile.html?nick='+encodeURIComponent(u.nick);
+      a.className = 'top-row';
+      a.innerHTML =
+        '<div class="top-rank">'+(i+4)+'</div>'+
+        avatarHtml(u, 'top-avatar', 'top-avatar-ph')+
+        '<div class="top-row-info">'+
+          '<div class="top-row-nick">'+esc(u.nick)+'</div>'+
+          '<div class="top-row-stats">💬 '+u.comments+' · 👍 '+u.likes+' · ✉️ '+u.msgs+'</div>'+
+        '</div>'+
+        '<div class="top-row-score">'+u.score+'</div>';
+      listEl.appendChild(a);
+    });
+  }
+
+  /* Floating particles bg */
+  (function(){
+    var canvas = document.getElementById('topBgCanvas');
+    var ctx = canvas.getContext('2d');
+    function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    var stars = [];
+    for(var i=0;i<50;i++) stars.push({x:Math.random(),y:Math.random(),r:.5+Math.random()*1.5,vy:-0.0002-Math.random()*.0003,op:.1+Math.random()*.4,pulse:Math.random()*6,ps:.01+Math.random()*.02});
+    function tick(){
+      var W=canvas.width,H=canvas.height;
+      ctx.clearRect(0,0,W,H);
+      stars.forEach(function(s){
+        s.y+=s.vy; s.pulse+=s.ps;
+        if(s.y<-.02)s.y=1.02;
+        var op=s.op*(.6+.4*Math.sin(s.pulse));
+        ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,210,80,'+op+')'; ctx.fill();
+      });
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+})();
+</script>
+</body>
+</html>

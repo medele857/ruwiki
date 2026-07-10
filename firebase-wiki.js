@@ -274,16 +274,20 @@
       /* ── Поставить/снять лайк ── */
       toggleLike: function (pid, pageRef, liked, onDone) {
         var key = 'likes_by/' + safeKey(pid) + '/' + safeKey(DEVICE_ID);
+        var uidKey = window.WikiDB.uid || safeKey(DEVICE_ID);
+        var profRef = db.ref('profiles/' + safeKey(uidKey) + '/likesGiven');
         if (liked) {
           /* снимаем */
           db.ref(key).remove();
           pageRef.child('likes').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
+          profRef.transaction(function (v) { return Math.max(0, (v || 0) - 1); });
           onDone(false);
         } else {
           /* ставим — атомарно: сначала пишем флаг, потом счётчик */
           db.ref(key).set(true, function (err) {
             if (err) return; /* уже стоит (гонка) */
             pageRef.child('likes').transaction(function (v) { return (v || 0) + 1; });
+            profRef.transaction(function (v) { return (v || 0) + 1; });
             onDone(true);
           });
         }
@@ -853,6 +857,11 @@
         window.WikiDB.stampCooldown('comment_' + pid);
         ref.child('comments').push({ text: text, nick: currentNick, ts: Date.now(), deviceId: DEVICE_ID, uid: MY_UID });
         ref.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
+        /* Обновляем профиль: счётчик комментов + ник + joinedTs */
+        var profRef = db.ref('profiles/' + safeKey(MY_UID));
+        profRef.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
+        profRef.child('nick').set(currentNick);
+        profRef.child('joinedTs').transaction(function (v) { return v || Date.now(); });
         lockComment(COMMENT_CD);
       });
     }
@@ -910,7 +919,7 @@
       var d = item.data, cid = item.id;
       var dt = new Date(d.ts).toLocaleDateString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
       var nickHtml = d.nick
-        ? '<span class="wfb-comment-nick">' + esc(d.nick) + '</span>'
+        ? '<a href="profile.html?nick=' + encodeURIComponent(d.nick) + '" class="wfb-comment-nick" style="text-decoration:none;">' + esc(d.nick) + '</a>'
         : '<span>аноним</span>';
 
       var myVote = d.votes && d.votes[MY_KEY] ? d.votes[MY_KEY] : null; /* 'like'|'dislike'|null */

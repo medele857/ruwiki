@@ -507,6 +507,22 @@
   var msgListener = null;
 
   function safeKey(s){ return s.replace(/[.#$/\[\] ]/g,'_'); }
+  var avatarCache = {};
+  function getAvatar(nick, cb){
+    if(avatarCache[nick] !== undefined){ cb(avatarCache[nick]); return; }
+    db.ref('nick_index/'+safeKey(nick.toLowerCase())).once('value', function(s){
+      var uid = s.val();
+      if(!uid){ avatarCache[nick]=''; cb(''); return; }
+      db.ref('profiles/'+safeKey(uid)+'/avatar').once('value', function(a){
+        avatarCache[nick] = a.val()||'';
+        cb(avatarCache[nick]);
+      });
+    });
+  }
+  function avatarEl(nick, av, size){
+    if(av) return '<img src="'+esc(av)+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML=\'<div style=&quot;width:'+size+'px;height:'+size+'px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:'+(size*0.42)+'px;flex-shrink:0;&quot;>'+esc(nick[0].toUpperCase())+'</div>\'">';
+    return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:'+(size*0.42)+'px;flex-shrink:0;">'+esc(nick[0].toUpperCase())+'</div>';
+  }
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function chatId(a,b){ return [a,b].sort().join('__'); }
 
@@ -602,7 +618,7 @@
       el.className='msg-dialog-item'+(currentDialog&&currentDialog.otherNick===item.nick?' active':'');
       var unread = item.data.unread>0;
       el.innerHTML=
-        '<div class="msg-dialog-avatar">'+esc(item.nick[0].toUpperCase())+'</div>'+
+        '<div class="msg-dialog-avatar-slot">'+avatarEl(item.nick, avatarCache[item.nick]||'', 38)+'</div>'+
         '<div class="msg-dialog-info">'+
           '<div class="msg-dialog-nick">'+esc(item.nick)+'</div>'+
           '<div class="msg-dialog-preview">'+esc((item.data.lastMsg||'').slice(0,40))+'</div>'+
@@ -611,6 +627,14 @@
         (unread?'<div class="msg-unread-dot"></div>':'');
       el.addEventListener('click',function(){ openChat(item.nick); });
       list.appendChild(el);
+
+      /* Подгружаем аватарку асинхронно */
+      if(avatarCache[item.nick]===undefined){
+        getAvatar(item.nick, function(av){
+          var slot = el.querySelector('.msg-dialog-avatar-slot');
+          if(slot) slot.innerHTML = avatarEl(item.nick, av, 38);
+        });
+      }
     });
   }
 
@@ -631,8 +655,13 @@
     currentDialog = { chatId: cid, otherNick: otherNick };
 
     /* Update UI */
-    document.getElementById('chatAvatar').textContent = otherNick[0].toUpperCase();
-    document.getElementById('chatNick').textContent   = otherNick;
+    var chatAvatarEl = document.getElementById('chatAvatar');
+    chatAvatarEl.innerHTML = avatarEl(otherNick, avatarCache[otherNick]||'', 36);
+    getAvatar(otherNick, function(av){
+      var slot = document.getElementById('chatAvatar');
+      if(slot) slot.innerHTML = avatarEl(otherNick, av, 36);
+    });
+    document.getElementById('chatNick').innerHTML = '<a href="profile.html?nick='+encodeURIComponent(otherNick)+'" style="color:inherit;text-decoration:none;">'+esc(otherNick)+'</a>';
     document.getElementById('msgWelcome').style.display = 'none';
     var chatView = document.getElementById('msgChatView');
     chatView.style.display='flex';
@@ -864,6 +893,8 @@
       var preview=(text||'📎 медиа').slice(0,50);
       var ts=msg.ts;
       db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
+      /* Профиль: счётчик сообщений */
+      if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); pr.child('joinedTs').transaction(function(v){return v||Date.now();}); }
       db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
         cur=cur||{};
         cur.lastMsg=preview; cur.lastTs=ts;

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — МапДев Вики</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    html, body { overflow-y: auto !important; }
+    .prof-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(160deg,#0a0a12 0%,#0e0c18 50%,#08080f 100%); }
+
+    .prof-wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: calc(var(--hh) + 60px) 24px 100px; }
+
+    /* Hero card */
+    .prof-hero {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; margin-bottom: 24px;
+      display: flex; gap: 24px; align-items: flex-start;
+      animation: fadeUp .5s ease forwards; opacity: 0;
+      position: relative; overflow: hidden;
+    }
+    .prof-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 0% 0%, var(--glow) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .prof-avatar-wrap { position: relative; z-index: 1; flex-shrink: 0; }
+    .prof-avatar {
+      width: 96px; height: 96px; border-radius: 20px; object-fit: cover;
+      border: 2px solid var(--border2); background: var(--bg3);
+      box-shadow: 0 0 28px var(--glow);
+    }
+    .prof-avatar-placeholder {
+      width: 96px; height: 96px; border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 44px; color: #fff;
+      border: 2px solid var(--border2);
+    }
+    .prof-info { flex: 1; position: relative; z-index: 1; min-width: 0; }
+    .prof-nick {
+      font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: .04em;
+      color: var(--text); line-height: 1; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .prof-verified {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+      font-size: 11px; color: #fff;
+    }
+    .prof-joined { font-size: 11px; color: var(--text2); letter-spacing: .05em; margin-bottom: 14px; }
+    .prof-bio {
+      font-size: 13px; color: var(--text2); line-height: 1.75;
+      white-space: pre-line; word-break: break-word;
+    }
+    .prof-bio-empty { font-size: 12px; color: var(--text2); opacity: .45; font-style: italic; }
+
+    /* Stats */
+    .prof-stats {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+      margin-bottom: 24px;
+      animation: fadeUp .5s ease .1s forwards; opacity: 0;
+    }
+    .prof-stat {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px; text-align: center;
+    }
+    .prof-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--accent); line-height: 1; }
+    .prof-stat-label { font-size: 10px; color: var(--text2); letter-spacing: .08em; text-transform: uppercase; margin-top: 6px; }
+
+    /* Edit button */
+    .prof-edit-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font); font-size: 12px; letter-spacing: .05em;
+      padding: 9px 18px; border-radius: var(--radius);
+      border: 1px solid var(--border2); background: var(--bg3);
+      color: var(--accent); cursor: pointer; transition: all .15s;
+      margin-top: 16px;
+    }
+    .prof-edit-btn:hover { background: var(--bg); border-color: var(--accent); transform: scale(1.04); }
+
+    /* Comments section */
+    .prof-comments-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .05em;
+      color: var(--text); margin-bottom: 16px;
+      animation: fadeUp .5s ease .2s forwards; opacity: 0;
+    }
+    .prof-comment {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      animation: fadeUp .3s ease forwards;
+    }
+    .prof-comment-page {
+      font-size: 11px; color: var(--accent); text-decoration: none;
+      margin-bottom: 6px; display: inline-block;
+    }
+    .prof-comment-page:hover { text-decoration: underline; }
+    .prof-comment-text { font-size: 13px; color: var(--text); line-height: 1.7; word-break: break-word; }
+    .prof-comment-meta { font-size: 10px; color: var(--text2); margin-top: 6px; display: flex; gap: 10px; }
+    .prof-comments-empty { text-align: center; padding: 40px; color: var(--text2); font-size: 13px; opacity: .5; }
+
+    /* Edit modal */
+    .prof-modal-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .prof-modal-overlay.show { display: flex; }
+    .prof-modal {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 28px; width: 100%; max-width: 420px;
+      animation: fadeUp .3s ease forwards;
+    }
+    .prof-modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .05em; color: var(--text); margin-bottom: 18px; }
+    .prof-modal-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; display: block; }
+    .prof-modal-input, .prof-modal-textarea {
+      width: 100%; box-sizing: border-box; background: var(--bg3);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); font-family: var(--font); font-size: 13px;
+      padding: 10px 14px; outline: none; margin-bottom: 14px;
+      transition: border-color .15s;
+    }
+    .prof-modal-input:focus, .prof-modal-textarea:focus { border-color: var(--border2); }
+    .prof-modal-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    .prof-modal-preview {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+      padding: 10px; background: var(--bg3); border-radius: 8px;
+    }
+    .prof-modal-preview img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+    .prof-modal-preview-ph { width: 48px; height: 48px; border-radius: 10px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text2); }
+    .prof-modal-btns { display: flex; gap: 8px; }
+    .prof-modal-save {
+      flex: 1; font-family: var(--font); font-size: 13px; padding: 11px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: var(--radius); cursor: pointer; transition: background .15s;
+    }
+    .prof-modal-save:hover { background: var(--accent2); }
+    .prof-modal-cancel {
+      font-family: var(--font); font-size: 13px; padding: 11px 18px;
+      background: var(--bg3); color: var(--text2);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      cursor: pointer; transition: all .15s;
+    }
+    .prof-modal-cancel:hover { border-color: var(--border2); color: var(--text); }
+
+    .prof-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font); font-size: 12px; color: var(--text2);
+      text-decoration: none; margin-bottom: 20px; transition: color .15s;
+    }
+    .prof-back:hover { color: var(--accent); }
+
+    .prof-loading { text-align: center; padding: 80px; color: var(--text2); font-size: 14px; }
+
+    @media (max-width: 600px) {
+      .prof-hero { flex-direction: column; align-items: center; text-align: center; }
+      .prof-stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="prof-bg"></div>
+
+<header class="site-header">
+  <div class="header-logo">
+    <img src="medele.png" alt="logo" class="logo-img" id="logoImg">
+    <span class="logo-text" id="logoText" data-default="МапДев Вики" data-hover="кто кто?">МапДев Вики</span>
+  </div>
+  <nav class="header-nav">
+    <a href="authors.html"  class="nav-btn" data-sound>Авторы</a>
+    <a href="bloggers.html" class="nav-btn" data-sound>Блогеры</a>
+    <a href="studios.html"  class="nav-btn" data-sound>Студии</a>
+    <a href="events.html"   class="nav-btn" data-sound>Ивенты</a>
+    <a href="posts.html"    class="nav-btn" data-sound>Посты</a>
+  </nav>
+  <div class="header-right">
+    <a href="messages.html" class="dm-header-btn" data-sound>
+      <span class="dm-btn-icon">💬</span>
+      <span class="dm-btn-label">Личные сообщения</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" data-sound><span class="theme-icon">🌙</span></button>
+  </div>
+</header>
+
+<div class="prof-wrap">
+  <a href="javascript:history.back()" class="prof-back">← Назад</a>
+  <div id="profContent">
+    <div class="prof-loading">Загрузка профиля…</div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="prof-modal-overlay" id="editModal">
+  <div class="prof-modal">
+    <div class="prof-modal-title">Редактировать профиль</div>
+    <label class="prof-modal-label">Ссылка на аватарку (URL)</label>
+    <input class="prof-modal-input" id="editAvatar" placeholder="https://...">
+    <div class="prof-modal-preview" id="editPreview" style="display:none;">
+      <img id="editPreviewImg" src="" alt="">
+      <span style="font-size:11px;color:var(--text2);">Предпросмотр аватарки</span>
+    </div>
+    <label class="prof-modal-label">О себе</label>
+    <textarea class="prof-modal-textarea" id="editBio" placeholder="Расскажи о себе..." maxlength="500"></textarea>
+    <div class="prof-modal-btns">
+      <button class="prof-modal-cancel" id="editCancel">Отмена</button>
+      <button class="prof-modal-save" id="editSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<audio id="galochkaAudio" src="galochka.mp3" preload="auto"></audio>
+<script src="script.js"></script>
+<script src="firebase-wiki.js"></script>
+<script>
+(function(){
+  function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* Читаем ?nick= из URL, если нет — свой профиль */
+  var params = new URLSearchParams(window.location.search);
+  var targetNick = params.get('nick');
+
+  var db=null, myUid=null, myNick=null, viewingUid=null, isOwn=false;
+
+  function waitDB(cb){
+    if(window.WikiDB && window.WikiDB.db){
+      if(window.WikiDB.uid) cb(window.WikiDB);
+      else if(window.WikiDB.onAuthReady) window.WikiDB.onAuthReady(function(){ cb(window.WikiDB); });
+      else setTimeout(function(){ waitDB(cb); },200);
+    } else setTimeout(function(){ waitDB(cb); },200);
+  }
+
+  waitDB(function(wdb){
+    db = wdb.db;
+    myUid = wdb.uid;
+
+    /* Мой ник */
+    db.ref('nicknames/'+safeKey(myUid)).once('value', function(snap){
+      myNick = snap.val();
+
+      if(!targetNick || targetNick === myNick){
+        /* Свой профиль */
+        isOwn = true;
+        viewingUid = myUid;
+        loadProfile(myUid, myNick);
+      } else {
+        /* Чужой — находим uid по нику через nick_index */
+        db.ref('nick_index/'+safeKey(targetNick.toLowerCase())).once('value', function(s){
+          var uid = s.val();
+          if(!uid){
+            document.getElementById('profContent').innerHTML = '<div class="prof-comments-empty">Пользователь не найден</div>';
+            return;
+          }
+          viewingUid = uid;
+          isOwn = (uid === myUid);
+          loadProfile(uid, targetNick);
+        });
+      }
+    });
+  });
+
+  function loadProfile(uid, nick){
+    /* Профиль + статистика */
+    db.ref('profiles/'+safeKey(uid)).once('value', function(snap){
+      var prof = snap.val() || {};
+      renderProfile(uid, nick, prof);
+      loadUserComments(uid, nick);
+    });
+  }
+
+  function renderProfile(uid, nick, prof){
+    var avatar = prof.avatar || '';
+    var bio = prof.bio || '';
+    var joined = prof.joinedTs ? new Date(prof.joinedTs).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}) : null;
+
+    var avatarHtml = avatar
+      ? '<img class="prof-avatar" src="'+esc(avatar)+'" alt="" onerror="this.outerHTML=\'<div class=\\\'prof-avatar-placeholder\\\'>'+esc((nick||'?')[0].toUpperCase())+'</div>\'">'
+      : '<div class="prof-avatar-placeholder">'+esc((nick||'?')[0].toUpperCase())+'</div>';
+
+    var html =
+      '<div class="prof-hero">'+
+        '<div class="prof-avatar-wrap">'+avatarHtml+'</div>'+
+        '<div class="prof-info">'+
+          '<div class="prof-nick">'+esc(nick||'Аноним')+'</div>'+
+          (joined ? '<div class="prof-joined">на сайте с '+joined+'</div>' : '')+
+          (bio ? '<div class="prof-bio">'+esc(bio)+'</div>' : '<div class="prof-bio-empty">Пользователь пока ничего о себе не написал</div>')+
+          (isOwn ? '<button class="prof-edit-btn" id="profEditBtn">✏️ Редактировать профиль</button>' : '')+
+        '</div>'+
+      '</div>'+
+      '<div class="prof-stats">'+
+        '<div class="prof-stat"><div class="prof-stat-val" id="statComments">…</div><div class="prof-stat-label">комментариев</div></div>'+
+        '<div class="prof-stat"><div class="prof-stat-val" id="statLikes">…</div><div class="prof-stat-label">лайков поставил</div></div>'+
+        '<div class="prof-stat"><div class="prof-stat-val" id="statMsgs">…</div><div class="prof-stat-label">сообщений</div></div>'+
+      '</div>'+
+      '<div class="prof-comments-title">💬 Комментарии</div>'+
+      '<div id="profComments"><div class="prof-comments-empty">Загрузка…</div></div>';
+
+    document.getElementById('profContent').innerHTML = html;
+
+    /* Статистика */
+    db.ref('profiles/'+safeKey(uid)).once('value', function(snap){
+      var p = snap.val() || {};
+      document.getElementById('statComments').textContent = p.commentCount || 0;
+      document.getElementById('statLikes').textContent = p.likesGiven || 0;
+      document.getElementById('statMsgs').textContent = p.msgCount || 0;
+    });
+
+    /* Кнопка редактирования */
+    if(isOwn){
+      var editBtn = document.getElementById('profEditBtn');
+      if(editBtn) editBtn.addEventListener('click', function(){ openEditModal(prof); });
+    }
+  }
+
+  /* Все комментарии пользователя — сканим все страницы */
+  function loadUserComments(uid, nick){
+    var container = document.getElementById('profComments');
+    db.ref('pages').once('value', function(snap){
+      var comments = [];
+      if(snap.exists()){
+        snap.forEach(function(page){
+          var pageId = page.key;
+          var pageComments = page.child('comments');
+          if(pageComments.exists()){
+            pageComments.forEach(function(c){
+              var d = c.val();
+              if(d.uid === uid || d.nick === nick){
+                comments.push({ pageId: pageId, data: d });
+              }
+            });
+          }
+        });
+      }
+      comments.sort(function(a,b){ return b.data.ts - a.data.ts; });
+
+      if(!comments.length){
+        container.innerHTML = '<div class="prof-comments-empty">Пока нет комментариев</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      comments.slice(0, 50).forEach(function(item){
+        var d = item.data;
+        var dt = new Date(d.ts).toLocaleDateString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        var entry = window.WikiDB.entries[item.pageId];
+        var pageName = entry ? entry.name : item.pageId;
+        var pageUrl = entry ? entry.url : item.pageId+'.html';
+        var el = document.createElement('div');
+        el.className = 'prof-comment';
+        el.innerHTML =
+          '<a href="'+esc(pageUrl)+'" class="prof-comment-page">📄 '+esc(pageName)+'</a>'+
+          '<div class="prof-comment-text">'+esc(d.text)+'</div>'+
+          '<div class="prof-comment-meta"><span>'+dt+'</span>'+
+            (d.likeCount ? '<span>👍 '+d.likeCount+'</span>' : '')+
+          '</div>';
+        container.appendChild(el);
+      });
+    });
+  }
+
+  /* Edit modal */
+  function openEditModal(prof){
+    var modal = document.getElementById('editModal');
+    document.getElementById('editAvatar').value = prof.avatar || '';
+    document.getElementById('editBio').value = prof.bio || '';
+    updatePreview();
+    modal.classList.add('show');
+  }
+
+  function updatePreview(){
+    var url = document.getElementById('editAvatar').value.trim();
+    var prev = document.getElementById('editPreview');
+    if(url){
+      prev.style.display = 'flex';
+      document.getElementById('editPreviewImg').src = url;
+    } else {
+      prev.style.display = 'none';
+    }
+  }
+
+  document.getElementById('editAvatar').addEventListener('input', updatePreview);
+  document.getElementById('editCancel').addEventListener('click', function(){
+    document.getElementById('editModal').classList.remove('show');
+  });
+  document.getElementById('editModal').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('show');
+  });
+  document.getElementById('editSave').addEventListener('click', function(){
+    var avatar = document.getElementById('editAvatar').value.trim();
+    var bio = document.getElementById('editBio').value.trim();
+    var updates = { avatar: avatar, bio: bio, nick: myNick };
+    /* joinedTs только если ещё нет */
+    db.ref('profiles/'+safeKey(myUid)).once('value', function(snap){
+      var existing = snap.val() || {};
+      if(!existing.joinedTs) updates.joinedTs = Date.now();
+      db.ref('profiles/'+safeKey(myUid)).update(updates, function(err){
+        if(!err){
+          document.getElementById('editModal').classList.remove('show');
+          loadProfile(myUid, myNick);
+        }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
