@@ -144,6 +144,9 @@
       onlineRef.set(true);
       onlineRef.onDisconnect().remove();
 
+      /* Кнопка профиля в шапке (аватарка) */
+      injectProfileButton();
+
       /* Presence по нику: online + lastSeen (для «был недавно») */
       db.ref('nicknames/' + window.WikiDB.uid).once('value', function (nSnap) {
         var myNick = nSnap.val();
@@ -237,6 +240,77 @@
         el.classList.remove('show');
         setTimeout(function () { el.remove(); }, 400);
       }, 6000);
+    }
+
+    /* ── Кнопка профиля в шапке ── */
+    function injectProfileButton() {
+      /* Не добавляем на странице профиля/настроек/лички дважды */
+      if (document.getElementById('wfbProfileBtn')) return;
+
+      var header = document.querySelector('.site-header');
+      if (!header) return;
+
+      /* Стили */
+      if (!document.getElementById('wfbProfileBtnStyle')) {
+        var st = document.createElement('style');
+        st.id = 'wfbProfileBtnStyle';
+        st.textContent =
+          '.wfb-profile-btn{position:relative;width:36px;height:36px;border-radius:50%;overflow:visible;' +
+          'cursor:pointer;flex-shrink:0;border:2px solid var(--border2);background:var(--bg3);' +
+          'display:flex;align-items:center;justify-content:center;transition:transform .15s,border-color .15s;' +
+          'text-decoration:none;padding:0;}' +
+          '.wfb-profile-btn:hover{transform:scale(1.1);border-color:var(--accent);}' +
+          '.wfb-profile-btn img{width:100%;height:100%;border-radius:50%;object-fit:cover;}' +
+          '.wfb-profile-btn-ph{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;' +
+          'justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));' +
+          'color:#fff;font-family:var(--font);font-size:15px;}' +
+          '.wfb-profile-btn-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;' +
+          'border-radius:50%;background:#44dd66;border:2px solid var(--bg2);box-shadow:0 0 5px #44dd66;}';
+        document.head.appendChild(st);
+      }
+
+      var btn = document.createElement('a');
+      btn.id = 'wfbProfileBtn';
+      btn.className = 'wfb-profile-btn';
+      btn.href = 'profile.html';
+      btn.title = 'Профиль';
+      btn.innerHTML = '<div class="wfb-profile-btn-ph">?</div><div class="wfb-profile-btn-dot"></div>';
+
+      /* Вставляем в .header-right если есть, иначе перед theme-toggle */
+      var right = header.querySelector('.header-right');
+      if (right) {
+        right.insertBefore(btn, right.firstChild);
+      } else {
+        var themeToggle = header.querySelector('.theme-toggle');
+        if (themeToggle) {
+          /* Оборачиваем в контейнер чтобы было рядом */
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:10px;';
+          themeToggle.parentNode.insertBefore(wrap, themeToggle);
+          wrap.appendChild(btn);
+          wrap.appendChild(themeToggle);
+        } else {
+          header.appendChild(btn);
+        }
+      }
+
+      /* Загружаем ник → аватарку */
+      db.ref('nicknames/' + window.WikiDB.uid).once('value', function (nSnap) {
+        var nick = nSnap.val();
+        if (!nick) {
+          /* Нет ника — аватарка-заглушка со знаком */
+          btn.querySelector('.wfb-profile-btn-ph').textContent = '?';
+          return;
+        }
+        btn.querySelector('.wfb-profile-btn-ph').textContent = nick[0].toUpperCase();
+        /* Аватарка из профиля */
+        db.ref('profiles/' + safeKey(window.WikiDB.uid) + '/avatar').once('value', function (aSnap) {
+          var av = aSnap.val();
+          if (av) {
+            btn.innerHTML = '<img src="' + av + '" alt=""><div class="wfb-profile-btn-dot"></div>';
+          }
+        });
+      });
     }
 
     /* ── Глобальный WikiDB ── */
