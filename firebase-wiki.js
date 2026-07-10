@@ -579,6 +579,31 @@
       .wfb-comment-nick{color:var(--accent);font-size:11px;letter-spacing:.04em;}
       .wfb-comment-text{font-size:12px;color:var(--text);line-height:1.7;word-break:break-word;}
       .wfb-empty{font-size:12px;color:var(--text2);opacity:.6;}
+
+      /* toolbar: count + sort */
+      .wfb-comm-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+      .wfb-comm-count-label{font-size:11px;color:var(--text2);letter-spacing:.04em;}
+      .wfb-comm-sort{display:flex;gap:5px;}
+      .wfb-sort-btn{font-family:var(--font);font-size:11px;padding:5px 11px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+      .wfb-sort-btn:hover{border-color:var(--border2);color:var(--text);}
+      .wfb-sort-btn.active{border-color:var(--border2);color:var(--accent);background:var(--bg);}
+
+      /* collapse fade */
+      .wfb-comment-wrap{display:flex;flex-direction:column;gap:10px;position:relative;}
+      .wfb-comment-wrap.collapsed::after{content:'';position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(transparent,var(--bg));pointer-events:none;}
+
+      /* expand button */
+      .wfb-comm-expand{font-family:var(--font);font-size:12px;letter-spacing:.04em;margin-top:10px;padding:9px 0;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--accent);cursor:pointer;transition:all .15s;}
+      .wfb-comm-expand:hover{border-color:var(--border2);background:var(--bg2);transform:scale(1.01);}
+
+      /* vote buttons */
+      .wfb-comment-actions{display:flex;gap:6px;margin-top:8px;}
+      .wfb-vote-btn{display:inline-flex;align-items:center;gap:5px;font-family:var(--font);font-size:12px;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .13s;user-select:none;}
+      .wfb-vote-btn:hover{border-color:var(--border2);transform:scale(1.06);}
+      .wfb-vote-icon{font-size:13px;line-height:1;}
+      .wfb-vote-count{font-size:11px;min-width:8px;}
+      .wfb-like.active{border-color:#44cc80;color:#44cc80;background:rgba(68,204,128,.1);}
+      .wfb-dislike.active{border-color:#ff5060;color:#ff5060;background:rgba(255,80,96,.1);}
     `;
     document.head.appendChild(css);
 
@@ -837,27 +862,142 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
 
-    /* Live comment list */
+    /* ════════════════════════
+       COMMENT LIST — раскрытие + сортировка + лайки
+    ════════════════════════ */
     var list = document.getElementById('wfbList');
-    ref.child('comments').orderByChild('ts').limitToLast(30).on('value', function (snap) {
-      if (!snap.exists()) {
+    var COLLAPSE_COUNT = 3;
+    var allComments = [];    /* [{id, data}] */
+    var currentSort = 'newest';
+    var isExpanded = false;
+    var MY_KEY = window.WikiDB.uid || safeKey(DEVICE_ID);
+
+    /* Sort/toolbar UI */
+    var toolbar = document.createElement('div');
+    toolbar.className = 'wfb-comm-toolbar';
+    toolbar.innerHTML =
+      '<span class="wfb-comm-count-label" id="wfbCommCountLabel"></span>' +
+      '<div class="wfb-comm-sort">' +
+        '<button class="wfb-sort-btn active" data-sort="newest">Новые</button>' +
+        '<button class="wfb-sort-btn" data-sort="oldest">Старые</button>' +
+        '<button class="wfb-sort-btn" data-sort="popular">🔥 Популярные</button>' +
+      '</div>';
+    list.parentNode.insertBefore(toolbar, list);
+
+    toolbar.querySelectorAll('.wfb-sort-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        toolbar.querySelectorAll('.wfb-sort-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentSort = btn.dataset.sort;
+        renderComments();
+      });
+    });
+
+    function sortComments(arr) {
+      var a = arr.slice();
+      if (currentSort === 'oldest') a.sort(function (x, y) { return x.data.ts - y.data.ts; });
+      else if (currentSort === 'popular') a.sort(function (x, y) {
+        var lx = (x.data.likeCount || 0) - (x.data.dislikeCount || 0);
+        var ly = (y.data.likeCount || 0) - (y.data.dislikeCount || 0);
+        if (ly !== lx) return ly - lx;
+        return y.data.ts - x.data.ts;
+      });
+      else a.sort(function (x, y) { return y.data.ts - x.data.ts; }); /* newest */
+      return a;
+    }
+
+    function buildCommentEl(item) {
+      var d = item.data, cid = item.id;
+      var dt = new Date(d.ts).toLocaleDateString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      var nickHtml = d.nick
+        ? '<span class="wfb-comment-nick">' + esc(d.nick) + '</span>'
+        : '<span>аноним</span>';
+
+      var myVote = d.votes && d.votes[MY_KEY] ? d.votes[MY_KEY] : null; /* 'like'|'dislike'|null */
+      var likeCount = d.likeCount || 0;
+      var dislikeCount = d.dislikeCount || 0;
+
+      var el = document.createElement('div');
+      el.className = 'wfb-comment';
+      el.innerHTML =
+        '<div class="wfb-comment-meta">' + nickHtml + '<span>' + dt + '</span></div>' +
+        '<div class="wfb-comment-text">' + esc(d.text) + '</div>' +
+        '<div class="wfb-comment-actions">' +
+          '<button class="wfb-vote-btn wfb-like' + (myVote === 'like' ? ' active' : '') + '" data-vote="like">' +
+            '<span class="wfb-vote-icon">👍</span><span class="wfb-vote-count">' + likeCount + '</span>' +
+          '</button>' +
+          '<button class="wfb-vote-btn wfb-dislike' + (myVote === 'dislike' ? ' active' : '') + '" data-vote="dislike">' +
+            '<span class="wfb-vote-icon">👎</span><span class="wfb-vote-count">' + dislikeCount + '</span>' +
+          '</button>' +
+        '</div>';
+
+      el.querySelectorAll('.wfb-vote-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          voteComment(cid, btn.dataset.vote, myVote);
+        });
+      });
+      return el;
+    }
+
+    function voteComment(cid, vote, currentVote) {
+      var cRef = ref.child('comments/' + cid);
+      var voteRef = cRef.child('votes/' + MY_KEY);
+
+      if (currentVote === vote) {
+        /* Убираем свой голос */
+        voteRef.remove();
+        cRef.child(vote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
+      } else {
+        /* Ставим новый голос, снимаем старый если был */
+        voteRef.set(vote);
+        cRef.child(vote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return (v || 0) + 1; });
+        if (currentVote) {
+          cRef.child(currentVote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
+        }
+      }
+    }
+
+    function renderComments() {
+      if (!allComments.length) {
+        toolbar.style.display = 'none';
         list.innerHTML = '<div class="wfb-empty">Комментариев пока нет — будь первым!</div>';
         return;
       }
+      toolbar.style.display = 'flex';
+      document.getElementById('wfbCommCountLabel').textContent = allComments.length + (allComments.length === 1 ? ' комментарий' : ' комм.');
+
+      var sorted = sortComments(allComments);
+      var showAll = isExpanded || sorted.length <= COLLAPSE_COUNT;
+      var visible = showAll ? sorted : sorted.slice(0, COLLAPSE_COUNT);
+
       list.innerHTML = '';
-      snap.forEach(function (ch) {
-        var d  = ch.val();
-        var dt = new Date(d.ts).toLocaleDateString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-        var nickHtml = d.nick
-          ? '<span class="wfb-comment-nick">' + esc(d.nick) + '</span>'
-          : '<span>аноним</span>';
-        var el = document.createElement('div');
-        el.className = 'wfb-comment';
-        el.innerHTML =
-          '<div class="wfb-comment-meta">' + nickHtml + '<span>' + dt + '</span></div>' +
-          '<div class="wfb-comment-text">' + esc(d.text) + '</div>';
-        list.appendChild(el);
-      });
+      var wrap = document.createElement('div');
+      wrap.className = 'wfb-comment-wrap' + (!showAll ? ' collapsed' : '');
+      visible.forEach(function (item) { wrap.appendChild(buildCommentEl(item)); });
+      list.appendChild(wrap);
+
+      /* Кнопка раскрытия */
+      if (sorted.length > COLLAPSE_COUNT) {
+        var toggle = document.createElement('button');
+        toggle.className = 'wfb-comm-expand';
+        toggle.textContent = isExpanded
+          ? '▲ Свернуть'
+          : '▼ Показать все ' + sorted.length + ' комм.';
+        toggle.addEventListener('click', function () {
+          isExpanded = !isExpanded;
+          renderComments();
+        });
+        list.appendChild(toggle);
+      }
+    }
+
+    /* Live comment list */
+    ref.child('comments').orderByChild('ts').limitToLast(200).on('value', function (snap) {
+      allComments = [];
+      if (snap.exists()) {
+        snap.forEach(function (ch) { allComments.push({ id: ch.key, data: ch.val() }); });
+      }
+      renderComments();
     });
   }
 
