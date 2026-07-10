@@ -163,6 +163,15 @@
     .prof-pres.online { background: rgba(68,221,102,.15); color: #44dd66; }
     .prof-pres.recent { background: rgba(255,176,32,.15); color: #ffb020; }
     .prof-pres.offline { background: var(--bg3); color: var(--text2); }
+
+    .prof-rep-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .04em;
+      padding: 8px 18px; border-radius: 12px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(255,200,0,.15), rgba(255,160,0,.1));
+      border: 1px solid rgba(255,200,0,.35); color: #ffc800;
+      animation: fadeUp .5s ease .05s forwards; opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -295,6 +304,7 @@
           (isOwn ? '<button class="prof-edit-btn" id="profEditBtn">✏️ Редактировать профиль</button>' : '')+
         '</div>'+
       '</div>'+
+      '<div class="prof-rep-badge" id="profRepBadge">⭐ <span id="statRep">…</span> репутации</div>'+
       '<div class="prof-stats">'+
         '<div class="prof-stat"><div class="prof-stat-val" id="statComments">…</div><div class="prof-stat-label">комментариев</div></div>'+
         '<div class="prof-stat"><div class="prof-stat-val" id="statLikes">…</div><div class="prof-stat-label">лайков поставил</div></div>'+
@@ -319,6 +329,8 @@
       document.getElementById('statComments').textContent = p.commentCount || 0;
       document.getElementById('statLikes').textContent = p.likesGiven || 0;
       document.getElementById('statMsgs').textContent = p.msgCount || 0;
+      var repEl = document.getElementById('statRep');
+      if(repEl) repEl.textContent = p.reputation || 0;
     });
 
     /* Кнопка редактирования */

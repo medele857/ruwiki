@@ -158,7 +158,7 @@
         snap.forEach(function(ch){
           var d = ch.val() || {};
           if(!d.nick) return;
-          var score = (d.commentCount||0)*3 + (d.likesGiven||0) + (d.msgCount||0)*2;
+          var score = (d.commentCount||0)*3 + (d.likesGiven||0) + (d.msgCount||0)*2 + (d.reputation||0)*5;
           users.push({
             nick: d.nick, avatar: d.avatar||'', score: score,
             comments: d.commentCount||0, likes: d.likesGiven||0, msgs: d.msgCount||0

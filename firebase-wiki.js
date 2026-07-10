@@ -1044,16 +1044,30 @@
       var cRef = ref.child('comments/' + cid);
       var voteRef = cRef.child('votes/' + MY_KEY);
 
+      /* Репутация: лайк на коммент = +1 репа автору коммента */
+      function repAuthor(delta) {
+        cRef.child('uid').once('value', function (snap) {
+          var authorUid = snap.val();
+          if (!authorUid || authorUid === MY_KEY) return; /* себе не начисляем */
+          db.ref('profiles/' + safeKey(authorUid) + '/reputation').transaction(function (v) {
+            return Math.max(0, (v || 0) + delta);
+          });
+        });
+      }
+
       if (currentVote === vote) {
         /* Убираем свой голос */
         voteRef.remove();
         cRef.child(vote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
+        if (vote === 'like') repAuthor(-1);
       } else {
         /* Ставим новый голос, снимаем старый если был */
         voteRef.set(vote);
         cRef.child(vote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return (v || 0) + 1; });
+        if (vote === 'like') repAuthor(1);
         if (currentVote) {
           cRef.child(currentVote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
+          if (currentVote === 'like') repAuthor(-1);
         }
       }
     }
