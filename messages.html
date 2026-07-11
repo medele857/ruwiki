@@ -116,6 +116,62 @@
       color: var(--text2); border-top: 1px solid var(--border); background: var(--bg2);
     }
 
+    /* Context menu */
+    .msg-ctx-menu {
+      position: fixed; z-index: 6000;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 5px; min-width: 160px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.5);
+      animation: fadeUp .13s ease;
+    }
+    .msg-ctx-item {
+      display: block; width: 100%; text-align: left;
+      font-family: var(--font); font-size: 13px; color: var(--text);
+      padding: 9px 12px; border: none; background: none; border-radius: 6px;
+      cursor: pointer; transition: background .1s;
+    }
+    .msg-ctx-item:hover { background: var(--bg3); }
+    .msg-ctx-item.danger { color: #ff5060; }
+
+    /* Pinned bar */
+    .msg-pinned-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 8px 20px; background: var(--bg2);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+      cursor: pointer;
+    }
+    .msg-pinned-bar.show { display: flex; }
+    .msg-pinned-icon { color: var(--accent); font-size: 14px; }
+    .msg-pinned-content { flex: 1; min-width: 0; }
+    .msg-pinned-label { font-size: 10px; color: var(--accent); }
+    .msg-pinned-text { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-pinned-unpin { font-size: 14px; color: var(--text2); background: none; border: none; cursor: pointer; padding: 4px; }
+    .msg-pinned-unpin:hover { color: var(--text); }
+
+    /* Chat menu (⋮) */
+    .msg-chat-opts {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: none; border: none; color: var(--text2);
+      cursor: pointer; font-size: 18px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .13s;
+    }
+    .msg-chat-opts:hover { background: var(--bg3); color: var(--text); }
+
+    /* Messages area with wallpaper */
+    .msg-messages { position: relative; }
+    .msg-messages-wallpaper {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-size: cover; background-position: center; opacity: .12;
+    }
+    .msg-messages > * { position: relative; z-index: 1; }
+
+    /* Blocked notice */
+    .msg-blocked-notice {
+      padding: 16px 20px; text-align: center; font-size: 12px;
+      color: #ff5060; border-top: 1px solid var(--border); background: var(--bg2);
+    }
+
     /* Dialog list */
     .msg-dialog-list {
       flex: 1; overflow-y: auto; padding: 8px 0;
@@ -570,15 +626,26 @@
       <div class="msg-chat-head" id="msgChatHead">
         <button class="msg-chat-back" id="msgChatBack">←</button>
         <div class="msg-chat-avatar" id="chatAvatar">?</div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="msg-chat-nick" id="chatNick">—</div>
           <div class="msg-chat-status" id="chatStatus"></div>
         </div>
+        <button class="msg-chat-opts" id="chatOptsBtn" title="Опции">⋮</button>
       </div>
-      <div class="msg-messages" id="msgMessages"></div>
+      <div class="msg-pinned-bar" id="pinnedBar">
+        <span class="msg-pinned-icon">📌</span>
+        <div class="msg-pinned-content">
+          <div class="msg-pinned-label">Закреплённое</div>
+          <div class="msg-pinned-text" id="pinnedText"></div>
+        </div>
+        <button class="msg-pinned-unpin" id="pinnedUnpin" title="Открепить">✕</button>
+      </div>
+      <div class="msg-messages" id="msgMessages">
+        <div class="msg-messages-wallpaper" id="msgWallpaper"></div>
+      </div>
       <div class="msg-reply-bar" id="replyBar">
         <div class="msg-reply-bar-text">
-          Ответ на: <span class="msg-reply-bar-nick" id="replyBarNick"></span>
+          <span class="msg-reply-bar-nick" id="replyBarNick"></span>
           — <span id="replyBarText"></span>
         </div>
         <button class="msg-reply-bar-close" id="replyBarClose">✕</button>
@@ -597,6 +664,22 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat options menu -->
+<div class="msg-ctx-menu" id="chatOptsMenu" style="display:none;position:fixed;"></div>
+
+<!-- Wallpaper picker modal -->
+<div class="msg-modal-overlay" id="wallpaperModal">
+  <div class="msg-modal">
+    <div class="msg-modal-title">Обои чата</div>
+    <input class="msg-modal-input" id="wallpaperUrl" placeholder="Ссылка на картинку...">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">Обои видны только тебе в этом чате</div>
+    <div class="msg-modal-btns">
+      <button class="msg-modal-cancel" id="wallpaperClear">Убрать обои</button>
+      <button class="msg-modal-ok" id="wallpaperSave">Сохранить</button>
     </div>
   </div>
 </div>
@@ -621,6 +704,17 @@
   var msgListenerRef = null;
 
   function safeKey(s){ return s.replace(/[.#$/\[\] ]/g,'_'); }
+  function showToast(msg){
+    var t = document.getElementById('msgToastEl');
+    if(!t){
+      t = document.createElement('div');
+      t.id='msgToastEl';
+      t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-family:var(--font);font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;';
+      document.body.appendChild(t);
+    }
+    t.textContent=msg; t.style.opacity='1';
+    setTimeout(function(){ t.style.opacity='0'; }, 2500);
+  }
   var avatarCache = {};
   function getAvatar(nick, cb){
     if(avatarCache[nick] !== undefined){ cb(avatarCache[nick]); return; }
@@ -869,6 +963,14 @@
     /* Clear unread */
     db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)+'/unread').set(0);
 
+    /* Обои + закреп */
+    loadWallpaper(cid);
+    db.ref('dms/'+cid+'/pinned').off();
+    watchPinned('dms/'+cid);
+
+    /* Блокировка — проверяем, заблокировал ли я или меня */
+    checkBlockState(otherNick);
+
     /* Remove old listener */
     if(msgListenerRef && msgListener){ try{ msgListenerRef.off('value', msgListener); }catch(e){} }
 
@@ -891,10 +993,16 @@
   function renderMessages(snap){
     var container = document.getElementById('msgMessages');
     var wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+    /* Сохраняем слой обоев */
+    var wp = document.getElementById('msgWallpaper');
     container.innerHTML='';
+    if(wp) container.appendChild(wp);
 
     if(!snap||!snap.exists()){
-      container.innerHTML='<div style="text-align:center;color:var(--text2);font-size:12px;opacity:.45;padding:40px;">Начни разговор!</div>';
+      var empty=document.createElement('div');
+      empty.style.cssText='text-align:center;color:var(--text2);font-size:12px;opacity:.45;padding:40px;';
+      empty.textContent='Начни разговор!';
+      container.appendChild(empty);
       return;
     }
 
@@ -949,23 +1057,23 @@
       bubble.appendChild(mprev); bubble.appendChild(mlink);
     }
 
-    /* Time */
-    var timeEl=document.createElement('div'); timeEl.className='msg-bubble-time'; timeEl.textContent=timeStr(msg.ts);
+    /* Time + «изменено» */
+    var timeEl=document.createElement('div'); timeEl.className='msg-bubble-time';
+    timeEl.textContent=timeStr(msg.ts) + (msg.edited ? ' · изменено' : '');
     bubble.appendChild(timeEl);
 
-    /* Click → show reaction picker */
+    /* Left click → reactions */
     bubble.addEventListener('click', function(e){
       e.stopPropagation();
       showReactPicker(msgId, e.clientX, e.clientY);
     });
 
-    /* Long press → reply (mobile) */
+    /* Right click / long press → context menu */
     var pressTimer;
-    bubble.addEventListener('touchstart', function(){ pressTimer=setTimeout(function(){ setReplyTo(msgId, msg); },500); });
+    bubble.addEventListener('touchstart', function(e){ pressTimer=setTimeout(function(){ showMsgMenu(msgId, msg, isMine, e.touches[0].clientX, e.touches[0].clientY); },500); });
     bubble.addEventListener('touchend',   function(){ clearTimeout(pressTimer); });
-
-    /* Right click → reply */
-    bubble.addEventListener('contextmenu', function(e){ e.preventDefault(); setReplyTo(msgId, msg); });
+    bubble.addEventListener('touchmove',  function(){ clearTimeout(pressTimer); });
+    bubble.addEventListener('contextmenu', function(e){ e.preventDefault(); showMsgMenu(msgId, msg, isMine, e.clientX, e.clientY); });
 
     wrap.appendChild(bubble);
 
@@ -987,6 +1095,82 @@
     }
 
     return wrap;
+  }
+
+  /* ════════════════════════════
+     MESSAGE CONTEXT MENU
+  ════════════════════════════ */
+  function showMsgMenu(msgId, msg, isMine, x, y){
+    var old = document.getElementById('msgCtxMenu');
+    if(old) old.remove();
+
+    var menu = document.createElement('div');
+    menu.id = 'msgCtxMenu';
+    menu.className = 'msg-ctx-menu';
+
+    var items = [];
+    items.push({ label:'↩ Ответить', act:function(){ setReplyTo(msgId, msg); } });
+
+    /* Закреп — в личке любой, в группе владелец */
+    var canPin = currentGroup ? (currentGroup.data.owner===myNick) : true;
+    if(canPin){
+      items.push({ label:'📌 Закрепить', act:function(){ pinMessage(msgId, msg); } });
+    }
+
+    if(isMine){
+      if(msg.text){ items.push({ label:'✏️ Редактировать', act:function(){ startEditMessage(msgId, msg); } }); }
+      items.push({ label:'🗑 Удалить у всех', danger:true, act:function(){ deleteMessage(msgId); } });
+    }
+
+    items.forEach(function(it){
+      var b = document.createElement('button');
+      b.className = 'msg-ctx-item' + (it.danger?' danger':'');
+      b.textContent = it.label;
+      b.addEventListener('click', function(e){ e.stopPropagation(); it.act(); menu.remove(); });
+      menu.appendChild(b);
+    });
+
+    document.body.appendChild(menu);
+    var mw = menu.offsetWidth||160, mh = menu.offsetHeight||120;
+    var left = Math.min(x, window.innerWidth-mw-10);
+    var top = Math.min(y, window.innerHeight-mh-10);
+    menu.style.left = left+'px'; menu.style.top = top+'px';
+
+    setTimeout(function(){
+      document.addEventListener('click', function closer(){ menu.remove(); document.removeEventListener('click', closer); });
+    }, 10);
+  }
+
+  function deleteMessage(msgId){
+    var base = msgBasePath(); if(!base) return;
+    db.ref(base+msgId).remove();
+  }
+
+  var editingMsgId = null;
+  function startEditMessage(msgId, msg){
+    editingMsgId = msgId;
+    var inp = document.getElementById('msgInput');
+    inp.value = msg.text || '';
+    inp.focus();
+    /* Показываем плашку редактирования */
+    var bar = document.getElementById('replyBar');
+    document.getElementById('replyBarNick').textContent = 'Редактирование';
+    document.getElementById('replyBarText').textContent = (msg.text||'').slice(0,50);
+    bar.classList.add('show');
+    replyTo = null;
+  }
+
+  function pinMessage(msgId, msg){
+    if(currentGroup){
+      db.ref('groups/'+currentGroup.gid+'/pinned').set({ msgId:msgId, nick:msg.nick, text:(msg.text||'📎 медиа').slice(0,100), ts:Date.now() });
+    } else if(currentDialog){
+      db.ref('dms/'+currentDialog.chatId+'/pinned').set({ msgId:msgId, nick:msg.nick, text:(msg.text||'📎 медиа').slice(0,100), ts:Date.now() });
+    }
+  }
+
+  function unpinMessage(){
+    if(currentGroup) db.ref('groups/'+currentGroup.gid+'/pinned').remove();
+    else if(currentDialog) db.ref('dms/'+currentDialog.chatId+'/pinned').remove();
   }
 
   /* ════════════════════════════
@@ -1046,6 +1230,8 @@
   }
   document.getElementById('replyBarClose').addEventListener('click',function(){
     replyTo=null;
+    editingMsgId=null;
+    document.getElementById('msgInput').value='';
     document.getElementById('replyBar').classList.remove('show');
   });
 
@@ -1075,6 +1261,18 @@
     var text   = document.getElementById('msgInput').value.trim();
     var media  = document.getElementById('mediaUrlInput').value.trim();
     if(!text&&!media) return;
+
+    /* ── Режим редактирования ── */
+    if(editingMsgId){
+      var base = msgBasePath();
+      if(base){
+        db.ref(base+editingMsgId).update({ text:text, edited:true });
+      }
+      editingMsgId = null;
+      document.getElementById('msgInput').value='';
+      document.getElementById('replyBar').classList.remove('show');
+      return;
+    }
 
     var msg={ nick: myNick, uid: myUid, text: text, ts: Date.now() };
     if(media){ msg.mediaUrl=media; msg.mediaType=mediaType; }
@@ -1107,20 +1305,30 @@
     var cid=currentDialog.chatId;
     var otherNick=currentDialog.otherNick;
 
-    db.ref('dms/'+cid+'/messages').push(msg, function(err){
-      if(err) return;
-      var preview=(text||'📎 медиа').slice(0,50);
-      var ts=msg.ts;
-      db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
-      if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); pr.child('joinedTs').transaction(function(v){return v||Date.now();}); }
-      db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
-        cur=cur||{};
-        cur.lastMsg=preview; cur.lastTs=ts;
-        cur.unread=(cur.unread||0)+1;
-        return cur;
+    /* Проверка блокировки перед отправкой */
+    db.ref('blocks/'+safeKey(otherNick)+'/'+safeKey(myNick)).once('value', function(theirs){
+      db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(otherNick)).once('value', function(mine){
+        if(theirs.exists() || mine.exists()){ showToast('Сообщение не отправлено — блокировка'); return; }
+        actuallySendDM();
       });
-      clearInputs();
     });
+
+    function actuallySendDM(){
+      db.ref('dms/'+cid+'/messages').push(msg, function(err){
+        if(err) return;
+        var preview=(text||'📎 медиа').slice(0,50);
+        var ts=msg.ts;
+        db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
+        if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); pr.child('joinedTs').transaction(function(v){return v||Date.now();}); }
+        db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
+          cur=cur||{};
+          cur.lastMsg=preview; cur.lastTs=ts;
+          cur.unread=(cur.unread||0)+1;
+          return cur;
+        });
+        clearInputs();
+      });
+    }
   }
 
   document.getElementById('msgSendBtn').addEventListener('click',sendMessage);
@@ -1362,6 +1570,11 @@
       var msgsRef = db.ref('groups/'+gid+'/messages').orderByChild('ts').limitToLast(80);
       msgListenerRef = msgsRef;
       msgListener = msgsRef.on('value', function(snap){ renderMessages(snap); });
+
+      /* Обои + закреп */
+      loadWallpaper('g_'+gid);
+      db.ref('groups/'+gid+'/pinned').off();
+      watchPinned('groups/'+gid);
     });
   }
 
@@ -1396,6 +1609,163 @@
       });
     });
   });
+
+  /* ════════════════════════════
+     CHAT OPTIONS (⋮) — delete/block/wallpaper
+  ════════════════════════════ */
+  document.getElementById('chatOptsBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    var menu = document.getElementById('chatOptsMenu');
+    menu.innerHTML = '';
+
+    var opts = [];
+    /* Обои — всегда */
+    opts.push({ label:'🖼 Обои чата', act:openWallpaper });
+
+    if(currentDialog){
+      /* Личка: удалить чат у себя, блокировка */
+      opts.push({ label:'🗑 Удалить чат у себя', danger:true, act:deleteChatForMe });
+      var otherNick = currentDialog.otherNick;
+      db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(otherNick)).once('value', function(bs){
+        var blocked = bs.exists();
+        opts.push({ label: blocked ? '✓ Разблокировать' : '🚫 Заблокировать', danger:!blocked, act:function(){ toggleBlock(otherNick, blocked); } });
+        buildOptsMenu(menu, opts, e.clientX, e.clientY);
+      });
+      return;
+    } else if(currentGroup){
+      /* Группа/канал: покинуть */
+      opts.push({ label:'🚪 Покинуть', danger:true, act:leaveGroup });
+    }
+    buildOptsMenu(menu, opts, e.clientX, e.clientY);
+  });
+
+  function buildOptsMenu(menu, opts, x, y){
+    menu.innerHTML = '';
+    opts.forEach(function(o){
+      var b = document.createElement('button');
+      b.className = 'msg-ctx-item' + (o.danger?' danger':'');
+      b.textContent = o.label;
+      b.addEventListener('click', function(ev){ ev.stopPropagation(); o.act(); menu.style.display='none'; });
+      menu.appendChild(b);
+    });
+    menu.style.display = 'block';
+    var mw = menu.offsetWidth||180;
+    menu.style.left = Math.min(x, window.innerWidth-mw-10)+'px';
+    menu.style.top = (y+8)+'px';
+    setTimeout(function(){
+      document.addEventListener('click', function c(){ menu.style.display='none'; document.removeEventListener('click', c); });
+    }, 10);
+  }
+
+  /* Удалить чат у себя (у собеседника остаётся) */
+  function deleteChatForMe(){
+    if(!currentDialog) return;
+    if(!confirm('Удалить этот чат? Он исчезнет только у тебя.')) return;
+    db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(currentDialog.otherNick)).remove();
+    /* Помечаем что скрыл сообщения до этого момента */
+    db.ref('dm_hidden/'+safeKey(myNick)+'/'+currentDialog.chatId).set(Date.now());
+    currentDialog = null;
+    document.getElementById('msgChatView').style.display='none';
+    document.getElementById('msgWelcome').style.display='flex';
+    if(window.innerWidth<=640) document.getElementById('msgLeft').classList.remove('hidden');
+  }
+
+  /* Блокировка */
+  function toggleBlock(nick, currentlyBlocked){
+    if(currentlyBlocked){
+      db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(nick)).remove();
+      showToast('Разблокирован');
+    } else {
+      if(!confirm('Заблокировать '+nick+'? Вы не сможете писать друг другу.')) return;
+      db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(nick)).set(Date.now());
+      showToast('Заблокирован');
+    }
+  }
+
+  /* Покинуть группу */
+  function leaveGroup(){
+    if(!currentGroup) return;
+    if(!confirm('Покинуть «'+currentGroup.data.name+'»?')) return;
+    var updates = {};
+    updates['groups/'+currentGroup.gid+'/members/'+safeKey(myNick)] = null;
+    updates['user_groups/'+safeKey(myNick)+'/'+currentGroup.gid] = null;
+    db.ref().update(updates);
+    currentGroup = null;
+    document.getElementById('msgChatView').style.display='none';
+    document.getElementById('msgWelcome').style.display='flex';
+    if(window.innerWidth<=640) document.getElementById('msgLeft').classList.remove('hidden');
+  }
+
+  /* ── Обои чата (только для себя) ── */
+  var wallpaperChatKey = null;
+  function openWallpaper(){
+    wallpaperChatKey = currentGroup ? ('g_'+currentGroup.gid) : (currentDialog ? currentDialog.chatId : null);
+    if(!wallpaperChatKey) return;
+    db.ref('wallpapers/'+safeKey(myNick)+'/'+wallpaperChatKey).once('value', function(s){
+      document.getElementById('wallpaperUrl').value = s.val() || '';
+    });
+    document.getElementById('wallpaperModal').classList.add('show');
+  }
+  document.getElementById('wallpaperSave').addEventListener('click', function(){
+    var url = document.getElementById('wallpaperUrl').value.trim();
+    db.ref('wallpapers/'+safeKey(myNick)+'/'+wallpaperChatKey).set(url);
+    applyWallpaper(url);
+    document.getElementById('wallpaperModal').classList.remove('show');
+  });
+  document.getElementById('wallpaperClear').addEventListener('click', function(){
+    db.ref('wallpapers/'+safeKey(myNick)+'/'+wallpaperChatKey).remove();
+    applyWallpaper('');
+    document.getElementById('wallpaperModal').classList.remove('show');
+  });
+  document.getElementById('wallpaperModal').addEventListener('click', function(e){
+    if(e.target===this) this.classList.remove('show');
+  });
+  function applyWallpaper(url){
+    var wp = document.getElementById('msgWallpaper');
+    if(wp) wp.style.backgroundImage = url ? 'url('+url+')' : 'none';
+  }
+  function loadWallpaper(chatKey){
+    db.ref('wallpapers/'+safeKey(myNick)+'/'+chatKey).once('value', function(s){
+      applyWallpaper(s.val()||'');
+    });
+  }
+
+  /* ── Закреплённое сообщение ── */
+  function watchPinned(basePath){
+    db.ref(basePath+'/pinned').on('value', function(snap){
+      var bar = document.getElementById('pinnedBar');
+      if(!snap.exists()){ bar.classList.remove('show'); return; }
+      var p = snap.val();
+      document.getElementById('pinnedText').textContent = (p.nick?p.nick+': ':'')+(p.text||'');
+      bar.classList.add('show');
+    });
+  }
+  document.getElementById('pinnedUnpin').addEventListener('click', function(e){
+    e.stopPropagation();
+    unpinMessage();
+  });
+
+  /* Проверка блокировки — скрываем ввод если заблокировано */
+  function checkBlockState(otherNick){
+    var inputArea = document.querySelector('.msg-input-area');
+    var oldNotice = document.getElementById('blockedNotice');
+    if(oldNotice) oldNotice.remove();
+    inputArea.style.display = 'flex';
+
+    /* Я заблокировал его ИЛИ он заблокировал меня */
+    db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(otherNick)).once('value', function(mine){
+      db.ref('blocks/'+safeKey(otherNick)+'/'+safeKey(myNick)).once('value', function(theirs){
+        if(mine.exists() || theirs.exists()){
+          inputArea.style.display = 'none';
+          var notice = document.createElement('div');
+          notice.id = 'blockedNotice';
+          notice.className = 'msg-blocked-notice';
+          notice.textContent = mine.exists() ? '🚫 Ты заблокировал этого пользователя' : '🚫 Ты заблокирован этим пользователем';
+          inputArea.parentNode.appendChild(notice);
+        }
+      });
+    });
+  }
 
   /* ════════════════════════════
      MOBILE BACK
