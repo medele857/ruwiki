@@ -79,22 +79,28 @@
     var st = document.createElement('style');
     st.id = 'achToastStyle';
     st.textContent =
-      '.ach-toast{position:fixed;right:18px;bottom:18px;z-index:100000;display:flex;align-items:center;gap:12px;' +
-      'padding:12px 16px 12px 12px;border-radius:14px;background:var(--bg2,#161022);' +
-      'border:1px solid var(--accent,#9b5ff0);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 22px rgba(155,95,240,.25);' +
-      'font-family:var(--font,system-ui,sans-serif);max-width:320px;transform:translateY(140%);opacity:0;' +
-      'transition:transform .4s cubic-bezier(.2,.9,.3,1.2),opacity .4s;pointer-events:none;}' +
-      '.ach-toast.show{transform:translateY(0);opacity:1;}' +
-      '.ach-toast-icon{font-size:30px;line-height:1;flex-shrink:0;width:46px;height:46px;border-radius:11px;' +
-      'display:flex;align-items:center;justify-content:center;' +
-      'background:linear-gradient(135deg,rgba(155,95,240,.25),rgba(80,144,255,.18));' +
-      'box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);animation:achPop .5s ease;}' +
-      '@keyframes achPop{0%{transform:scale(.4) rotate(-12deg)}70%{transform:scale(1.15) rotate(4deg)}100%{transform:scale(1)}}' +
-      '.ach-toast-body{display:flex;flex-direction:column;gap:2px;min-width:0;}' +
-      '.ach-toast-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#9b5ff0);font-weight:700;}' +
-      '.ach-toast-title{font-size:15px;font-weight:700;color:var(--text,#fff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
-      '.ach-toast-desc{font-size:11px;color:var(--text2,#a9a4c0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
-      '@media(max-width:520px){.ach-toast{right:10px;left:10px;bottom:10px;max-width:none;}}';
+      /* Всплывание — как у уведомления о сообщении: сверху по центру, съезжает вниз */
+      '.ach-toast{position:fixed;top:14px;left:50%;z-index:100000;' +
+      'transform:translateX(-50%) translateY(-170%);' +
+      'display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;' +
+      'min-width:264px;max-width:min(380px,calc(100vw - 20px));' +
+      /* Вид — майнкрафтовский тост достижения */
+      "font-family:'MinecraftRus',var(--font,monospace);image-rendering:pixelated;color:#fff;" +
+      'background:#242424;border:2px solid #000;' +
+      'box-shadow:inset 2px 2px 0 0 rgba(255,255,255,.14),inset -2px -2px 0 0 rgba(0,0,0,.55),' +
+      '0 6px 0 0 rgba(0,0,0,.35),0 12px 28px rgba(0,0,0,.5);' +
+      'transition:transform .35s cubic-bezier(.2,.9,.3,1.2);cursor:default;}' +
+      '.ach-toast.show{transform:translateX(-50%) translateY(0);}' +
+      /* Слот с иконкой (вдавленная рамка как в инвентаре) */
+      '.ach-toast-icon{flex-shrink:0;width:42px;height:42px;display:flex;align-items:center;' +
+      'justify-content:center;font-size:26px;line-height:1;image-rendering:pixelated;background:#1b1b1b;' +
+      'box-shadow:inset 2px 2px 0 0 rgba(0,0,0,.6),inset -2px -2px 0 0 rgba(255,255,255,.1);}' +
+      '.ach-toast-body{display:flex;flex-direction:column;gap:4px;min-width:0;}' +
+      /* Верхняя строка — жёлтая, как «Achievement Get!» */
+      '.ach-toast-label{font-size:13px;line-height:1;color:#ffff4a;text-shadow:2px 2px 0 rgba(0,0,0,.55);}' +
+      /* Название достижения — белое */
+      '.ach-toast-title{font-size:14px;line-height:1.15;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.55);' +
+      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:270px;}';
     document.head.appendChild(st);
   }
 
@@ -114,9 +120,8 @@
     el.innerHTML =
       '<div class="ach-toast-icon">' + (ach.icon || '🏆') + '</div>' +
       '<div class="ach-toast-body">' +
-        '<div class="ach-toast-label">Достижение получено</div>' +
+        '<div class="ach-toast-label">Достижение получено!</div>' +
         '<div class="ach-toast-title">' + escapeHtml(ach.title || '') + '</div>' +
-        '<div class="ach-toast-desc">' + escapeHtml(ach.desc || '') + '</div>' +
       '</div>';
     document.body.appendChild(el);
 
@@ -127,11 +132,11 @@
       requestAnimationFrame(function () { el.classList.add('show'); });
     });
 
-    setTimeout(function () { el.classList.remove('show'); }, 4200);
+    setTimeout(function () { el.classList.remove('show'); }, 5000);
     setTimeout(function () {
       if (el.parentNode) el.parentNode.removeChild(el);
       nextToast();
-    }, 4700);
+    }, 5450);
   }
 
   function escapeHtml(s) {

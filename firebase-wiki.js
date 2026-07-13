@@ -146,6 +146,7 @@
 
       /* Кнопка профиля в шапке (аватарка) */
       injectProfileButton();
+      injectNotifBell();
 
       /* Presence по нику: online + lastSeen (для «был недавно») */
       db.ref('nicknames/' + window.WikiDB.uid).once('value', function (nSnap) {
@@ -243,6 +244,170 @@
     }
 
     /* ── Кнопка профиля в шапке ── */
+    /* ════════════════════════════════════════════════════
+       КОЛОКОЛЬЧИК УВЕДОМЛЕНИЙ
+       Данные: notifications/{uid}/{id} = {type,fromNick,text,link,ts,read}
+       Публичный API: window.WikiNotify.push(nickOrUid, {type,fromNick,text,link})
+    ════════════════════════════════════════════════════ */
+    var NOTIF_ICONS = { like: '👍', mention: '💬', dm: '✉️', reply: '↩️', system: '🔔', ach: '🏆' };
+
+    function notifResolveUid(nickOrUid, cb) {
+      if (!nickOrUid) { cb(null); return; }
+      db.ref('nick_index/' + safeKey(String(nickOrUid).toLowerCase())).once('value', function (s) {
+        cb(s.exists() ? s.val() : nickOrUid); /* нашли ник → uid, иначе считаем что это уже uid */
+      });
+    }
+
+    function notifPush(toNickOrUid, data) {
+      if (!window.WikiDB || !window.WikiDB.uid) return;
+      data = data || {};
+      notifResolveUid(toNickOrUid, function (uid) {
+        if (!uid || uid === window.WikiDB.uid) return; /* себе не шлём */
+        db.ref('notifications/' + safeKey(uid)).push({
+          type: data.type || 'system',
+          fromNick: data.fromNick || '',
+          text: data.text || '',
+          link: data.link || '',
+          ts: Date.now(),
+          read: false
+        });
+      });
+    }
+
+    /* Разбор @упоминаний в тексте и отправка уведомлений */
+    function notifyMentions(text, fromNick, link) {
+      if (!text) return;
+      var seen = {}, re = /@([A-Za-zА-Яа-яЁё0-9_]{2,24})/g, m;
+      while ((m = re.exec(text)) !== null) {
+        var nick = m[1], lk = nick.toLowerCase();
+        if (seen[lk]) continue; seen[lk] = true;
+        if (fromNick && lk === fromNick.toLowerCase()) continue;
+        notifPush(nick, { type: 'mention', fromNick: fromNick, text: 'упомянул(а) вас в комментарии', link: link });
+      }
+    }
+
+    window.WikiNotify = { push: notifPush, mentions: notifyMentions };
+
+    function injectNotifBell() {
+      if (!window.WikiDB || !window.WikiDB.uid) return;
+      var profBtn = document.getElementById('wfbProfileBtn');
+      if (!profBtn || document.getElementById('wfbBellBtn')) return;
+
+      if (!document.getElementById('wfbBellStyle')) {
+        var st = document.createElement('style');
+        st.id = 'wfbBellStyle';
+        st.textContent =
+          '.wfb-bell-btn{position:relative;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0;' +
+          'border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;' +
+          'transition:transform .15s,border-color .15s;font-size:16px;line-height:1;padding:0;color:var(--text);}' +
+          '.wfb-bell-btn:hover{transform:scale(1.1);border-color:var(--accent);}' +
+          '.wfb-bell-badge{position:absolute;top:-4px;right:-4px;min-width:9px;height:16px;padding:0 4px;border-radius:8px;' +
+          'background:#e0405a;color:#fff;font-family:var(--font);font-size:10px;font-weight:bold;display:none;' +
+          'align-items:center;justify-content:center;border:2px solid var(--bg2);box-sizing:content-box;}' +
+          '.wfb-bell-badge.show{display:flex;}' +
+          '.wfb-notif-panel{position:fixed;top:64px;right:14px;z-index:99998;width:330px;max-width:calc(100vw - 20px);' +
+          'max-height:70vh;overflow-y:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;' +
+          'box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:translateY(-10px);pointer-events:none;' +
+          'transition:opacity .2s,transform .2s;}' +
+          '.wfb-notif-panel.show{opacity:1;transform:translateY(0);pointer-events:auto;}' +
+          '.wfb-notif-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;' +
+          'border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);}' +
+          '.wfb-notif-head b{font-family:var(--font);font-size:15px;color:var(--text);}' +
+          '.wfb-notif-readall{font-family:var(--font);font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;}' +
+          '.wfb-notif-readall:hover{text-decoration:underline;}' +
+          '.wfb-notif-item{display:flex;gap:11px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid var(--border);' +
+          'cursor:pointer;transition:background .12s;text-decoration:none;}' +
+          '.wfb-notif-item:hover{background:var(--bg3);}' +
+          '.wfb-notif-item.unread{background:rgba(155,95,240,.09);}' +
+          '.wfb-notif-ic{font-size:19px;line-height:1.2;flex-shrink:0;}' +
+          '.wfb-notif-body{min-width:0;}' +
+          '.wfb-notif-text{font-family:var(--font);font-size:13px;color:var(--text);line-height:1.35;word-wrap:break-word;}' +
+          '.wfb-notif-text b{color:var(--accent);font-weight:bold;}' +
+          '.wfb-notif-time{font-family:var(--font);font-size:11px;color:var(--text2);margin-top:3px;}' +
+          '.wfb-notif-empty{padding:34px 16px;text-align:center;color:var(--text2);font-family:var(--font);font-size:13px;}';
+        document.head.appendChild(st);
+      }
+
+      var bell = document.createElement('button');
+      bell.id = 'wfbBellBtn';
+      bell.className = 'wfb-bell-btn';
+      bell.title = 'Уведомления';
+      bell.innerHTML = '🔔<span class="wfb-bell-badge" id="wfbBellBadge"></span>';
+      profBtn.parentNode.insertBefore(bell, profBtn);
+
+      var panel = document.createElement('div');
+      panel.className = 'wfb-notif-panel';
+      panel.id = 'wfbNotifPanel';
+      panel.innerHTML =
+        '<div class="wfb-notif-head"><b>Уведомления</b>' +
+        '<button class="wfb-notif-readall" id="wfbNotifReadAll">Прочитать все</button></div>' +
+        '<div id="wfbNotifList"><div class="wfb-notif-empty">Пока пусто</div></div>';
+      document.body.appendChild(panel);
+
+      var notifRef = db.ref('notifications/' + safeKey(window.WikiDB.uid));
+      var cache = [];
+
+      bell.addEventListener('click', function (e) { e.stopPropagation(); panel.classList.toggle('show'); });
+      document.addEventListener('click', function (e) {
+        if (!panel.contains(e.target) && e.target !== bell) panel.classList.remove('show');
+      });
+      document.getElementById('wfbNotifReadAll').addEventListener('click', function (e) {
+        e.stopPropagation();
+        var upd = {};
+        cache.forEach(function (n) { if (!n.data.read) upd[n.id + '/read'] = true; });
+        if (Object.keys(upd).length) notifRef.update(upd);
+      });
+
+      notifRef.orderByChild('ts').limitToLast(30).on('value', function (snap) {
+        cache = [];
+        snap.forEach(function (ch) { cache.push({ id: ch.key, data: ch.val() || {} }); });
+        cache.reverse();
+        renderNotifs();
+      });
+
+      function nEsc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+      function nTimeAgo(ts) {
+        if (!ts) return '';
+        var s = Math.floor((Date.now() - ts) / 1000);
+        if (s < 60) return 'только что';
+        if (s < 3600) return Math.floor(s / 60) + ' мин назад';
+        if (s < 86400) return Math.floor(s / 3600) + ' ч назад';
+        if (s < 604800) return Math.floor(s / 86400) + ' дн назад';
+        return new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+      }
+
+      function renderNotifs() {
+        var list = document.getElementById('wfbNotifList');
+        var unread = 0;
+        if (!cache.length) {
+          list.innerHTML = '<div class="wfb-notif-empty">Пока пусто</div>';
+        } else {
+          var html = '';
+          cache.forEach(function (n) {
+            var d = n.data;
+            if (!d.read) unread++;
+            var ic = NOTIF_ICONS[d.type] || '🔔';
+            var who = d.fromNick ? '<b>' + nEsc(d.fromNick) + '</b> ' : '';
+            html +=
+              '<a class="wfb-notif-item' + (d.read ? '' : ' unread') + '" href="' + (d.link || '#') + '" data-id="' + n.id + '">' +
+                '<div class="wfb-notif-ic">' + ic + '</div>' +
+                '<div class="wfb-notif-body">' +
+                  '<div class="wfb-notif-text">' + who + nEsc(d.text || '') + '</div>' +
+                  '<div class="wfb-notif-time">' + nTimeAgo(d.ts) + '</div>' +
+                '</div>' +
+              '</a>';
+          });
+          list.innerHTML = html;
+          Array.prototype.forEach.call(list.querySelectorAll('.wfb-notif-item'), function (a) {
+            a.addEventListener('click', function () { notifRef.child(a.dataset.id + '/read').set(true); });
+          });
+        }
+        var badge = document.getElementById('wfbBellBadge');
+        if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.classList.add('show'); }
+        else { badge.classList.remove('show'); }
+      }
+    }
+
     function injectProfileButton() {
       /* Не добавляем на странице профиля/настроек/лички дважды */
       if (document.getElementById('wfbProfileBtn')) return;
@@ -956,6 +1121,7 @@
         profRef.child('nick').set(currentNick);
         profRef.child('joinedTs').transaction(function (v) { return v || Date.now(); });
         if (window.WikiAchievements) { window.WikiAchievements.grantSelf('first_comment'); setTimeout(function () { window.WikiAchievements.checkSelf(); }, 500); }
+        if (window.WikiNotify) window.WikiNotify.mentions(text, currentNick, location.pathname + location.search + '#wfb-comments');
         lockComment(COMMENT_CD);
       });
     }
@@ -1067,6 +1233,14 @@
         voteRef.set(vote);
         cRef.child(vote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return (v || 0) + 1; });
         if (vote === 'like') repAuthor(1);
+        if (vote === 'like') {
+          cRef.once('value', function (cs) {
+            var c = cs.val() || {};
+            if (c.uid && c.uid !== MY_UID && window.WikiNotify) {
+              window.WikiNotify.push(c.uid, { type: 'like', fromNick: currentNick, text: 'оценил(а) ваш комментарий', link: location.pathname + location.search + '#wfb-comments' });
+            }
+          });
+        }
         if (currentVote) {
           cRef.child(currentVote === 'like' ? 'likeCount' : 'dislikeCount').transaction(function (v) { return Math.max(0, (v || 0) - 1); });
           if (currentVote === 'like') repAuthor(-1);

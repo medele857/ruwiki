@@ -1331,6 +1331,7 @@
           cur.unread=(cur.unread||0)+1;
           return cur;
         });
+        if(window.WikiNotify) window.WikiNotify.push(otherNick, { type:'dm', fromNick:myNick, text:'написал(а) вам: '+preview, link:'messages.html?with='+encodeURIComponent(myNick) });
         clearInputs();
       });
     }
