@@ -87,6 +87,38 @@
       color: var(--text); margin-bottom: 16px;
       animation: fadeUp .5s ease .2s forwards; opacity: 0;
     }
+    /* ── Достижения ── */
+    .prof-ach-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .05em;
+      color: var(--text); margin: 4px 0 14px; display: flex; align-items: baseline; gap: 10px;
+      animation: fadeUp .5s ease .15s forwards; opacity: 0;
+    }
+    .prof-ach-count { font-family: var(--font); font-size: 12px; color: var(--text2); letter-spacing: normal; }
+    .prof-ach-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+      gap: 10px; margin-bottom: 30px;
+      animation: fadeUp .5s ease .2s forwards; opacity: 0;
+    }
+    .prof-ach-loading { grid-column: 1/-1; font-size: 12px; color: var(--text2); opacity: .55; }
+    .prof-ach {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 8px 10px; text-align: center; cursor: default;
+      transition: transform .14s, border-color .14s, box-shadow .14s;
+    }
+    .prof-ach:hover {
+      transform: translateY(-3px); border-color: var(--accent);
+      box-shadow: 0 6px 20px rgba(0,0,0,.3), 0 0 16px rgba(155,95,240,.18);
+    }
+    .prof-ach-ic {
+      font-size: 30px; line-height: 1; margin-bottom: 7px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    }
+    .prof-ach-name {
+      font-size: 11px; color: var(--text); line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .prof-ach.locked { opacity: .38; filter: grayscale(1); }
+    .prof-ach.locked:hover { opacity: .6; filter: grayscale(.4); transform: translateY(-2px); }
     .prof-comment {
       background: var(--bg2); border: 1px solid var(--border);
       border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
@@ -297,6 +329,7 @@
 <script src="firebase-wiki.js"></script>
 <script src="presence.js"></script>
 <script src="textformat.js"></script>
+<script src="achievements.js"></script>
 <script>
 (function(){
   function safeKey(s){ return String(s).replace(/[.#$/\[\] ]/g,'_'); }
@@ -384,6 +417,8 @@
         '<div class="prof-stat"><div class="prof-stat-val" id="statLikes">…</div><div class="prof-stat-label">лайков поставил</div></div>'+
         '<div class="prof-stat"><div class="prof-stat-val" id="statMsgs">…</div><div class="prof-stat-label">сообщений</div></div>'+
       '</div>'+
+      '<div class="prof-ach-title">🏆 Достижения <span class="prof-ach-count" id="profAchCount"></span></div>'+
+      '<div class="prof-ach-grid" id="profAchGrid"><div class="prof-ach-loading">Загрузка…</div></div>'+
       '<div class="prof-comments-title">💬 Комментарии</div>'+
       '<div id="profComments"><div class="prof-comments-empty">Загрузка…</div></div>';
 
@@ -406,6 +441,9 @@
       var repEl = document.getElementById('statRep');
       if(repEl) repEl.textContent = p.reputation || 0;
     });
+
+    /* Достижения */
+    renderAchievements(uid);
 
     /* Кнопка редактирования */
     if(isOwn){
@@ -463,6 +501,39 @@
   }
 
   /* Edit modal */
+  function renderAchievements(uid){
+    var grid = document.getElementById('profAchGrid');
+    if(!grid) return;
+    var cat = (window.WikiAchievements && window.WikiAchievements.catalog) || {};
+    var ids = Object.keys(cat);
+    if(!ids.length){ grid.innerHTML = '<div class="prof-ach-loading">Достижения недоступны</div>'; return; }
+
+    db.ref('profiles/'+safeKey(uid)+'/achievements').once('value', function(snap){
+      var earned = snap.val() || {};
+      var got = 0;
+      var html = '';
+      ids.forEach(function(id){
+        var a = cat[id];
+        var has = !!earned[id];
+        if(has) got++;
+        var locked = !has;
+        var hidden = a.secret && !has;               /* секрет скрыт пока не получен */
+        var icon  = hidden ? '❔' : a.icon;
+        var title = hidden ? '???' : a.title;
+        var desc  = hidden ? 'Секретное достижение' : a.desc;
+        var when  = has ? new Date(earned[id]).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}) : '';
+        html +=
+          '<div class="prof-ach'+(locked?' locked':'')+'" title="'+esc(desc)+(when?' • '+when:'')+'">'+
+            '<div class="prof-ach-ic">'+icon+'</div>'+
+            '<div class="prof-ach-name">'+esc(title)+'</div>'+
+          '</div>';
+      });
+      grid.innerHTML = html;
+      var cEl = document.getElementById('profAchCount');
+      if(cEl) cEl.textContent = got + ' / ' + ids.length;
+    });
+  }
+
   function openEditModal(prof){
     var modal = document.getElementById('editModal');
     document.getElementById('editAvatar').value = prof.avatar || '';
@@ -500,6 +571,10 @@
       if(!existing.joinedTs) updates.joinedTs = Date.now();
       db.ref('profiles/'+safeKey(myUid)).update(updates, function(err){
         if(!err){
+          if(window.WikiAchievements){
+            if(avatar) window.WikiAchievements.grantSelf('set_avatar');
+            if(bio) window.WikiAchievements.grantSelf('set_bio');
+          }
           document.getElementById('editModal').classList.remove('show');
           loadProfile(myUid, myNick);
         }
@@ -611,6 +686,7 @@
     }
     db.ref('profiles/'+safeKey(myUid)).update({ wall: dataUrl, nick: myNick }, function(err){
       if(!err){
+        if(window.WikiAchievements) window.WikiAchievements.grantSelf('paint_wall');
         document.getElementById('wallModal').classList.remove('show');
         loadProfile(myUid, myNick);
       } else {

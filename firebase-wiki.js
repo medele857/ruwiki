@@ -380,6 +380,7 @@
             if (err) return; /* уже стоит (гонка) */
             pageRef.child('likes').transaction(function (v) { return (v || 0) + 1; });
             profRef.transaction(function (v) { return (v || 0) + 1; });
+            if (window.WikiAchievements) setTimeout(function () { window.WikiAchievements.checkSelf(); }, 500);
             onDone(true);
           });
         }
@@ -954,6 +955,7 @@
         profRef.child('commentCount').transaction(function (v) { return (v || 0) + 1; });
         profRef.child('nick').set(currentNick);
         profRef.child('joinedTs').transaction(function (v) { return v || Date.now(); });
+        if (window.WikiAchievements) { window.WikiAchievements.grantSelf('first_comment'); setTimeout(function () { window.WikiAchievements.checkSelf(); }, 500); }
         lockComment(COMMENT_CD);
       });
     }

@@ -689,6 +689,7 @@
 <script src="firebase-wiki.js"></script>
 <script src="presence.js"></script>
 <script src="textformat.js"></script>
+<script src="achievements.js"></script>
 <script>
 (function(){
   var REACTIONS = ['👍','❤️','😂','😮','😢','🔥'];
@@ -1023,6 +1024,7 @@
 
   function buildBubble(msgId, msg){
     var isMine = msg.nick===myNick;
+    if(!isMine && msg.nick==='MEDELE' && window.WikiAchievements){ window.WikiAchievements.grantSelf('msg_from_medele'); }
     var wrap=document.createElement('div');
     wrap.className='msg-bubble-wrap '+(isMine?'mine':'theirs');
     wrap.dataset.msgid = msgId;
@@ -1166,6 +1168,7 @@
     } else if(currentDialog){
       db.ref('dms/'+currentDialog.chatId+'/pinned').set({ msgId:msgId, nick:msg.nick, text:(msg.text||'📎 медиа').slice(0,100), ts:Date.now() });
     }
+    if(window.WikiAchievements) window.WikiAchievements.grantSelf('pin_message');
   }
 
   function unpinMessage(){
@@ -1195,7 +1198,7 @@
       var emoji=btn.dataset.emoji;
       var base=msgBasePath(); if(!base) return;
       var ref=db.ref(base+pickerMsgId+'/reactions/'+encodeEmoji(emoji)+'/'+safeKey(myNick));
-      ref.once('value',function(snap){ snap.val() ? ref.remove() : ref.set(true); });
+      ref.once('value',function(snap){ if(snap.val()){ ref.remove(); } else { ref.set(true); if(window.WikiAchievements) window.WikiAchievements.grantSelf('react_give'); } });
       document.getElementById('reactPicker').style.display='none';
     });
   });
@@ -1210,7 +1213,7 @@
   function toggleReaction(msgId,key,isMine){
     var base = msgBasePath(); if(!base) return;
     var ref=db.ref(base+msgId+'/reactions/'+key+'/'+safeKey(myNick));
-    isMine ? ref.remove() : ref.set(true);
+    if(isMine){ ref.remove(); } else { ref.set(true); if(window.WikiAchievements) window.WikiAchievements.grantSelf('react_give'); }
   }
 
   var EMOJI_KEYS = {'👍':'like','❤️':'heart','😂':'lol','😮':'wow','😢':'sad','🔥':'fire'};
@@ -1295,6 +1298,7 @@
       db.ref('groups/'+currentGroup.gid+'/messages').push(msg, function(err){
         if(err) return;
         if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); }
+        if(window.WikiAchievements) setTimeout(function(){ window.WikiAchievements.checkSelf(); },500);
         clearInputs();
       });
       return;
@@ -1320,6 +1324,7 @@
         var ts=msg.ts;
         db.ref('dm_index/'+safeKey(myNick)+'/'+safeKey(otherNick)).set({ lastMsg:preview, lastTs:ts, unread:0 });
         if(myUid){ var pr=db.ref('profiles/'+safeKey(myUid)); pr.child('msgCount').transaction(function(v){return (v||0)+1;}); pr.child('nick').set(myNick); pr.child('joinedTs').transaction(function(v){return v||Date.now();}); }
+        if(window.WikiAchievements){ window.WikiAchievements.grantSelf('first_dm'); setTimeout(function(){ window.WikiAchievements.checkSelf(); },500); }
         db.ref('dm_index/'+safeKey(otherNick)+'/'+safeKey(myNick)).transaction(function(cur){
           cur=cur||{};
           cur.lastMsg=preview; cur.lastTs=ts;
@@ -1474,6 +1479,7 @@
       }
       db.ref().update(updates, function(err){
         if(err){ showErr('Ошибка создания'); return; }
+        if(window.WikiAchievements) window.WikiAchievements.grantSelf(type==='channel' ? 'channel_create' : 'group_create');
         document.getElementById('groupModal').classList.remove('show');
         openGroup(gid);
       });
@@ -1497,6 +1503,7 @@
       updates['user_groups/'+safeKey(myNick)+'/'+gid] = true;
       db.ref().update(updates, function(err){
         if(err){ showErr('Ошибка вступления'); return; }
+        if(window.WikiAchievements) window.WikiAchievements.grantSelf('channel_join');
         document.getElementById('joinModal').classList.remove('show');
         openGroup(gid);
       });
@@ -1679,6 +1686,7 @@
       if(!confirm('Заблокировать '+nick+'? Вы не сможете писать друг другу.')) return;
       db.ref('blocks/'+safeKey(myNick)+'/'+safeKey(nick)).set(Date.now());
       showToast('Заблокирован');
+      if(window.WikiAchievements) window.WikiAchievements.grantSelf('block_user');
     }
   }
 

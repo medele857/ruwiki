@@ -345,6 +345,7 @@
 <script src="script.js"></script>
 <script src="firebase-wiki.js"></script>
 <script src="textformat.js"></script>
+<script src="achievements.js"></script>
 <script>
 (function () {
   var REACTIONS  = ['👍','❤️','😂','😮'];
@@ -443,6 +444,7 @@
         ts:           Date.now()
       }, function(err){
         if(err){ showToast('❌ Ошибка: '+err.message); return; }
+        if(window.WikiAchievements) window.WikiAchievements.grantSelf('first_post');
         document.getElementById('wpTitle').value='';
         document.getElementById('wpText').value='';
         document.getElementById('wpMediaUrl').value='';

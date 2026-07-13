@@ -88,6 +88,7 @@
       textarea.selectionStart = start + before.length;
       textarea.selectionEnd = start + before.length + sel.length;
       textarea.dispatchEvent(new Event('input', {bubbles:true}));
+      if(window.WikiAchievements) window.WikiAchievements.grantSelf('use_format');
     }
 
     bar.querySelectorAll('[data-wrap]').forEach(function(btn){
